@@ -2,12 +2,19 @@
 
 # dependencies
 node_modules/
+.pnpm-store/
 
 # Expo
 .expo/
 dist/
 web-build/
 expo-env.d.ts
+
+# Tamagui
+.tamagui/
+
+# IDE
+.vscode/
 
 # Native
 .kotlin/
