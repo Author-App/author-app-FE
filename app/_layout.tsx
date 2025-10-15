@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { Platform } from 'react-native';
-import { Slot } from 'expo-router';
+import { router, Slot } from 'expo-router';
 import Head from 'expo-router/head';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -20,9 +20,9 @@ export default function RootLayout() {
       <GestureHandlerRootView style={{ flex: 1 }}>
         <AppHead />
         <AppTamaguiProvider>
-            <FontProvider>
-              <Slot />
-            </FontProvider>
+          <FontProvider>
+            <Slot />
+          </FontProvider>
         </AppTamaguiProvider>
       </GestureHandlerRootView>
     </SafeAreaProvider>
