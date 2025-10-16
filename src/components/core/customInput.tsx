@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Input, XStack, YStack, Text, Button } from 'tamagui'
 import { Eye, EyeOff } from '@tamagui/lucide-icons'
 import { Phone } from '@tamagui/lucide-icons'
-import { ICustomInputProps } from '@/constants/Interfaces'
+import { ICustomInputProps } from '@/src/interfaces'
 
 const CustomInput: React.FC<ICustomInputProps> = ({
   label,

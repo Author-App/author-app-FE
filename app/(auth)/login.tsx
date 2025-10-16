@@ -6,26 +6,18 @@ import CustomButton from '@/src/components/core/customButton'
 import CustomInput from '@/src/components/core/customInput'
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
+import { loginValidationSchema } from '@/src/utils/validator'
 
 const login = () => {
     const router = useRouter()
     const [loading, setLoading] = useState(false)
-
-    const validationSchema = Yup.object({
-        email: Yup.string()
-            .email('Invalid email format')
-            .required('Email is required'),
-        password: Yup.string()
-            .min(6, 'Password must be at least 6 characters')
-            .required('Password is required'),
-    });
 
     const formik = useFormik({
         initialValues: {
             email: '',
             password: '',
         },
-        validationSchema,
+        validationSchema: loginValidationSchema,
         onSubmit: async (values, { resetForm }) => {
             try {
                 console.log("THIS IS VALUESS", values);

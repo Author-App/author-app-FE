@@ -1,6 +1,6 @@
 import React from 'react'
 import { Button, Spinner, Text, YStack } from 'tamagui'
-import { ICustomButton } from '@/constants/Interfaces'
+import { ICustomButton } from '@/src/interfaces'
 
 const CustomButton: React.FC<ICustomButton> = ({
   buttonText,
