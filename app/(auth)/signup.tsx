@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { useRouter } from 'expo-router'
 import { YStack, XStack, Text, Input, Separator, Button, Image } from 'tamagui'
-import { Ionicons } from '@expo/vector-icons'
 import CustomButton from '@/src/components/core/customButton'
 import CustomInput from '@/src/components/core/customInput'
 import { useFormik } from 'formik';
