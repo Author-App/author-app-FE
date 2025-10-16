@@ -1,0 +1,13 @@
+export type ButtonVariant =
+  | 'primary-xs'
+  | 'primary-sm'
+  | 'primary-md'
+  | 'secondary-xs'
+  | 'secondary-sm'
+  | 'secondary-md'
+  | 'tertiary-xs'
+  | 'tertiary-sm'
+  | 'tertiary-md'
+  | 'quaternary-xs'
+  | 'quaternary-sm'
+  | 'quaternary-md';
