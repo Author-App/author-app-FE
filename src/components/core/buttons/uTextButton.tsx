@@ -1,15 +1,18 @@
 import { forwardRef, useMemo } from 'react';
 import { Button as TamaguiButton, TextProps } from 'tamagui';
-  
+
 import UText from '@/src/components/core/text/uText';
 import { BaseButtonType } from '@/src/components/core/types/button/baseButtonType';
 import ButtonVariantStylesType from '@/src/components/core/types/button/buttonStylesType';
 import { ButtonVariant } from '@/src/components/core/types/button/buttonVariant';
 import { TextVariant } from '@/src/components/core/types/text/textVariant';
+import { ActivityIndicator } from 'react-native';
 
 interface UTextButtonProps extends BaseButtonType {
   textColor?: TextProps['color'];
   textDecorationLine?: TextProps['textDecorationLine'];
+  loading?: boolean;
+  indicatorColor?: string;
 }
 interface StylesType extends ButtonVariantStylesType {
   textVariant: TextVariant;
@@ -21,7 +24,7 @@ const getVariantStyle = (variant: ButtonVariant = 'primary-md'): StylesType => {
     hoverBackgroundColor: '$primary8',
     pressBackgroundColor: '$primary9',
     px: 16,
-    py: 8,
+    py: 15,
     height: 'auto',
     borderRadius: 999,
     color: '$neutral1',
@@ -160,6 +163,8 @@ const UTextButton = forwardRef<any, UTextButtonProps>((props, ref) => {
     children,
     textColor,
     textDecorationLine,
+    indicatorColor,
+    loading,
     ...restProps
   } = props;
   const variantStyle = useMemo(() => getVariantStyle(variant), [variant]);
@@ -190,13 +195,17 @@ const UTextButton = forwardRef<any, UTextButtonProps>((props, ref) => {
       opacity={disabled ? 0.4 : 1}
       {...restProps}
     >
-      <UText
-        variant={textVariant}
-        color={textColor || color}
-        textDecorationLine={textDecorationLine}
-      >
-        {children}
-      </UText>
+      {loading ?
+        <ActivityIndicator size="small" color={indicatorColor || '$neutral0'} /> :
+        <UText
+          variant={textVariant}
+          color={textColor || color}
+          textDecorationLine={textDecorationLine}
+        >
+          {children}
+        </UText>
+
+      }
     </TamaguiButton>
   );
 });

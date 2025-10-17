@@ -6,8 +6,11 @@ import UIcon from '@/src/components/core/icons/uIcon';
 import ButtonVariantStylesType from '@/src/components/core/types/button/buttonStylesType';
 import { ButtonVariant } from '@/src/components/core/types/button/buttonVariant';
 import { IconButtonType } from '@/src/components/core/types/button/iconButtonType';
+import { ActivityIndicator } from 'react-native';
 
-interface UIconButtonProps extends IconButtonType {}
+interface UIconButtonProps extends IconButtonType {
+  loading?: boolean;
+}
 
 interface StylesType extends ButtonVariantStylesType {
   iconSize?: number;
@@ -17,8 +20,10 @@ interface StylesType extends ButtonVariantStylesType {
 const getVariantStyle = (variant: ButtonVariant = 'primary-md'): StylesType => {
   const baseStyles: StylesType = {
     backgroundColor: '$primary7',
-    width: 36,
-    height: 36,
+    // width: 36,
+    // height: 36,
+    width: 46,
+    height: 46,
     borderRadius: 9999,
     justifyContent: 'center',
     alignItems: 'center',
@@ -92,7 +97,8 @@ const getVariantStyle = (variant: ButtonVariant = 'primary-md'): StylesType => {
         backgroundColor: '$neutral0',
         pressBackgroundColor: '$neutral2',
         hoverBackgroundColor: '$neutral1',
-        borderColor: '$primary7',
+        // borderColor: '$primary7',
+        borderColor: '$primary2',
         pressBorderColor: '$primary7',
         hoverBorderColor: '$primary7',
         iconColor: '$primary7',
@@ -130,6 +136,7 @@ const UIconButton = forwardRef<any, UIconButtonProps>((props, ref) => {
     dimen,
     color,
     disabled,
+    loading,
     iconProps = {},
     ...restProps
   } = props;
@@ -162,11 +169,21 @@ const UIconButton = forwardRef<any, UIconButtonProps>((props, ref) => {
       opacity={disabled ? 0.5 : 1}
       {...restProps}
     >
-      <UIcon
+
+      {loading ? (
+        <ActivityIndicator size="small" color={ 'white'} /> 
+      ) : (
+        <UIcon
+          icon={icon}
+          color={iconProps.color || color || iconColor || 'white'} 
+          dimen={iconProps.dimen || dimen || iconSize}
+        />
+      )}
+      {/* <UIcon
         icon={icon}
         color={iconProps.color || iconColor}
         dimen={iconProps.dimen || iconSize}
-      />
+      /> */}
     </TamaguiButton>
   );
 });

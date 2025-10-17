@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Platform } from 'react-native';
+import { Platform, ToastAndroid } from 'react-native';
 import { router, Slot } from 'expo-router';
 import Head from 'expo-router/head';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -7,6 +7,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import AppTamaguiProvider from '@/src/components/providers/appTamaguiProvider';
 import FontProvider from '@/src/components/providers/fontProvider';
+import Toast from 'react-native-toast-message';
 
 
 export default function RootLayout() {
@@ -22,6 +23,8 @@ export default function RootLayout() {
         <AppTamaguiProvider>
           <FontProvider>
             <Slot />
+
+            <Toast />
           </FontProvider>
         </AppTamaguiProvider>
       </GestureHandlerRootView>

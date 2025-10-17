@@ -1,10 +1,12 @@
 import { forwardRef, useMemo } from 'react';
-import { GetProps, GetThemeValueForKey, Input as TamaguiInput } from 'tamagui';
+import { GetProps, GetThemeValueForKey, Input as TamaguiInput, Text, YStack } from 'tamagui';
 
 import { UInputVariant } from '@/src/components/core/types/input/inputVariants';
+import UText from '../text/uText';
 
 interface UInputProps extends Omit<GetProps<typeof TamaguiInput>, 'variant'> {
   variant?: UInputVariant;
+  error?: string;
 }
 
 interface StylesType extends Omit<GetProps<typeof TamaguiInput>, 'ref'> {
@@ -20,16 +22,20 @@ const getVariantStyle = (variant: UInputVariant = 'primary'): StylesType => {
     placeholderTextColor: '$primaryAlpha7',
     borderColor: '$transparent',
     borderWidth: 0,
-    minHeight: 20,
-    flex: 1,
-    py: 10,
-    px: 8,
-    fontFamily: '$dmsans',
-    fontSize: 16,
+    minHeight: 40,
+    // flex: 1,
+    // py: 10,
+    py: 14,
+    px: 16,
+    // fontFamily: '$dmsans',
+    fontFamily: '$adamina',
+    // fontSize: 16,
+    fontSize:14,
     letterSpacing: 0,
     color: '$primary7',
     borderRadius: 999,
     boxSizing: 'border-box',
+    marginBottom: 0
   };
 
   switch (variant) {
@@ -59,7 +65,7 @@ const getVariantStyle = (variant: UInputVariant = 'primary'): StylesType => {
 };
 
 const UInput = forwardRef<any, UInputProps>(
-  ({ variant = 'tertiary', disabled, borderColor, ...props }, ref) => {
+  ({ variant = 'tertiary', disabled, borderColor, error, ...props }, ref) => {
     const {
       pressBackgroundColor,
       hoverBackgroundColor,
@@ -67,23 +73,34 @@ const UInput = forwardRef<any, UInputProps>(
       ...variantStyle
     } = useMemo(() => getVariantStyle(variant), [variant]);
     return (
-      <TamaguiInput
-        ref={ref}
-        unstyled
-        pressStyle={{
-          backgroundColor: pressBackgroundColor,
-          borderColor: borderColor || variantBorderColor,
-        }}
-        hoverStyle={{
-          backgroundColor: hoverBackgroundColor,
-          borderColor: borderColor || variantBorderColor,
-        }}
-        borderColor={borderColor || variantBorderColor}
-        {...variantStyle}
-        {...props}
-        disabled={disabled}
-        opacity={disabled ? 0.5 : 1}
-      />
+      <>
+        <YStack gap={2} marginBottom={0}>
+          <TamaguiInput
+            ref={ref}
+            unstyled
+            pressStyle={{
+              backgroundColor: pressBackgroundColor,
+              borderColor: borderColor || variantBorderColor,
+            }}
+            hoverStyle={{
+              backgroundColor: hoverBackgroundColor,
+              borderColor: borderColor || variantBorderColor,
+            }}
+            borderColor={borderColor || variantBorderColor}
+            {...variantStyle}
+            {...props}
+            disabled={disabled}
+            opacity={disabled ? 0.5 : 1}
+          />
+
+          {error ? (
+            <UText variant="text-xs" color="$red10" ml={16} mt={5}>
+              {error}
+            </UText>
+          ) : null}
+
+        </YStack>
+      </>
     );
   }
 );

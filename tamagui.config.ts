@@ -444,6 +444,8 @@ const tokens = createTokens({
     negativeAlpha9: '#FF003CE6',
     negativeAlpha10: '#FF003CFF',
     transparent: 'transparent',
+
+    facebook:'#1976D2',
   },
   size: {
     ...config.tokens.size,
