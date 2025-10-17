@@ -2,6 +2,7 @@ import IconArrowRight from '@/assets/icons/iconArrowRight';
 import UIconButton from '@/src/components/core/buttons/uIconButtonVariants';
 import UTextButton from '@/src/components/core/buttons/uTextButton';
 import UInput from '@/src/components/core/inputs/uInput';
+import UKeyboardAvoidingView from '@/src/components/core/layout/uKeyboardAvoidingView';
 import UText from '@/src/components/core/text/uText';
 import ScreenWrapper from '@/src/components/layout/screenWrapper';
 import useForgotPasswordController from '@/src/controllers/useForgotPasswordController';
@@ -9,7 +10,7 @@ import { useFormik } from 'formik';
 import React from 'react';
 import { XStack, YStack } from 'tamagui';
 
-const forgotpassword = () => {
+const ForgotPassword = () => {
 
     const { validator, values, functions, states, router } = useForgotPasswordController();
 
@@ -21,19 +22,15 @@ const forgotpassword = () => {
 
 
     return (
-        <ScreenWrapper scrollable>
-
-            <YStack flex={1} bg="$white" px={24} pb={24} jc="space-between">
-                <YStack mt={80} gap={16}>
-
+            <YStack flex={1} px={24} pb={24} jc="space-between">
+                <YStack mt={80} gap={16} flex={1}>
                     <UText variant="heading-h1" color="$primary7">
                         Forgot Password
                     </UText>
                     <UText variant="text-sm" color="$neutral7">
                         Enter an email address to receive a verification code
                     </UText>
-
-                    <YStack gap={16} mt={25}>
+                    <UKeyboardAvoidingView gap={16} mt={25}>
                         <UInput
                             variant="primary"
                             placeholder="Enter your email"
@@ -43,7 +40,6 @@ const forgotpassword = () => {
                             keyboardType="email-address"
                             autoComplete="email"
                         />
-
                         <XStack justifyContent="flex-end">
                             <UIconButton
                                 variant="secondary-md"
@@ -56,12 +52,9 @@ const forgotpassword = () => {
                                 loading={states.loading}
                             />
                         </XStack>
-
-                    </YStack>
+                    </UKeyboardAvoidingView>
                 </YStack>
-
                 <YStack gap={16} mb={25}>
-
                     <XStack jc="center" mt={16}>
                         <UText
                             variant="text-md"
@@ -73,11 +66,8 @@ const forgotpassword = () => {
                         </UText>
                     </XStack>
                 </YStack>
-
             </YStack>
-        </ScreenWrapper>
-
     )
 }
 
-export default forgotpassword;
+export default ForgotPassword;

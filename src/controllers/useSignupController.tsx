@@ -1,7 +1,7 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { loginValidationSchema } from "../utils/validator";
-import { showSuccessToast } from "../utils/toast";
+import { loginValidationSchema } from "@/src/utils/validator";
+import { showSuccessToast } from "@/src/utils/toast";
 
 
 const initialValues = {
@@ -26,7 +26,8 @@ const useSignupController = () => {
 
             console.log("THIS IS VALUESS", values);
 
-            router.replace('/(public)/login' as any);
+            router.replace('/(public)/login');
+            showSuccessToast('You’ve signed up successfully')
             resetForm();
         } catch (error) {
             console.log("THIS IS ERROR", error);

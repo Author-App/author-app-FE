@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
-import { Platform, ToastAndroid } from 'react-native';
-import { router, Slot } from 'expo-router';
+import { Platform } from 'react-native';
+import { Slot } from 'expo-router';
 import Head from 'expo-router/head';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -8,23 +8,25 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import AppTamaguiProvider from '@/src/components/providers/appTamaguiProvider';
 import FontProvider from '@/src/components/providers/fontProvider';
 import Toast from 'react-native-toast-message';
+import { getTokenValue } from 'tamagui';
 
 
 export default function RootLayout() {
+
+  const color = getTokenValue('$neutral1');
 
   useEffect(() => {
     // any one-time init (logbox, updates, etc.)
   }, []);
 
   return (
-    <SafeAreaProvider>
+    <SafeAreaProvider style={{backgroundColor: color}}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <AppHead />
         <AppTamaguiProvider>
           <FontProvider>
             <Slot />
-
-            <Toast />
+            <Toast  />
           </FontProvider>
         </AppTamaguiProvider>
       </GestureHandlerRootView>

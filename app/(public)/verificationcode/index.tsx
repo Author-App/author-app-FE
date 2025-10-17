@@ -1,17 +1,15 @@
 import IconArrowRight from '@/assets/icons/iconArrowRight';
 import UIconButton from '@/src/components/core/buttons/uIconButtonVariants';
-import UInput from '@/src/components/core/inputs/uInput';
 import UText from '@/src/components/core/text/uText';
-import ScreenWrapper from '@/src/components/layout/screenWrapper';
 import useVerificationCodeController from '@/src/controllers/useVerificationCodeController';
 import { useFormik } from 'formik';
 import React from 'react';
 import { XStack, YStack } from 'tamagui';
 import OTPTextView from "react-native-otp-textinput";
-import { getVariableValue } from 'tamagui';
+import UKeyboardAvoidingView from '@/src/components/core/layout/uKeyboardAvoidingView';
 
 
-const verificationcode = () => {
+const VerificationCode = () => {
 
     const { validator, values, functions, states, router } = useVerificationCodeController();
 
@@ -23,22 +21,16 @@ const verificationcode = () => {
 
 
     return (
-        <ScreenWrapper scrollable>
-
-            <YStack flex={1} bg="$white" px={24} pb={24} jc="space-between">
-                <YStack mt={80} gap={16}>
-
+            <YStack flex={1} px={24} pb={24} jc="space-between">
+                <YStack mt={80} gap={16} flex={1}>
                     <UText variant="heading-h1" color="$primary7">
                         Verification Code
                     </UText>
                     <UText variant="text-sm" color="$neutral7">
                         Enter verification code sent to your email address.
                     </UText>
-
-                    <YStack gap={16} mt={25}>
-
+                    <UKeyboardAvoidingView gap={16} mt={25}>
                         <OTPTextView
-
                             inputCount={4}
                             keyboardType="number-pad"
                             handleTextChange={(text) =>
@@ -65,7 +57,7 @@ const verificationcode = () => {
                             />
                         </XStack>
 
-                    </YStack>
+                    </UKeyboardAvoidingView>
                 </YStack>
 
                 <YStack gap={16} mb={25}>
@@ -83,9 +75,8 @@ const verificationcode = () => {
                 </YStack>
 
             </YStack>
-        </ScreenWrapper>
 
     )
 }
 
-export default verificationcode;
+export default VerificationCode;

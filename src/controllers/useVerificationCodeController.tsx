@@ -1,7 +1,6 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { codeValidationSchema, forgotPasswordFormValidator, loginValidationSchema } from "../utils/validator";
-import { showSuccessToast } from "../utils/toast";
+import { codeValidationSchema } from "@/src/utils/validator";
 
 
 const initialValues = {
@@ -37,7 +36,7 @@ const useVerificationCodeController = () => {
 
             console.log("THIS IS VALUESS", values);
 
-            router.replace('/(public)/resetpassword' as any);
+            router.push('/(public)/resetPassword');
 
             resetForm();
         } catch (error) {

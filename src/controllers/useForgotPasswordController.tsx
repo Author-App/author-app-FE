@@ -1,7 +1,6 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { forgotPasswordFormValidator, loginValidationSchema } from "../utils/validator";
-import { showSuccessToast } from "../utils/toast";
+import { forgotPasswordFormValidator } from "@/src/utils/validator";
 
 
 const initialValues = {
@@ -10,8 +9,8 @@ const initialValues = {
 
 const useForgotPasswordController = () => {
 
-    const [loading, setLoading] = useState<boolean>(false);
-    const [submitted, setSubmitted] = useState<boolean>(false);
+    const [loading, setLoading] = useState(false);
+    const [submitted, setSubmitted] = useState(false);
 
 
     const router = useRouter();
@@ -24,7 +23,7 @@ const useForgotPasswordController = () => {
 
             console.log("THIS IS VALUESS", values);
 
-            router.replace('/(public)/verificationcode' as any);
+            router.push('/(public)/verificationCode');
 
             resetForm();
         } catch (error) {
