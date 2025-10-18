@@ -1,10 +1,8 @@
 import IconArrowRight from '@/assets/icons/iconArrowRight';
 import UIconButton from '@/src/components/core/buttons/uIconButtonVariants';
-import UTextButton from '@/src/components/core/buttons/uTextButton';
 import UInput from '@/src/components/core/inputs/uInput';
 import UKeyboardAvoidingView from '@/src/components/core/layout/uKeyboardAvoidingView';
 import UText from '@/src/components/core/text/uText';
-import ScreenWrapper from '@/src/components/layout/screenWrapper';
 import useForgotPasswordController from '@/src/controllers/useForgotPasswordController';
 import { useFormik } from 'formik';
 import React from 'react';
