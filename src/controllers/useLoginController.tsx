@@ -1,7 +1,7 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { loginValidationSchema } from "../utils/validator";
-import { showSuccessToast } from "../utils/toast";
+import { useAppToast } from "../utils/toast";
 
 
 const initialValues = {
@@ -17,6 +17,8 @@ const useLoginController = () => {
 
     const router = useRouter();
 
+    const { showSuccessToast, showErrorToast } = useAppToast();
+
     const handleSubmit = async (values: any, { resetForm, setSubmitting }: { resetForm: () => void; setSubmitting: (isSubmitting: boolean) => void }) => {
         try {
             setLoading(true);
@@ -25,8 +27,9 @@ const useLoginController = () => {
 
             console.log("THIS IS VALUESS", values);
 
-            router.replace('/(tabs)' as any);
-            showSuccessToast('You’ve logged in successfully')
+            router.replace('/(tabs)');
+
+            showSuccessToast('Success', 'You’ve logged in successfully')
 
             resetForm();
         } catch (error) {
