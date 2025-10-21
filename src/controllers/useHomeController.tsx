@@ -53,33 +53,9 @@ const useHomeController = () => {
                             {...config}
                             type={item.subtype}
                             onPressCTA={() => console.log('Navigating to details')}
-                        // type={item.subtype}
-                        // image={config.image}
-                        // eyebrow={config.eyebrow}
-                        // title={config.title}
-                        // subtitle={config.subtitle}
-                        // ctaLabel={config.ctaLabel}
-                        // badge={config.badge}
-                        // progress={config.progress}
-                        // onPressCTA={() => console.log("Navigating to details")}
-                        // tint={config.tint}
-                        // icon={config.icon}
-                        // blurViewIntensity={config.blurViewIntensity}
 
                         />
                     );
-                // return (
-                //     <HeroBanner
-                //         image={item?.data?.image}
-                //         eyebrow={item?.data?.eyebrow}
-                //         title={item?.data?.title}
-                //         subtitle={item?.data?.subtitle}
-                //         ctaLabel={item?.data?.ctaLabel}
-                //         badge={item?.data?.badge}
-                //         progress={item?.data?.progress}
-                //         onPressCTA={() => console.log('Navigating to audiobook details')}
-                //     />
-                // )
                 case 'carousel':
                     return (
                         <YStack mt="$5">
