@@ -35,7 +35,10 @@ const UHeaderWithImage = ({
         borderRadius={20}
         fallBackText={heroFallbackText}
       />
-      <YStack w="80%">
+      <YStack 
+      // width='80%'
+      // w="100%"
+      >
         <UText
           mt={4}
           variant="text-md"

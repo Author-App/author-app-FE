@@ -37,7 +37,7 @@ const HeroBanner: React.FC<HeroBannerProps> = ({
   icon,
   blurViewIntensity,
 }) => {
-  const shouldShowIcon = type === 'book' || type === 'audiobook'
+  const shouldShowIcon =  type === 'audiobook'
 
 
   return (

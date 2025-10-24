@@ -9,12 +9,16 @@ import UProgressBar from '../../core/display/uProgressBar'
 import IconHeadphone from '@/assets/icons/iconHeadphone'
 import UIconButton from '../../core/buttons/uIconButtonVariants'
 import IconDuration from '@/assets/icons/iconDuration'
+import { percentageToDecimal, roundPercentage } from '@/src/utils/helper'
 
 const AudiobookCard: React.FC<BookCardProps> = ({
     cover,
     title,
     author,
     summary,
+    totalMinutes,
+    minutesCompleted,
+    percentage
 }) => {
     const theme = useTheme()
 
@@ -49,7 +53,7 @@ const AudiobookCard: React.FC<BookCardProps> = ({
             {/* Right: Content */}
             <YStack height={'100%'} justifyContent='space-between'>
                 <YStack>
-                    <UText numberOfLines={1} variant="heading-h2-bold" color="$primary7" >
+                    <UText numberOfLines={1} variant="heading-h2-bold" color="$neutral10" >
                         {title}
                     </UText>
 
@@ -66,11 +70,7 @@ const AudiobookCard: React.FC<BookCardProps> = ({
                             onPress={() => console.log('Facebook login')}
 
                         />
-                        {/* <Image 
-                        source={assets.icons.ebookIcon}
-                            width={24}
-                            height={24} 
-                             /> */}
+
                         <UText numberOfLines={1} color="$neutral6" variant="text-xs" mt="$1" ml="$1">
                             Audiobook
                         </UText>
@@ -78,10 +78,6 @@ const AudiobookCard: React.FC<BookCardProps> = ({
                     </XStack>
 
                     <XStack ai='center'>
-                        {/* <Image source={assets.icons.durationIcon}
-                            width={24}
-                            height={24}
-                            tintColor={'$primary7'} /> */}
                         <UIconButton
                             variant="quaternary-xxs"
                             icon={IconDuration}
@@ -89,7 +85,7 @@ const AudiobookCard: React.FC<BookCardProps> = ({
 
                         />
                         <UText numberOfLines={1} color="$neutral6" variant="text-xs" mt="$1" ml="$1">
-                            45 min
+                            {totalMinutes} min
                         </UText>
 
                     </XStack>
@@ -98,19 +94,19 @@ const AudiobookCard: React.FC<BookCardProps> = ({
                 </XStack>
                 <YStack>
                     <UProgressBar
-                        percentage={0.6 * 100}
+                        percentage={ percentage }
                         isAnimate={true}
-                        foregroundColor='$primary7'
+                        foregroundColor='$secondary5'
                         width={'85%'}
                     />
                     <XStack
                         jc='space-between' mt={'$2'} width={'80%'}>
                         <UText numberOfLines={1} color="$neutral6" variant="text-xs" >
-                            40/85 minutes
+                            {minutesCompleted}/{totalMinutes} minutes
                         </UText>
 
-                        <UText numberOfLines={1} color="$primary7" variant="text-xs" >
-                            65%
+                        <UText numberOfLines={1} color="$secondary5" variant="text-xs" >
+                            {roundPercentage(percentage)}%
                         </UText>
 
 

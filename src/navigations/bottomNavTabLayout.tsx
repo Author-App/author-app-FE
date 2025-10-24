@@ -7,6 +7,7 @@ import UIconButton from '../components/core/buttons/uIconButtonVariants';
 import UHeaderWithImage from '../components/core/layout/uHeaderWithImage';
 import UText from '../components/core/text/uText';
 import IconNotifications from '@/assets/icons/iconNotifications';
+import assets from '@/assets/images';
 
 const BottomNavTabLayout = () => {
 
@@ -28,9 +29,9 @@ const BottomNavTabLayout = () => {
             // title="Home"
             leftControl={
               <UHeaderWithImage
-                // heroImage={null}
-                heroFallbackText='PJ'
-                title="Hi, Peter John"
+                heroImage={assets.images.padden}
+                // heroFallbackText='PJ'
+                title="Hi, Stanley Padden"
                 headerSubtitle={
                   <UText variant="text-xs" color="$neutral7">
                     Welcome back 👋
