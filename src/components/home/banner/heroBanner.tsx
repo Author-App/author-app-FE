@@ -1,11 +1,9 @@
 import React from 'react'
 import { YStack, XStack, Image } from 'tamagui'
-// import { LinearGradient } from '@tamagui/linear-gradient'
 import UTextButton from '../../core/buttons/uTextButton'
 import UText from '../../core/text/uText'
 import UProgressBar from '../../core/display/uProgressBar'
 import UIconButton from '../../core/buttons/uIconButtonVariants'
-import { BlurTint, BlurView } from 'expo-blur';
 import { IconProps } from '@/assets/icons/types/iconProps'
 
 interface HeroBannerProps {
@@ -18,9 +16,7 @@ interface HeroBannerProps {
   badge?: 'New' | 'Live' | 'Free' | string
   progress?: number 
   onPressCTA?: () => void;
-  tint?: BlurTint;
   icon?: React.ComponentType<IconProps>; 
-  blurViewIntensity?: number;
 }
 
 const HeroBanner: React.FC<HeroBannerProps> = ({
@@ -33,133 +29,90 @@ const HeroBanner: React.FC<HeroBannerProps> = ({
   badge,
   progress,
   onPressCTA,
-  tint,
   icon,
-  blurViewIntensity,
 }) => {
   const shouldShowIcon = type === 'book' || type === 'audiobook'
 
-
   return (
-    <YStack
-      height={260}
+    <XStack
+      height={180}
       borderRadius="$4"
       overflow="hidden"
-      position="relative"
-      bg="$gray5"
+      bg="$neutral0"
       onPress={onPressCTA}
-      pressStyle={{ opacity: 0.9 }}
-
+      pressStyle={{ 
+        opacity: 0.9,
+        transform: [{ scale: 0.98 }]
+      }}
+      shadowColor="$neutral8"
+      shadowOpacity={0.15}
+      shadowRadius={12}
+      shadowOffset={{ width: 0, height: 4 }}
+      elevation={6}
     >
-
-      <Image
-        source={{ uri: image }}
-        width="100%"
-        height="100%"
-        position="absolute"
-      />
-
-      {/* <LinearGradient
-        colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.8)']}
-        start={[0, 0]}
-        end={[0, 1]}
-        style={{
-          position: 'absolute',
-          width: '100%',
-          height: '100%',
-        }}
-      /> */}
-
-      <YStack p="$4"
-        jc="flex-end"
-        h="100%" space="$2">
-
-        <BlurView
-          intensity={blurViewIntensity}
-          tint={tint || 'systemThinMaterialDark'}
-          style={{
-            borderRadius: 12,
-            paddingVertical: 12,
-            paddingTop: 12,
-            paddingHorizontal: 10,
-            alignSelf: 'flex-start',
-            overflow: 'hidden',
-            width: '100%'
-          }}
-        >
-
+      {/* Left side - Content */}
+      <YStack
+        flex={1}
+        p="$5"
+        jc="space-between"
+      >
+        {/* Top section with eyebrow and title */}
+        <YStack space="$2">
           {eyebrow && (
-            <UText variant='text-2xs' color="$white" tt="uppercase">
+            <UText 
+              variant='text-2xs' 
+              color="$primary7" 
+              tt="uppercase"
+              fontWeight="600"
+            >
               {eyebrow}
             </UText>
           )}
 
-
-          <XStack
-            width="100%"
-            alignItems="center"
-            justifyContent="space-between"
-            // paddingHorizontal="$3"
-            paddingVertical="$2"
+          <UText 
+            color="$neutral10" 
+            variant='text-md' 
+            numberOfLines={2}
+            fontWeight="700"
           >
-            <YStack flexShrink={1}>
-              <UText color="$white" variant='heading-h1-bold' numberOfLines={2} width="90%">
-                {title}
-              </UText>
+            {title}
+          </UText>
 
-              {subtitle && (
+          {subtitle && (
+            <UText 
+              variant='text-sm' 
+              color="$neutral7" 
+              numberOfLines={2}
+              lineHeight="$4"
+            >
+              {subtitle}
+            </UText>
+          )}
+        </YStack>
 
-                <UText variant='text-sm' color="$white" numberOfLines={1}>
-                  {subtitle}
-                </UText>
-              )}
-            </YStack>
-
-            {
-              shouldShowIcon && icon &&
-              <UIconButton
-                variant="tertiary-md"
-                icon={icon}
-                onPress={() => console.log('Play Button')}
-                alignSelf='center'
-              />
-            }
-
-          </XStack>
-
-
-          <XStack
-            ai="center"
-            space="$2"
-            mt="$3"
-            mb="$4"
-          >
+        {/* Bottom section with CTA and progress */}
+        <YStack space="$3">
+          <XStack ai="center" space="$3">
             <UTextButton
-              variant='tertiary-sm'
+              variant='primary-sm'
               onPress={onPressCTA}
-              borderRadius={50}
-
+              borderRadius="$6"
+              bg="$primary5"
+              pressStyle={{
+                bg: "$primary6"
+              }}
             >
               {ctaLabel}
             </UTextButton>
 
-            {badge && (
-              <YStack
-                px="$2"
-                py="$1"
-                borderRadius={50}
-                bg={
-                  badge === 'Live'
-                    ? '$red10'
-                    : badge === 'Free'
-                      ? '$positiveAlpha7'
-                      : '$blue10'
-                }
-              >
-                <UText variant='text-2xs' color="$white" >
-                  {badge}
-                </UText>
-              </YStack>
+            {shouldShowIcon && icon && (
+              <UIconButton
+                variant="secondary-sm"
+                icon={icon}
+                onPress={() => console.log('Play Button')}
+                bg="$neutral1"
+                borderColor="$neutral3"
+              />
             )}
           </XStack>
 
@@ -167,14 +120,29 @@ const HeroBanner: React.FC<HeroBannerProps> = ({
             <UProgressBar
               percentage={progress * 100}
               isAnimate={true}
-              foregroundColor='$white'
+              foregroundColor='$primary5'
+              backgroundColor='$neutral2'
             />
           )}
-
-
-        </BlurView>
+        </YStack>
       </YStack>
-    </YStack>
+
+      {/* Right side - Image */}
+      <YStack
+        width={120}
+        height="100%"
+        ai="center"
+        jc="center"
+        mr="$3"
+      >
+        <Image
+          source={{ uri: image }}
+          width="100%"
+          height="80%"
+          resizeMode="contain"
+        />
+      </YStack>
+    </XStack>
   )
 }
 
