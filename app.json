@@ -1,15 +1,15 @@
 {
   "expo": {
-    "name": "author-app",
-    "slug": "author-app",
+    "name": "stanley-paden",
+    "slug": "stanley-paden",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icons/icon.png",
+    "icon": "./public/brand/icon.png",
     "scheme": "authorapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/icons/splash-icon.png",
+      "image": "./public/brand/splashScreen.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -18,7 +18,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/icons/adaptive-icon.png",
+        "foregroundImage": "./public/brand/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
@@ -27,7 +27,7 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/icons/favicon.png"
+      "favicon": "./public/brand/favicon.png"
     },
     "plugins": [
       "expo-router"
