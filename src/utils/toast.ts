@@ -1,18 +1,31 @@
-import Toast from "react-native-toast-message";
+import { useToastController } from '@tamagui/toast';
 
+export function useAppToast() {
+  const toast = useToastController();
 
-export const showErrorToast = (error: string) =>{
-    Toast.show({
-        type: 'error',
-        text1: 'Error!',
-        text2: `${error}`,
-      });
-}
+  const showSuccessToast = (title: string, description?: string) => {
+    toast.show(title, {
+      description,
+      preset: 'success',
+      duration: 3000,
+    });
+  };
 
-export const showSuccessToast = (message: string) =>{
-    Toast.show({
-        type: 'success',
-        text1: 'Success!',
-        text2: `${message}`,
-      });
+  const showErrorToast = (title: string, description?: string) => {
+    toast.show(title, {
+      description,
+      preset: 'error',
+      duration: 3000,
+    });
+  };
+
+  const showWarningToast = (title: string, description?: string) => {
+    toast.show(title, {
+      description,
+      preset: 'warning',
+      duration: 3000,
+    });
+  };
+
+  return { showSuccessToast, showErrorToast, showWarningToast };
 }

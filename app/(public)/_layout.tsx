@@ -6,7 +6,7 @@ export default function PublicLayout() {
       <Stack.Screen name="login" />
       <Stack.Screen name="signup" />
       <Stack.Screen name="forgotPassword" />
-      <Stack.Screen name="verificatioCcode" />
+      <Stack.Screen name="verificationCode" />
       <Stack.Screen name="resetPassword" />
     </Stack>
   );
