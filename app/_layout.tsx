@@ -10,6 +10,9 @@ import FontProvider from '@/src/components/providers/fontProvider';
 import { getTokenValue } from 'tamagui';
 
 import { PortalProvider } from '@tamagui/portal';
+import { Provider } from 'react-redux';
+import { PersistGate } from 'redux-persist/integration/react';
+import { persistor, store } from '@/src/redux/Store';
 
 
 export default function RootLayout() {
@@ -24,13 +27,17 @@ export default function RootLayout() {
     <SafeAreaProvider style={{ backgroundColor: color }}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <AppHead />
-        <AppTamaguiProvider>
-          <PortalProvider>
-              <FontProvider>
-                <Slot />
-              </FontProvider>
-          </PortalProvider>
-        </AppTamaguiProvider>
+        <Provider store={store}>
+          <PersistGate loading={null} persistor={persistor}>
+            <AppTamaguiProvider>
+              <PortalProvider>
+                  <FontProvider>
+                    <Slot />
+                  </FontProvider>
+              </PortalProvider>
+            </AppTamaguiProvider>
+          </PersistGate>
+        </Provider>
       </GestureHandlerRootView>
     </SafeAreaProvider>
   );

@@ -12,7 +12,7 @@ const HomeScreen = () => {
       data={homeData}
       renderItem={functions.renderItem}
       keyExtractor={(item) => item.id}
-      contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32, paddingTop: 60 }}
+      contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32, paddingTop: 20 }}
     />
   )
 }

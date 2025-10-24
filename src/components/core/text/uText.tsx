@@ -93,7 +93,7 @@ const getVariantStyle = (variant: TextVariant): StylesType => {
     case 'heading-h2-bold':
       return {
         ...baseStyles,
-        fontSize: 18,
+        fontSize: 17,
         fontWeight: '700',
         letterSpacing: -0.18,
       };

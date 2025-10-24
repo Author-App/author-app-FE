@@ -5,7 +5,7 @@ export const homeData: HomeItem[] = [
     {
       type: 'hero',
       id: 'hero_1',
-      subtype: "event",
+      subtype: "book",
     },
     {
       type: 'carousel',

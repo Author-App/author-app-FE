@@ -2,6 +2,8 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import { loginValidationSchema } from "../utils/validator";
 import { showSuccessToast } from "../utils/toast";
+import { useDispatch } from "react-redux";
+import { useLoginMutation } from "../redux/Apis/Auth";
 
 
 const initialValues = {
@@ -13,6 +15,9 @@ const useLoginController = () => {
 
     const [loading, setLoading] = useState<boolean>(false);
     const [submitted, setSubmitted] = useState<boolean>(false);
+
+    const [login, { isLoading, error }] = useLoginMutation();
+    const dispatch = useDispatch();
 
 
     const router = useRouter();

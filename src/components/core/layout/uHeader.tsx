@@ -30,7 +30,7 @@ const UHeader = ({
     }
 
     titleElement = (
-      <UText variant="label-md" color="$primary7" {...textProps}>
+      <UText variant="heading-h1" {...textProps}>
         {title}
       </UText>
     );
@@ -40,11 +40,27 @@ const UHeader = ({
     <YStack px={16} w="100%" {...props}>
       {!safeAreaDisabled && <USpacer height={top} />}
       <XStack py={8} gap={8} jc="space-between" ai="center">
-        <XStack gap={8} flexGrow={1}>
+
+        {/* Left Section */}
+        <XStack flex={1} jc="flex-start" ai="center">
+          {leftControl}
+        </XStack>
+
+        {/* Center Title */}
+        <XStack flex={1} jc="center" ai="center">
+          {titleElement}
+        </XStack>
+
+        {/* Right Section */}
+        <XStack flex={1} jc="flex-end" ai="center">
+          {rightControl}
+        </XStack>
+
+        {/* <XStack gap={8} flexGrow={1}>
           {leftControl}
           {titleElement}
         </XStack>
-        {rightControl}
+        {rightControl} */}
       </XStack>
     </YStack>
   );
