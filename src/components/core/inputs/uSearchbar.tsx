@@ -140,7 +140,7 @@ const USearchbar = ({
       <UIconButton
         icon={IconMagnifyingGlass}
         variant="quaternary-xs"
-        iconProps={{ dimen: 20, color: '$primaryAlpha7' }}
+        iconProps={{ dimen: 20, color: '$white' }}
       />
       <UInput
         ref={inputRef}

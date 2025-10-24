@@ -1,6 +1,8 @@
 const assets = {
   icons: {
-    // bookbanner: require('../images/icons/bookbanner.jpg'),
+    durationIcon: require('../images/icons/durationIcon.png'),
+    ebookIcon: require('../images/icons/ebookIcon.png'),
+    headphoneIcon: require('../images/icons/headphoneIcon.png'),
   },
   images: {
     audiobookbanner: require('../images/images/audiobookbanner.jpg'),

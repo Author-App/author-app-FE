@@ -8,6 +8,7 @@ export type ButtonVariant =
   | 'tertiary-xs'
   | 'tertiary-sm'
   | 'tertiary-md'
+  | 'quaternary-xxs'
   | 'quaternary-xs'
   | 'quaternary-sm'
   | 'quaternary-md';

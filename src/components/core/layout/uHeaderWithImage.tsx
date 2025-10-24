@@ -8,12 +8,14 @@ interface UHeaderWithImageProps extends PropsWithChildren<XStackProps> {
   heroImage?: string;
   title: string;
   headerSubtitle?: React.ReactNode;
+  heroFallbackText?: string;
 }
 
 const UHeaderWithImage = ({
   heroImage,
   title,
   headerSubtitle,
+  heroFallbackText,
   ...props
 }: UHeaderWithImageProps) => {
   return (
@@ -29,8 +31,9 @@ const UHeaderWithImage = ({
         w={33}
         h={33}
         imageSource={heroImage}
-        borderRadius={8}
-        fallBackText={title}
+        // borderRadius={8}
+        borderRadius={20}
+        fallBackText={heroFallbackText}
       />
       <YStack w="80%">
         <UText

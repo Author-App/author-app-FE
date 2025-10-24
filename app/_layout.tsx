@@ -7,10 +7,13 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import AppTamaguiProvider from '@/src/components/providers/appTamaguiProvider';
 import FontProvider from '@/src/components/providers/fontProvider';
-import { ToastProvider, ToastViewport } from '@tamagui/toast';
+import { Toast, ToastProvider, ToastViewport } from '@tamagui/toast';
 import { getTokenValue } from 'tamagui';
 
 import { PortalProvider } from '@tamagui/portal';
+import { Provider } from 'react-redux';
+import { PersistGate } from 'redux-persist/integration/react';
+import { persistor, store } from '@/src/redux/Store';
 
 
 export default function RootLayout() {
@@ -25,18 +28,23 @@ export default function RootLayout() {
     <SafeAreaProvider style={{ backgroundColor: color }}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <AppHead />
-        <AppTamaguiProvider>
-          <PortalProvider>
-            <ToastProvider swipeDirection='horizontal'>
-              <FontProvider>
-                <Slot />
+        <Provider store={store}>
+          <PersistGate loading={null} persistor={persistor}>
+          <AppTamaguiProvider>
+            {/* <PortalProvider> */}
+              <ToastProvider swipeDirection='horizontal'>
+                <FontProvider>
+                  <Slot />
 
-                <ToastViewport top="$10"/>
+                  <Toast />
+                  {/* <ToastViewport top="$10" zIndex={9999} /> */}
 
-              </FontProvider>
-            </ToastProvider>
-          </PortalProvider>
-        </AppTamaguiProvider>
+                </FontProvider>
+              </ToastProvider>
+            {/* </PortalProvider> */}
+          </AppTamaguiProvider>
+          </PersistGate>
+          </Provider>
       </GestureHandlerRootView>
     </SafeAreaProvider>
   );

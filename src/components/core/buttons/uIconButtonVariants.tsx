@@ -124,6 +124,20 @@ const getVariantStyle = (variant: ButtonVariant = 'primary-md'): StylesType => {
         hoverBackgroundColor: '$primaryAlpha1',
         iconColor: '$primary7',
       };
+
+    case 'quaternary-xxs':
+      return {
+        ...baseStyles,
+        backgroundColor: '$transparent',
+        pressBackgroundColor: '$primaryAlpha2',
+        hoverBackgroundColor: '$primaryAlpha1',
+        iconColor: '$primary7',
+        width: 20,
+        height: 20,
+        padding: 3,
+        iconSize: 18,
+      };
+
     default:
       return baseStyles;
   }
@@ -171,11 +185,11 @@ const UIconButton = forwardRef<any, UIconButtonProps>((props, ref) => {
     >
 
       {loading ? (
-        <ActivityIndicator size="small" color={ 'white'} /> 
+        <ActivityIndicator size="small" color={'white'} />
       ) : (
         <UIcon
           icon={icon}
-          color={iconProps.color || color || iconColor || 'white'} 
+          color={iconProps.color || color || iconColor || 'white'}
           dimen={iconProps.dimen || dimen || iconSize}
         />
       )}
