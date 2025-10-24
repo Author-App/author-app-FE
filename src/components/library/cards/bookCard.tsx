@@ -11,19 +11,23 @@ import UIconButton from '../../core/buttons/uIconButtonVariants'
 import IconDuration from '@/assets/icons/iconDuration'
 import IconBook from '@/assets/icons/iconBook'
 import IconSaveBookMark from '@/assets/icons/iconSaveBookMark'
+import { percentageToDecimal, roundPercentage } from '@/src/utils/helper'
 
 const BookCard: React.FC<BookCardProps> = ({
     cover,
     title,
     author,
     summary,
+    totalMinutes,
+    minutesCompleted,
+    percentage
 }) => {
     const theme = useTheme()
 
     const CARD_WIDTH = 95
     const CARD_HEIGHT = CARD_WIDTH * 1.5 // 2:3 aspect ratio
 
-    console.log("THIS IS AUTHOR", author);
+    console.log("THIS IS PERCENTAGE", percentageToDecimal(percentage));
 
 
     return (
@@ -76,11 +80,6 @@ const BookCard: React.FC<BookCardProps> = ({
                             onPress={() => console.log('Facebook login')}
 
                         />
-                        {/* <Image 
-                        source={assets.icons.ebookIcon}
-                            width={24}
-                            height={24} 
-                             /> */}
                         <UText numberOfLines={1} color="$neutral6" variant="text-xs" mt="$1" ml="$1">
                             Book
                         </UText>
@@ -95,7 +94,7 @@ const BookCard: React.FC<BookCardProps> = ({
 
                         />
                         <UText numberOfLines={1} color="$neutral6" variant="text-xs" mt="$1" ml="$1">
-                            45 min
+                            {totalMinutes} min
                         </UText>
 
                     </XStack>
@@ -105,7 +104,7 @@ const BookCard: React.FC<BookCardProps> = ({
 
                 <YStack>
                     <UProgressBar
-                        percentage={0.6 * 100}
+                        percentage={ percentage }
                         isAnimate={true}
                         foregroundColor='$secondary5'
                         width={'85%'}
@@ -113,23 +112,17 @@ const BookCard: React.FC<BookCardProps> = ({
                     <XStack
                         jc='space-between' mt={'$2'} width={'80%'}>
                         <UText numberOfLines={1} color="$neutral6" variant="text-xs" >
-                            40/85 minutes
+                            {minutesCompleted}/{totalMinutes} minutes
                         </UText>
 
                         <UText numberOfLines={1} color="$secondary5" variant="text-xs" >
-                            65%
+                            {roundPercentage(percentage)}%
                         </UText>
 
 
                     </XStack>
                 </YStack>
 
-
-                {/* {summary ? (
-                    <UText numberOfLines={2} color="$neutral5" variant="text-xs" mt="$1">
-                        {summary}
-                    </UText>
-                ) : null} */}
             </YStack>
 
         </XStack >

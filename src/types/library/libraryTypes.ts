@@ -4,7 +4,11 @@ export interface BookCardProps {
   title: string
   author: string
   summary: string
+  totalMinutes: number
+  minutesCompleted: number
+  percentage: number
 }
+
 
 export interface AudiobookCardProps {
   id: number

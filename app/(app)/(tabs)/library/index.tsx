@@ -4,78 +4,110 @@ import UIconButton from '@/src/components/core/buttons/uIconButtonVariants';
 import USearchbar from '@/src/components/core/inputs/uSearchbar';
 import AudiobookCard from '@/src/components/library/cards/audiobookCard';
 import BookCard from '@/src/components/library/cards/bookCard';
-import { booksData } from '@/src/data/libraryData';
+import { audiobooksData, booksData } from '@/src/data/libraryData';
 import { FlashList } from '@shopify/flash-list';
-import { useState } from 'react';
-import { YStack, Text } from 'tamagui';
+import { useMemo, useState } from 'react';
+import { YStack, Text, XStack } from 'tamagui';
 
 const LibraryScreen = () => {
 
   const [activeTab, setActiveTab] = useState<'Books' | 'Audiobooks'>('Books');
   const [search, setSearch] = useState('');
-  return (
 
+  const currentData = activeTab === 'Books' ? booksData : audiobooksData;
+
+  const filteredData = useMemo(() => {
+    if (!search.trim()) return currentData;
+    return currentData.filter((item) =>
+      item.title.toLowerCase().includes(search.toLowerCase()) ||
+      item.author.toLowerCase().includes(search.toLowerCase()) ||
+      item.summary.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [search, currentData]);
+
+
+  return (
     <YStack
       f={1}
       jc="center"
       p="$4">
 
-      <USearchbar
-        search={search}
-        onSearchChange={setSearch}
-        placeholder="Search your library..."
-        variant="primary"
-        // height={'50%'}
-        flex={0}
 
-      />
-
-      <UButtonTabs
-        items={['Books', 'Audiobooks']}
-        selectedItem={activeTab}
-        onItemSelect={(tab) => setActiveTab(tab)}
-        variant="style-1"
-
-        innerContainerProps={{
-          h: 35,
-          ai: 'center',
-          jc: 'space-between',
-          // width: 370,
-          width: '100%',
-          borderRadius: 8,
-          marginVertical: 20,
-        }}
-        tabItemProps={{
-          // flex: 1,
-          width: '49%',
-          height: '100%',
-          jc: 'center',
-          pressStyle: { opacity: 0.7 },
-          // bg: '$primary1',
-          // textColor:'$notice4'
-        }}
-      />
       <FlashList
-        data={booksData}
+        // data={booksData}
+        data={filteredData}
         keyExtractor={(item) => String(item.id)}
-        // contentContainerStyle={{ flexGrow: 1 }}
-        style={{ flex: 1 }}
+        showsVerticalScrollIndicator={false}
         renderItem={({ item }) =>
-          <BookCard
-            id={item.id}
-            cover={item?.cover}
-            title={item?.title}
-            author={item?.author}
-            summary={item?.summary}
-          />}
+          activeTab === 'Books' ?
+            (
+              <BookCard
+                id={item.id}
+                cover={item?.cover}
+                title={item?.title}
+                author={item?.author}
+                summary={item?.summary}
+                totalMinutes={item?.totalMinutes}
+                minutesCompleted={item?.minutesCompleted}
+                percentage={item?.percentage}
+              />
+            ) :
+            <AudiobookCard
+              id={item.id}
+              cover={item?.cover}
+              title={item?.title}
+              author={item?.author}
+              summary={item?.summary}
+              totalMinutes={item?.totalMinutes}
+              minutesCompleted={item?.minutesCompleted}
+              percentage={item?.percentage}
+            />
 
-      // renderItem={({ item }) =>
-      //   <AudiobookCard
-      //     cover={item?.cover}
-      //     title={item?.title}
-      //     author={item?.author}
-      //     summary={item?.summary}
-      //   />}
+        }
+        ListHeaderComponent={
+          <>
+            <XStack height={35} width={'100%'}>
+              <USearchbar
+                search={search}
+                onSearchChange={setSearch}
+                placeholder="Search your library..."
+                variant="primary"
+              />
+            </XStack>
+
+            <UButtonTabs
+              items={['Books', 'Audiobooks']}
+              selectedItem={activeTab}
+              onItemSelect={(tab) => setActiveTab(tab)}
+              variant="style-1"
+              innerContainerProps={{
+                h: 35,
+                ai: 'center',
+                jc: 'space-between',
+                width: '100%',
+                borderRadius: 8,
+                marginVertical: 20,
+              }}
+              tabItemProps={{
+                // flex: 1,
+                width: '49%',
+                height: '100%',
+                jc: 'center',
+                pressStyle: { opacity: 0.7 },
+              }}
+            />
+          </>
+
+        }
+
+        ListEmptyComponent={
+          <YStack ai="center" mt="$8">
+            <Text color="$gray10" fontSize={16}>
+              No results found.
+            </Text>
+          </YStack>
+        }
+
       />
 
     </YStack>

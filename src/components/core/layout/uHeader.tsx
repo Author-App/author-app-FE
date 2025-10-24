@@ -30,7 +30,7 @@ const UHeader = ({
     }
 
     titleElement = (
-      <UText variant="heading-h1" {...textProps}>
+      <UText variant="label-md" {...textProps}>
         {title}
       </UText>
     );

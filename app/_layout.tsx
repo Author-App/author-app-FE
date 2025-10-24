@@ -13,6 +13,7 @@ import { PortalProvider } from '@tamagui/portal';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import { persistor, store } from '@/src/redux/Store';
+import Toast from 'react-native-toast-message';
 
 
 export default function RootLayout() {
@@ -30,11 +31,12 @@ export default function RootLayout() {
         <Provider store={store}>
           <PersistGate loading={null} persistor={persistor}>
             <AppTamaguiProvider>
-              <PortalProvider>
+              {/* <PortalProvider> */}
                   <FontProvider>
                     <Slot />
+                     <Toast/>
                   </FontProvider>
-              </PortalProvider>
+              {/* </PortalProvider> */}
             </AppTamaguiProvider>
           </PersistGate>
         </Provider>

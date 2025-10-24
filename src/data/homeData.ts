@@ -15,7 +15,7 @@ export const homeData: HomeItem[] = [
       data: [
         {
           id: 1,
-          cover: assets.images.bookOfLostNames,
+          cover: assets.images.bookbanner,
           title: 'The Book of Lost Names',
           author: 'The Book of Lost Names',
         },
@@ -41,7 +41,7 @@ export const homeData: HomeItem[] = [
       data: [
         {
           id: 1,
-          cover: assets.images.whereTheCrawdadsSing,
+          cover: assets.images.bookbanner,
           title: 'Where the Crawdads Sing',
           narrator: 'Cassandra Campbell',
           duration: '12 hr 15 min',

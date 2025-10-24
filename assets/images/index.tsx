@@ -6,7 +6,7 @@ const assets = {
   },
   images: {
     audiobookbanner: require('../images/images/audiobookbanner.jpg'),
-    bookbanner: require('../images/images/bookbanner.jpg'),
+    bookbanner: require('../images/images/bookbanner.png'),
     bookOfLostNames: require('../images/images/bookOfLostNames.jpg'),
     itEndsWithUs: require('../images/images/itEndsWithUs.jpg'),
     truly: require('../images/images/truly.jpg'),
@@ -15,6 +15,7 @@ const assets = {
     midnightLibrary: require('../images/images/midnightLibrary.webp'),
     promo: require('../images/images/promo.jpg'),
     event: require('../images/images/event.webp'),
+    padden: require('../images/images/padden.jpg'),
 
 
     

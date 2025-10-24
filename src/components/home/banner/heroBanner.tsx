@@ -31,7 +31,7 @@ const HeroBanner: React.FC<HeroBannerProps> = ({
   onPressCTA,
   icon,
 }) => {
-  const shouldShowIcon = type === 'book' || type === 'audiobook'
+  const shouldShowIcon =  type === 'audiobook'
 
   return (
     <XStack
