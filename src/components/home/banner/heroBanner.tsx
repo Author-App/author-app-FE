@@ -1,13 +1,10 @@
 import React from 'react'
-import { YStack, XStack, Text, Button, Image, View, Progress } from 'tamagui'
-import { LinearGradient } from '@tamagui/linear-gradient'
-import { useNavigation } from '@react-navigation/native'
-import assets from '@/assets/images'
+import { YStack, XStack, Image } from 'tamagui'
+// import { LinearGradient } from '@tamagui/linear-gradient'
 import UTextButton from '../../core/buttons/uTextButton'
 import UText from '../../core/text/uText'
 import UProgressBar from '../../core/display/uProgressBar'
 import UIconButton from '../../core/buttons/uIconButtonVariants'
-import IconPlay from '@/assets/icons/iconPlay'
 import { BlurTint, BlurView } from 'expo-blur';
 import { IconProps } from '@/assets/icons/types/iconProps'
 
@@ -62,7 +59,7 @@ const HeroBanner: React.FC<HeroBannerProps> = ({
         position="absolute"
       />
 
-      <LinearGradient
+      {/* <LinearGradient
         colors={['rgba(0,0,0,0)', 'rgba(0,0,0,0.8)']}
         start={[0, 0]}
         end={[0, 1]}
@@ -71,7 +68,7 @@ const HeroBanner: React.FC<HeroBannerProps> = ({
           width: '100%',
           height: '100%',
         }}
-      />
+      /> */}
 
       <YStack p="$4"
         jc="flex-end"

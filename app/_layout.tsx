@@ -7,7 +7,6 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import AppTamaguiProvider from '@/src/components/providers/appTamaguiProvider';
 import FontProvider from '@/src/components/providers/fontProvider';
-import { ToastProvider, ToastViewport } from '@tamagui/toast';
 import { getTokenValue } from 'tamagui';
 
 import { PortalProvider } from '@tamagui/portal';
@@ -27,14 +26,9 @@ export default function RootLayout() {
         <AppHead />
         <AppTamaguiProvider>
           <PortalProvider>
-            <ToastProvider swipeDirection='horizontal'>
               <FontProvider>
                 <Slot />
-
-                <ToastViewport top="$10"/>
-
               </FontProvider>
-            </ToastProvider>
           </PortalProvider>
         </AppTamaguiProvider>
       </GestureHandlerRootView>

@@ -139,7 +139,7 @@ const USearchbar = ({
     >
       <UIconButton
         icon={IconMagnifyingGlass}
-        variant="quaternary-xs"
+        variant="quaternary-sm"
         iconProps={{ dimen: 20, color: '$primaryAlpha7' }}
       />
       <UInput
@@ -163,7 +163,7 @@ const USearchbar = ({
         >
           <UIconButton
             icon={IconX}
-            variant="quaternary-xs"
+            variant="quaternary-sm"
             onPress={handleClear}
             disabled={disabled}
             dimen={16}
