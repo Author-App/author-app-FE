@@ -18,6 +18,8 @@ const ProfileScreen = () => {
         <Text theme="alt2">Account & settings</Text>
         <UTextButton mt={20} variant="tertiary-sm" w={100} onPress={handleLogout}>Sign Out
         </UTextButton>
+        <UTextButton mt={20} variant="tertiary-sm" w={100} onPress={() => router.push('/(app)/(tabs)/profile/settings')}>Settings
+        </UTextButton>
     </YStack>
   );
 }
