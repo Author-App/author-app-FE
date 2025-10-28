@@ -11,4 +11,8 @@ export type ButtonVariant =
   | 'quaternary-xxs'
   | 'quaternary-xs'
   | 'quaternary-sm'
-  | 'quaternary-md';
+  | 'quaternary-md'
+  | 'quinary-xs'
+  | 'quinary-md'
+  | 'quinary-sm'
+

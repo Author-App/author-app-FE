@@ -151,6 +151,39 @@ const getVariantStyle = (variant: ButtonVariant = 'primary-md'): StylesType => {
         pressBackgroundColor: '$primaryAlpha2',
         color: '$primary7',
       };
+    case 'quinary-sm': // 🆕 Silver small button
+      return {
+        ...baseStyles,
+        backgroundColor: '$neutral3',
+        hoverBackgroundColor: '$neutral4',
+        pressBackgroundColor: '$neutral5',
+        color: '$neutral9',
+        py: 4,
+        px: 12,
+        textVariant: 'text-xs',
+      };
+
+    case 'quinary-md': // 🆕 Silver medium button
+      return {
+        ...baseStyles,
+        backgroundColor: '#E9E5E5',
+        hoverBackgroundColor: '$neutral4',
+        pressBackgroundColor: '$neutral5',
+        color: '$black',
+        borderRadius: 9
+      };
+
+    case 'quinary-xs': // 🆕 Silver extra-small button
+      return {
+        ...baseStyles,
+        backgroundColor: '$neutral3',
+        hoverBackgroundColor: '$neutral4',
+        pressBackgroundColor: '$neutral5',
+        color: '$neutral9',
+        py: 4,
+        px: 8,
+        textVariant: 'text-2xs',
+      };
     default:
       return baseStyles;
   }

@@ -280,6 +280,7 @@ const tokens = createTokens({
 
     // --- Figma Brand Colors ---
     neutral0: '#FFFAFA',
+    neutral1_5: '#C2C0C1',
     neutral2: '#DCD8D9',
     neutral3: '#C2C0C1',
     neutral4: '#A9A7A8',

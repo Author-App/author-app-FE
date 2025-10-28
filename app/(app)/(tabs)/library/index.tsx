@@ -84,7 +84,8 @@ const LibraryScreen = () => {
                 h: 35,
                 ai: 'center',
                 jc: 'space-between',
-                width: '100%',
+                // width: '100%',
+                width:250,
                 borderRadius: 8,
                 marginVertical: 20,
               }}

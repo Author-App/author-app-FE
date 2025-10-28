@@ -68,9 +68,7 @@ const Login = () => {
                             formik.handleSubmit()
                         }}
                         loading={states.loading}
-                        indicatorColor={'#fff'}
-                        
-                        >
+                        indicatorColor={'#fff'}>
                         Sign In
                     </UTextButton>
                     <XStack ai="center" jc="center" gap={8} mt={10} mb={10}>

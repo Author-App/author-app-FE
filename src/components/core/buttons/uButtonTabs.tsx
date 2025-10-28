@@ -17,7 +17,7 @@ import {
 } from 'tamagui';
 
 import UButtonTabItem, {
-  ButtonTabItemVariant, 
+  ButtonTabItemVariant,
 } from '@/src/components/core/buttons/uButtonTabItem';
 
 interface UButtonTabsProps<T extends string = string>
@@ -164,7 +164,7 @@ const UButtonTabs = <T extends string = string>({
     //   bounces={false}
     //   {...props}
     // >
-      variant === 'style-2' ? renderWithUnderline() : renderTabs()
+     variant === 'style-2' ? renderWithUnderline() : renderTabs() 
     // </ScrollView>
   );
 };
