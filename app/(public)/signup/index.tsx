@@ -1,6 +1,8 @@
 import IconApple from '@/assets/icons/iconApple';
 import IconFacebook from '@/assets/icons/iconFacebook';
 import IconGoogle from '@/assets/icons/iconGoogle';
+import assets from '@/assets/images';
+import { NeonButton } from '@/src/components/core/buttons/neonButton';
 import UIconButton from '@/src/components/core/buttons/uIconButtonVariants';
 import UTextButton from '@/src/components/core/buttons/uTextButton';
 import UInput from '@/src/components/core/inputs/uInput';
@@ -9,6 +11,7 @@ import UText from '@/src/components/core/text/uText';
 import useSignupController from '@/src/controllers/useSignupController';
 import { useFormik } from 'formik';
 import React from 'react';
+import { Image, ImageBackground } from 'react-native';
 import { XStack, YStack } from 'tamagui';
 
 const Signup = () => {
@@ -23,12 +26,18 @@ const Signup = () => {
 
 
     return (
+        <ImageBackground
+            source={assets.images.authBackgroundImage2}
+            resizeMode="cover"
+            style={{ flex: 1 }}
+        >
+            <Image source={assets.images.mainLogo} style={{ width: 130, height: 70, marginTop: 38 }} />
             <YStack flex={1} px={24} pb={24} jc="space-between">
-                <YStack mt={80} gap={16} flex={1}>
-                    <UText variant="heading-h1" color="$primary7">
+                <YStack gap={10} flex={1}>
+                    <UText variant="heading-h1" color="$white">
                         Create Account
                     </UText>
-                    <UText variant="text-sm" color="$neutral7">
+                    <UText variant="text-sm" color="$white">
                         Sign up to get started
                     </UText>
 
@@ -65,7 +74,7 @@ const Signup = () => {
                 </YStack>
 
                 <YStack gap={16} mb={25}>
-                    <UTextButton
+                    {/* <UTextButton
                         onPress={() => {
                             functions.setSubmitted(true)
                             formik.handleSubmit()
@@ -75,14 +84,24 @@ const Signup = () => {
 
                     >
                         Sign Up
-                    </UTextButton>
+                    </UTextButton> */}
+
+                    <NeonButton style={{ width: '100%' }}
+                        onPress={() => {
+                            functions.setSubmitted(true)
+                            formik.handleSubmit()
+                        }}
+                        loading={states.loading}
+                    >
+                        Sign Up
+                    </NeonButton>
 
                     <XStack ai="center" jc="center" gap={8} mt={10} mb={10}>
-                        <YStack flex={1} h={1} bg="$neutral4" />
-                        <UText variant="text-sm" color="$neutral7">
+                        <YStack flex={1} h={1} bg="$white" />
+                        <UText variant="text-sm" color="$white">
                             or Sign Up with
                         </UText>
-                        <YStack flex={1} h={1} bg="$neutral4" />
+                        <YStack flex={1} h={1} bg="$white" />
                     </XStack>
 
                     <XStack jc="center" ai="center" gap={24}>
@@ -107,17 +126,17 @@ const Signup = () => {
                     </XStack>
 
                     <XStack jc="center" mt={16}>
-                        <UText variant="text-sm" color="$neutral7">Already have an account? </UText>
+                        <UText variant="text-sm" color="$white">Already have an account? </UText>
                         <UText
                             variant="text-sm"
-                            color="$primary7"
-                            fontWeight={700}
+                            color="$white"
                             onPress={() => router.push('/(public)/login' as any)}>
                             Sign In
                         </UText>
                     </XStack>
                 </YStack>
             </YStack>
+        </ImageBackground>
     )
 }
 

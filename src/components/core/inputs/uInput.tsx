@@ -16,24 +16,22 @@ interface StylesType extends Omit<GetProps<typeof TamaguiInput>, 'ref'> {
 
 const getVariantStyle = (variant: UInputVariant = 'primary'): StylesType => {
   const baseStyles: StylesType = {
-    backgroundColor: '$primaryAlpha1',
+    backgroundColor: '$primary',
     hoverBackgroundColor: '$primaryAlpha2',
     pressBackgroundColor: '$primaryAlpha3',
-    placeholderTextColor: '$primaryAlpha7',
-    borderColor: '$transparent',
-    borderWidth: 0,
+    placeholderTextColor: '$white',
+    borderColor: '$secondary',
+    borderWidth: 2,
     minHeight: 40,
     // flex: 1,
-    // py: 10,
-    py: 14,
+    py: 12,
     px: 16,
-    // fontFamily: '$dmsans',
-    fontFamily: '$adamina',
-    // fontSize: 16,
-    fontSize:14,
+    fontFamily: '$cormorantgaramond',
+    fontSize:16,
     letterSpacing: 0,
-    color: '$primary7',
-    borderRadius: 999,
+    color: '$white',
+    // borderRadius: 999,
+    borderRadius: 10,
     boxSizing: 'border-box',
     marginBottom: 0
   };
@@ -94,7 +92,7 @@ const UInput = forwardRef<any, UInputProps>(
           />
 
           {error ? (
-            <UText variant="text-xs" color="$red10" ml={16} mt={5}>
+            <UText variant="text-xs" color="$white" ml={16} mt={5}>
               {error}
             </UText>
           ) : null}

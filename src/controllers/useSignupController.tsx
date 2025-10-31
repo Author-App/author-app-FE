@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { loginValidationSchema } from "@/src/utils/validator";
+import { loginValidationSchema, signupValidationSchema } from "@/src/utils/validator";
 import { showSuccessToast } from "@/src/utils/toast";
 
 
@@ -37,7 +37,7 @@ const useSignupController = () => {
     }
 
     return {
-        validator: loginValidationSchema,
+        validator: signupValidationSchema,
         values: {
             initialValues,
         },

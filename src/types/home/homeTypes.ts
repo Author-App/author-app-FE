@@ -38,7 +38,7 @@ export type HomeItem =
       id: string;
       type: 'carousel';
       title: string;
-      subtype: 'books' | 'audiobooks';
+      subtype: 'books' | 'audiobooks' | 'articles';
       data: CarouselItem[];
     };
 

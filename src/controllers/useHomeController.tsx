@@ -12,17 +12,17 @@ import { bannerConfig } from "../config/bannerConfig";
 
 
 const useHomeController = () => {
-    const [loading, setLoading] = useState(true)
+    const [loading, setLoading] = useState(false)
     const [error, setError] = useState(false)
 
 
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setLoading(false);
-        }, 2000); // 2 seconds
+    // useEffect(() => {
+    //     const timer = setTimeout(() => {
+    //         setLoading(false);
+    //     }, 2000); // 2 seconds
 
-        return () => clearTimeout(timer);
-    }, []);
+    //     return () => clearTimeout(timer);
+    // }, []);
 
 
     const handleRetry = () => setError(false)
@@ -58,7 +58,9 @@ const useHomeController = () => {
                     );
                 case 'carousel':
                     return (
-                        <YStack mt="$5">
+                        <YStack 
+                        // mt="$5" 
+                        px={16} pt={30}>
                             <CarouselSection
                                 title={item?.title}
                                 subtype={item?.subtype}

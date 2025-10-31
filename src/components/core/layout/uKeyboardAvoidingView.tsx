@@ -13,9 +13,9 @@ const UKeyboardAvoidingView = ({
   ...props
 }: UKeyboardAvoidingViewProps) => {
   return (
-    <YStack bg="$neutral1" flex={1} flexGrow={1} {...props}>
+    <YStack bg="transparent" flex={1} flexGrow={1} {...props}>
       {children}
-      <UKeyboardSpacer bg={color} />
+      <UKeyboardSpacer bg={color ?? 'transparent'} />
     </YStack>
   );
 };

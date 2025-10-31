@@ -7,6 +7,8 @@ import React from 'react';
 import { XStack, YStack } from 'tamagui';
 import OTPTextView from "react-native-otp-textinput";
 import UKeyboardAvoidingView from '@/src/components/core/layout/uKeyboardAvoidingView';
+import { Image, ImageBackground } from 'react-native';
+import assets from '@/assets/images';
 
 
 const VerificationCode = () => {
@@ -21,12 +23,18 @@ const VerificationCode = () => {
 
 
     return (
+        <ImageBackground
+            source={assets.images.authBackgroundImage2}
+            resizeMode="cover"
+            style={{ flex: 1 }}
+        >
+            <Image source={assets.images.mainLogo} style={{ width: 130, height: 70, marginTop: 38 }} />
             <YStack flex={1} px={24} pb={24} jc="space-between">
-                <YStack mt={80} gap={16} flex={1}>
-                    <UText variant="heading-h1" color="$primary7">
+                <YStack gap={10} flex={1}>
+                    <UText variant="heading-h1" color="$white">
                         Verification Code
                     </UText>
-                    <UText variant="text-sm" color="$neutral7">
+                    <UText variant="text-sm" color="$white">
                         Enter verification code sent to your email address.
                     </UText>
                     <UKeyboardAvoidingView gap={16} mt={25}>
@@ -36,7 +44,17 @@ const VerificationCode = () => {
                             handleTextChange={(text) =>
                                 functions.handleOTPChange(text, formik.setFieldValue, formik.handleSubmit)
                             }
-                            tintColor={'#465A54'}
+                            // tintColor={'#465A54'}
+                            tintColor={'$white'}
+                            textInputStyle={{
+                                color:'#ffffff'
+                                // textShadowColor: '$white',
+                                // textShadowOffset: { width: 0, height: 0 },
+                                // textShadowRadius: 0,
+                                // includeFontPadding: false,
+                            }}
+
+
                         />
                         {states.submitted && formik.errors.code && (
                             <UText variant="text-xs" color="$red10" ml={16} mt={5}>
@@ -46,13 +64,13 @@ const VerificationCode = () => {
 
                         <XStack justifyContent="flex-end">
                             <UIconButton
-                                variant="secondary-md"
+                                variant="primary-md"
                                 icon={IconArrowRight}
                                 onPress={() => {
                                     functions.setSubmitted(true)
                                     formik.handleSubmit()
                                 }}
-                                iconProps={{ color: '$neutral0' }}
+                                // iconProps={{ color: '$neutral0' }}
                                 loading={states.loading}
                             />
                         </XStack>
@@ -65,8 +83,8 @@ const VerificationCode = () => {
                     <XStack jc="center" mt={16}>
                         <UText
                             variant="text-md"
-                            color="$primary7"
-                            fontWeight={700}
+                            color="$white"
+                            // fontWeight={700}
                             textDecorationLine='underline'
                             onPress={() => router.push('/(public)/login' as any)}>
                             Back to Login
@@ -75,6 +93,7 @@ const VerificationCode = () => {
                 </YStack>
 
             </YStack>
+        </ImageBackground>
 
     )
 }

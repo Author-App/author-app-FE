@@ -1,12 +1,12 @@
 import React from 'react'
-import { FlatList } from 'react-native'
-import { YStack, XStack, Image, Text, View } from 'tamagui'
+import { FlatList, Image } from 'react-native'
+import { YStack, XStack, Text, View } from 'tamagui'
 import UText from '../../core/text/uText'
 import { useTheme } from 'tamagui'
 
 interface CarouselSectionProps {
   title: string
-  subtype: 'books' | 'audiobooks'
+  subtype: 'books' | 'audiobooks' | 'articles'
   data: {
     id: number
     cover: string
@@ -26,12 +26,12 @@ const CarouselSection: React.FC<CarouselSectionProps> = ({
 }) => {
   const theme = useTheme()
 
-  const CARD_WIDTH = 130
-  const CARD_HEIGHT = CARD_WIDTH * 1.5 // 2:3 aspect ratio
-
   return (
-    <YStack space="$3">
-      <UText variant="heading-h2" >
+    <YStack
+      space="$3"
+    // backgroundColor={'red'}
+    >
+      <UText variant="heading-h2">
         {title}
       </UText>
 
@@ -40,48 +40,63 @@ const CarouselSection: React.FC<CarouselSectionProps> = ({
         data={data}
         keyExtractor={(item) => String(item.id)}
         showsHorizontalScrollIndicator={false}
-        snapToInterval={CARD_WIDTH + 12}
+        snapToInterval={110 + 12}
+
         decelerationRate="fast"
         contentContainerStyle={{
           paddingHorizontal: 4,
         }}
         renderItem={({ item }) => (
-          <YStack
-            width={CARD_WIDTH}
-            mr="$3"
-            onPress={() => onPressItem(item.id)}
-            pressStyle={{ opacity: 0.85 }}
-          >
+          subtype == 'articles' ?
+            <>
+              <YStack mx={8}>
+                <View style={{ width: 100, height: 100, overflow: 'hidden', borderRadius: 50 }}>
+                  <Image
+                    source={item.cover}
+                    style={{
+                      width: 100,
+                      height: 'auto',
+                      aspectRatio: 0.5,
+                      alignSelf: 'center',
+                      resizeMode: 'cover',
+                      top: 0,
+                      position: 'absolute',
+                    }}
+                  />
+                </View>
 
-            <Image
-              source={{ uri: item.cover }}
-              width={CARD_WIDTH}
-              height={CARD_HEIGHT}
-              borderRadius="$4"
-              mb="$2"
-            />
+                <UText numberOfLines={2} variant="text-sm" textAlign='center' width={'90%'} mt={4}>
+                  {item.title}
+                </UText>
+              </YStack>
 
-            <UText numberOfLines={1} variant="text-sm">
-              {item.title}
-            </UText>
+            </> :
+            <YStack
+              width={115}
+              height={167}
+              padding={4}
+              mr={10}
+              onPress={() => onPressItem(item.id)}
+              pressStyle={{ opacity: 0.85 }}
+              backgroundColor={'$card'}
+              borderRadius={15}
+              ai={'center'}
 
-            {subtype === 'books' && (
-              <UText numberOfLines={1} color="$neutral4" variant="text-xs">
-                by {item.author}
+              borderWidth={1}
+              borderColor={'rgba(0,0,0,0.04)'}
+              shadowColor={'#000'}
+              shadowOpacity={0.5}
+              shadowRadius={0.1}
+              shadowOffset={{ width: 0, height: 0.5 }}
+            >
+
+              <Image source={item.cover} style={{ width: 100 , height: 90 , borderRadius: 15}}/>
+
+
+              <UText numberOfLines={2} variant="text-sm" textAlign='center' width={'90%'} mt={4}>
+                {item.title}
               </UText>
-            )}
-
-            {subtype === 'audiobooks' && (
-              <>
-                <UText numberOfLines={1} color="$neutral4" variant="text-xs">
-                  Narrated by {item.narrator}
-                </UText>
-                <UText numberOfLines={1} color="$gray8" variant="text-2xs" mt="$1">
-                  {item.duration}
-                </UText>
-              </>
-            )}
-          </YStack>
+            </YStack>
         )}
       />
     </YStack>
@@ -91,49 +106,3 @@ const CarouselSection: React.FC<CarouselSectionProps> = ({
 export default CarouselSection
 
 
-// import React from 'react'
-// import { YStack, XStack, Text, Button, Image } from 'tamagui'
-// import { FlatList, TouchableOpacity } from 'react-native'
-
-// const CarouselSection = ({ title, subtype, onPressItem }) => {
-//   const placeholderData = new Array(8).fill(null).map((_, i) => ({ id: i + 1 }))
-
-//   return (
-//     <YStack space="$3">
-//       <Text fontSize="$6" fontWeight="700">
-//         {title}
-//       </Text>
-
-//       <FlatList
-//         horizontal
-//         showsHorizontalScrollIndicator={false}
-//         data={placeholderData}
-//         keyExtractor={(item) => String(item.id)}
-//         renderItem={({ item }) => (
-//           <TouchableOpacity
-//             onPress={() => onPressItem(item.id)}
-//             activeOpacity={0.8}
-//             style={{ marginRight: 12 }}
-//           >
-//             <YStack width={120} space="$1">
-//               <Image
-//                 source={{ uri: 'https://via.placeholder.com/150x225' }}
-//                 width={120}
-//                 height={180}
-//                 borderRadius="$3"
-//               />
-//               <Text numberOfLines={1} fontWeight="600">
-//                 {subtype === 'books' ? 'Book Title' : 'Audiobook Title'}
-//               </Text>
-//               <Text numberOfLines={1} color="$gray10" fontSize="$2">
-//                 {subtype === 'books' ? 'Author Name' : 'Narrator Name'}
-//               </Text>
-//             </YStack>
-//           </TouchableOpacity>
-//         )}
-//       />
-//     </YStack>
-//   )
-// }
-
-// export default CarouselSection

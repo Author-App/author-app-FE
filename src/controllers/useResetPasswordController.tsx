@@ -1,7 +1,8 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { forgotPasswordFormValidator, loginValidationSchema, resetPasswordFormValidator } from "../utils/validator";
-import { useAppToast } from "../utils/toast";
+import { showSuccessToast } from "../utils/toast";
+// import { useAppToast } from "../utils/toast";
 
 
 const initialValues = {
@@ -16,7 +17,7 @@ const useResetPasswordController = () => {
 
     const router = useRouter();
 
-    const { showSuccessToast, showErrorToast } = useAppToast();
+    // const { showSuccessToast, showErrorToast } = useAppToast();
 
     const handleSubmit = async (values: any, { resetForm, setSubmitting }: { resetForm: () => void; setSubmitting: (isSubmitting: boolean) => void }) => {
         try {
@@ -26,7 +27,8 @@ const useResetPasswordController = () => {
 
             console.log("THIS IS VALUESS", values);
 
-            showSuccessToast('Success', 'Password updated successfully')
+            // showSuccessToast('Success', 'Password updated successfully')
+            showSuccessToast('Password updated successfully')
             
             router.replace('/(public)/login');
 

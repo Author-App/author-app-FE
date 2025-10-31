@@ -1,19 +1,37 @@
+import UHeaderWithBackground from '@/src/components/core/layout/uHeaderWithBackground'
+import HeroBanner from '@/src/components/home/banner/heroBanner'
 import useHomeController from '@/src/controllers/useHomeController'
 import { homeData } from '@/src/data/homeData'
 import { FlashList } from '@shopify/flash-list'
 import React from 'react'
+import { Text } from 'react-native'
+import { YStack } from 'tamagui'
 
 const HomeScreen = () => {
 
-  const {functions , states} = useHomeController()
+  const { functions, states } = useHomeController()
 
   return (
-    <FlashList
-      data={homeData}
-      renderItem={functions.renderItem}
-      keyExtractor={(item) => item.id}
-      contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32, paddingTop: 20 }}
-    />
+    <YStack flex={1}>
+      <FlashList
+        data={homeData}
+        renderItem={functions.renderItem}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={{
+          paddingBottom: 32,
+        }}
+        ListHeaderComponent={
+          <YStack mb={20} position="relative">
+            <UHeaderWithBackground
+            />
+            <HeroBanner />
+          </YStack>
+        }
+      />
+
+   
+
+    </YStack>
   )
 }
 
