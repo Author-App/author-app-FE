@@ -23,7 +23,7 @@ const useForgotPasswordController = () => {
 
             console.log("THIS IS VALUESS", values);
 
-            router.push('/(public)/verificationCode');
+            router.push('/(public)/verificationcode');
 
             resetForm();
         } catch (error) {

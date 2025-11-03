@@ -56,27 +56,22 @@ const UHeaderWithBackground: React.FC<UHeaderWithBackgroundProps> = ({
 
             <ImageBackground
                 source={resolvedBackground}
-
                 style={{
                     width: '100%',
-                    height: 200,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                }}
-                imageStyle={{
-                    bottom: undefined
+                    height: 350,
+                    justifyContent: 'flex-end',
+                    paddingBottom: 12,
                 }}
                 resizeMode="cover"
             >
 
                 {!safeAreaDisabled && <USpacer height={top} />}
-                <XStack py={12} jc="space-between" ai="center"
+                <XStack py={12} jc="space-between" ai="flex-end"
                     style={{ paddingTop: safeAreaDisabled ? 0 : top }}
                 >
                     <XStack flex={1} jc="flex-start" ai="center">
                         {resolvedTitleElement}
                     </XStack>
-
                 </XStack>
 
             </ImageBackground>

@@ -38,8 +38,7 @@ const ProfileScreen = () => {
             alignSelf="center"
             borderRadius={13}
             overflow="hidden"
-            position="absolute"
-            top={185}
+            top={-20}
             zIndex={999}
             backgroundColor={'$white'}
             px={10}
@@ -116,15 +115,9 @@ const ProfileScreen = () => {
 
                 </YStack>
               </XStack>
-
             </YStack>
-
-
           </YStack>
-
-
         </YStack>
-
       </YStack>
     </ScrollView>
   );

@@ -1,4 +1,4 @@
-import { LinearGradient } from '@tamagui/linear-gradient'
+import { LinearGradient } from 'expo-linear-gradient'
 import { ActivityIndicator } from 'react-native'
 import { Button } from 'tamagui'
 import UText from '../text/uText'

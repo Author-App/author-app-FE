@@ -1,10 +1,9 @@
+import React from 'react'
 import UHeaderWithBackground from '@/src/components/core/layout/uHeaderWithBackground'
 import HeroBanner from '@/src/components/home/banner/heroBanner'
 import useHomeController from '@/src/controllers/useHomeController'
 import { homeData } from '@/src/data/homeData'
 import { FlashList } from '@shopify/flash-list'
-import React from 'react'
-import { Text } from 'react-native'
 import { YStack } from 'tamagui'
 
 const HomeScreen = () => {
@@ -24,13 +23,10 @@ const HomeScreen = () => {
           <YStack mb={20} position="relative">
             <UHeaderWithBackground
             />
-            <HeroBanner />
+            <HeroBanner image='' title='' />
           </YStack>
         }
       />
-
-   
-
     </YStack>
   )
 }
