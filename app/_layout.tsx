@@ -31,12 +31,12 @@ export default function RootLayout() {
         <Provider store={store}>
           <PersistGate loading={null} persistor={persistor}>
             <AppTamaguiProvider>
-              {/* <PortalProvider> */}
+              <PortalProvider>
                   <FontProvider>
                     <Slot />
                      <Toast/>
                   </FontProvider>
-              {/* </PortalProvider> */}
+              </PortalProvider>
             </AppTamaguiProvider>
           </PersistGate>
         </Provider>

@@ -36,7 +36,7 @@ const useVerificationCodeController = () => {
 
             console.log("THIS IS VALUESS", values);
 
-            router.push('/(public)/resetpassword');
+            router.push('/(public)/resetPassword');
 
             resetForm();
         } catch (error) {

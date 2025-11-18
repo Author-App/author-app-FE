@@ -13,6 +13,20 @@ interface StylesType extends Omit<GetProps<typeof TamaguiInput>, 'ref'> {
   pressBackgroundColor?: GetThemeValueForKey<'backgroundColor'>;
   hoverBackgroundColor?: GetThemeValueForKey<'backgroundColor'>;
 }
+const getErrorColor = (variant: UInputVariant = 'primary') => {
+  switch (variant) {
+    case 'primary':
+      return '$white';
+    case 'secondary':
+      return '$negative5'; 
+    case 'tertiary':
+      return '$orange8';
+    case 'quaternary':
+      return '$red9';
+    default:
+      return '$white';
+  }
+};
 
 const getVariantStyle = (variant: UInputVariant = 'primary'): StylesType => {
   const baseStyles: StylesType = {
@@ -27,7 +41,7 @@ const getVariantStyle = (variant: UInputVariant = 'primary'): StylesType => {
     py: 12,
     px: 16,
     fontFamily: '$cormorantgaramond',
-    fontSize:16,
+    fontSize: 16,
     letterSpacing: 0,
     color: '$white',
     // borderRadius: 999,
@@ -49,6 +63,8 @@ const getVariantStyle = (variant: UInputVariant = 'primary'): StylesType => {
         borderWidth: 1,
         hoverBackgroundColor: '$primaryAlpha1',
         pressBackgroundColor: '$primaryAlpha2',
+        placeholderTextColor: '#676767ff',
+        color: '$black'
       };
     case 'tertiary':
       return {
@@ -56,6 +72,16 @@ const getVariantStyle = (variant: UInputVariant = 'primary'): StylesType => {
         backgroundColor: '$transparent',
         hoverBackgroundColor: '$primaryAlpha1',
         pressBackgroundColor: '$primaryAlpha2',
+      };
+    case 'quaternary':
+      return {
+        ...baseStyles,
+        backgroundColor: '$transparent',
+        hoverBackgroundColor: '$primaryAlpha1',
+        pressBackgroundColor: '$primaryAlpha2',
+        borderColor: '$transparent',
+        color: '$black',
+        placeholderTextColor: '$black'
       };
     default:
       return baseStyles;
@@ -70,6 +96,8 @@ const UInput = forwardRef<any, UInputProps>(
       borderColor: variantBorderColor,
       ...variantStyle
     } = useMemo(() => getVariantStyle(variant), [variant]);
+
+     const errorColor = getErrorColor(variant);
     return (
       <>
         <YStack gap={2} marginBottom={0}>
@@ -92,7 +120,7 @@ const UInput = forwardRef<any, UInputProps>(
           />
 
           {error ? (
-            <UText variant="text-xs" color="$white" ml={16} mt={5}>
+            <UText variant="text-xs" color={errorColor} ml={6} mt={5}>
               {error}
             </UText>
           ) : null}

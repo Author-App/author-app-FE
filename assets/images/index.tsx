@@ -5,6 +5,8 @@ const assets = {
     headphoneIcon: require('../images/icons/headphoneIcon.png'),
     bookmarkFilled: require('../images/icons/bookmarkFilled.png'),
     bookmark: require('../images/icons/bookmark.png'),
+    gallery: require('../images/icons/gallery.png'),
+    gallery2: require('../images/icons/gallery2.png'),
   },
   images: {
     audiobookbanner: require('../images/images/audiobookbanner.jpg'),
@@ -33,6 +35,30 @@ const assets = {
     articleImage4: require('../images/images/articleImage4.png'),
     articleImage5: require('../images/images/articleImage5.png'),
 
+    personImage1: require('../images/images/personImage1.jpg'),
+    personImage2: require('../images/images/personImage2.webp'),
+    personImage3: require('../images/images/personImage3.jpg'),
+    personImage4: require('../images/images/personImage4.jpg'),
+    personImage5: require('../images/images/personImage5.jpg'),
+
+    community1: require('../images/images/community1.jpg'),
+    community2: require('../images/images/community2.jpg'),
+
+    // blogImage1: require('../images/images/blogImage1.jpg'),
+
+    blogImage1: require('../images/images/blogImage1.png'),
+    blogImage2: require('../images/images/blogImage2.jpg'),
+    blogImage3: require('../images/images/blogImage3.jpg'),
+
+    // videoImage1: require('../images/images/videoImage1.PNG'),
+    // videoImage2: require('../images/images/videoImage2.PNG'),
+    // videoImage3: require('../images/images/videoImage3.PNG'),
+  },
+
+  videos: {
+    video1: require('../images/videos/video1.mp4'),
+    video2: require('../images/videos/video2.mp4'),
+    video3: require('../images/videos/video3.mp4'),
   },
 };
 

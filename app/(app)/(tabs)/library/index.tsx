@@ -1,97 +1,74 @@
+import IconLock from '@/assets/icons/iconLock';
 import assets from '@/assets/images';
 import UTextButton from '@/src/components/core/buttons/uTextButton';
 import UDropdown from '@/src/components/core/dropdowns/uDropdown';
 import UHeaderWithBackground from '@/src/components/core/layout/uHeaderWithBackground';
 import UText from '@/src/components/core/text/uText';
-import { audiobooksData, booksData } from '@/src/data/libraryData';
+import useLibraryController from '@/src/controllers/useLibraryController';
+import { audiobooksData, booksData, libraryData } from '@/src/data/libraryData';
 import { FlashList } from '@shopify/flash-list';
-import { useState } from 'react';
-import { Image, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useMemo, useState } from 'react';
+import { Dimensions, Image, StyleSheet, View } from 'react-native';
 import { Text, XStack, YStack } from 'tamagui';
 
 const LibraryScreen = () => {
 
-  const [activeTab, setActiveTab] = useState<'Books' | 'Audiobooks'>('Books');
-  const [search, setSearch] = useState('');
-  const [selectedValue, setSelectedValue] = useState<string | null>(null);
-
-  const currentData = activeTab === 'Books' ? booksData : audiobooksData;
-  const categoryOptions = [
-    { label: 'Books', value: 'books' },
-    { label: 'Audio Books', value: 'audioBooks' },
-  ];
-
-  const libraryData = [
-    {
-      id: 1,
-      cover: assets.images.articleImage1,
-      title: 'The Desert Kings Heir',
-      author: 'Stanley Padden',
-    },
-    {
-      id: 2,
-      cover: assets.images.articleImage2,
-      title: 'Crusaders Oath',
-      author: 'Stanley Padden',
-    },
-    {
-      id: 3,
-      cover: assets.images.articleImage3,
-      title: 'Whispers Great Wall',
-      author: 'Stanley Padden',
-    },
-    {
-      id: 4,
-      cover: assets.images.articleImage4,
-      title: 'Kens Oath',
-      author: 'Stanley Padden',
-    },
-    {
-      id: 5,
-      cover: assets.images.articleImage5,
-      title: 'Beent Sun',
-      author: 'Stanley Padden',
-    },
-  ]
+  const {
+    router, currentData, categoryOptions, sortOptions, activeTab, setActiveTab, 
+    selectedValue, setSelectedValue, selectedSortValue, setSelectedSortValue, numColumns } = useLibraryController();
 
 
   return (
 
-    <YStack flex={1} backgroundColor={'#FFFFFF'}>
+    <YStack flex={1}
+      backgroundColor={'$white'}>
 
       <FlashList
         data={libraryData}
         keyExtractor={(item) => String(item.id)}
         showsVerticalScrollIndicator={false}
-        numColumns={3}
+        numColumns={numColumns}
+        contentContainerStyle={{
+          paddingHorizontal: 0,
+
+        }}
+        style={{
+          paddingBottom: 10
+        }}
+
         renderItem={({ item }) => {
           return (
             <YStack
-              width={'90%'}
+              flex={1 / numColumns}
               marginTop={15}
-              marginHorizontal={5}
+              marginHorizontal={8}
               paddingTop={4}
               paddingBottom={10}
-              onPress={() => console.log("fsdfsfds")}
+              marginBottom={2}
+              onPress={() =>
+                router.push({
+                  pathname: '/(app)/bookDetail/[id]',
+                  params: { id: item.id },
+                })
+              }
               pressStyle={{ opacity: 0.85 }}
-              backgroundColor={'#ffffffff'}
+              backgroundColor={'$white'}
               borderRadius={15}
               ai={'center'}
               borderWidth={1}
-              shadowColor={'#cfcfcfff'}       
+              shadowColor={'#cfcfcfff'}
               shadowOffset={{ width: 0, height: 2 }}
               shadowOpacity={0.08}
               shadowRadius={6}
-              elevation={4}               
-              borderColor={'#efefefff'}
+              elevation={4}
+              borderColor={'#efefefff'}>
 
-            >
-
-              <View style={{ width: '95%', height: 120, overflow: 'hidden', borderRadius: 15 }}>
+              <View style={{ width: '98%', height: 120, overflow: 'hidden', borderRadius: 15 }}>
                 <Image
                   source={item.cover}
                   style={{
-                    width: '95%',
+                    width: '98%',
                     height: 'auto',
                     aspectRatio: 0.5,
                     alignSelf: 'center',
@@ -100,7 +77,25 @@ const LibraryScreen = () => {
                     position: 'absolute',
                   }}
                 />
+
+                {item.isLocked && (
+                  <View
+                    style={{
+                      ...StyleSheet.absoluteFillObject,
+                      backgroundColor: 'rgba(0, 0, 0, 0.35)',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      flexDirection: 'row'
+                    }}
+                  >
+                    <IconLock />
+                    <UText variant='heading-h2' color={'$white'}>Unlock</UText>
+
+                  </View>
+                )}
               </View>
+
+
 
               <UText numberOfLines={1} variant="text-sm" textAlign='center' width={'90%'} mt={4}>
                 {item.title}
@@ -121,7 +116,10 @@ const LibraryScreen = () => {
         }
         ListHeaderComponent={
           <>
-            <YStack mb={20} position="relative">
+            <YStack
+              // mb={20} 
+              mb={20}
+              position="relative">
               <UHeaderWithBackground
                 title='Library'
               />
@@ -129,13 +127,13 @@ const LibraryScreen = () => {
                 width="95%"
                 alignSelf="center"
                 borderRadius={13}
-                overflow="hidden"
+                overflow="visible"
                 position="absolute"
                 bottom={-35}
                 zIndex={999}
-                backgroundColor={'$white'}
               >
                 <XStack jc={'space-between'} width={'100%'}>
+
                   <UDropdown
                     variant="primary"
                     items={categoryOptions}
@@ -146,18 +144,30 @@ const LibraryScreen = () => {
                     placeholder="All Categories"
                     onSelectItem={e => {
                       console.log('Selected item:', e);
-                      setSelectedValue(e?.value)
-                      // setFieldValue('state', e?.value);
-
+                      setSelectedValue(e?.value?.toString() ?? null);
+                      // setSelectedSortValue(e?.value)
                     }}
                     style={{ width: '48%' }}
 
                   />
 
-                  <XStack ai={'center'} jc={'space-between'} width={'48%'} >
-                    <UText variant='text-sm' color={'$neutral6'}>Sort by: Newest</UText>
-                    <Image source={assets.icons.bookmark} style={{ width: 15, height: 15, marginRight: 10 }} />
-                  </XStack>
+                  <UDropdown
+                    variant="primary"
+                    items={sortOptions}
+                    value={selectedSortValue}
+                    name="state"
+                    required
+                    label="State"
+                    placeholder="Sort by:"
+                    onSelectItem={e => {
+                      console.log('Selected item:', e);
+                      setSelectedSortValue(e?.value?.toString() ?? null);
+                      // setSelectedSortValue(e?.value)
+                    }}
+                    style={{ width: '48%' }}
+
+                  />
+
                 </XStack>
 
               </YStack>
@@ -167,7 +177,7 @@ const LibraryScreen = () => {
               <UTextButton
                 onPress={() => console.log('fsddfs')}
                 variant='primary-md'
-                height={40}
+                // height={40}
                 width={'43%'}
               >
                 Read Synopsis
@@ -175,7 +185,7 @@ const LibraryScreen = () => {
               <UTextButton
                 onPress={() => console.log('fsddfs')}
                 variant='secondary-md'
-                height={40}
+                // height={40}
                 width={'43%'}
                 textColor={'$black'}
               >
@@ -183,6 +193,9 @@ const LibraryScreen = () => {
               </UTextButton>
               <Image source={assets.icons.bookmarkFilled} style={{ width: 18, height: 18, marginRight: 10 }} />
             </XStack>
+            <UText variant="heading-h2" ml={15} mt={15}>
+              Discover More Books
+            </UText>
           </>
         }
 

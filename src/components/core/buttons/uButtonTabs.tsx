@@ -157,15 +157,22 @@ const UButtonTabs = <T extends string = string>({
   );
 
   return (
-    // <ScrollView
-    //   horizontal
-    //   showsHorizontalScrollIndicator={false}
-    //   overScrollMode="never"
-    //   bounces={false}
-    //   {...props}
-    // >
-     variant === 'style-2' ? renderWithUnderline() : renderTabs() 
-    // </ScrollView>
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      overScrollMode="never"
+      bounces={false}
+      contentContainerStyle={{
+        alignItems: 'center',
+        paddingHorizontal: 10,
+      }}
+      style={{
+        flexGrow: 0,
+      }}
+      {...props}
+    >
+      {variant === 'style-2' ? renderWithUnderline() : renderTabs()}
+    </ScrollView>
   );
 };
 

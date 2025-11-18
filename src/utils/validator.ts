@@ -44,3 +44,9 @@ export const editProfileValidationSchema = Yup.object({
         .email('Invalid email format')
         // .required('Email is required'),
 });
+
+export const changePasswordFormValidator = Yup.object().shape({
+    currentPassword: Yup.string().min(6, 'Password must be at least 6 characters').required('Current Password is required'),
+    newPassword: Yup.string().min(6, 'Password must be at least 6 characters').required('New Password is required'),
+
+});

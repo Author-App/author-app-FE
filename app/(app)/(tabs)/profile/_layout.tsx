@@ -12,7 +12,7 @@ export default function ProfileLayout() {
     // screenOptions={{ headerShown: false }} 
     >
       <Stack.Screen name="index" options={{ headerShown: false }} />
-      <Stack.Screen name="settings" options={{
+      {/* <Stack.Screen name="settings" options={{
         header: () => (
           <UHeader
             title="Settings"
@@ -26,7 +26,7 @@ export default function ProfileLayout() {
           />
 
         )
-      }} />
+      }} /> */}
     </Stack>
   );
 } 

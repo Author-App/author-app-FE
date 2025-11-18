@@ -86,42 +86,78 @@ const UDropdown: React.FC<UDropdownProps> = ({
   const styles = useMemo(() => getVariantStyle(variant), [variant]);
 
   return (
-        <YStack gap={2} style={[{ width: '100%' }, style]}>
-          <DropDownPicker
-            open={open}
-            value={value}
-            items={items}
-            setOpen={setOpen}
-            listMode="MODAL" 
-            placeholder={placeholder}
-            disabled={disabled}
-            onSelectItem={onSelectItem}
-            zIndex={zIndex}
-            zIndexInverse={zIndexInverse}
-            style={{
-              backgroundColor: styles.backgroundColor,
-              borderColor: styles.borderColor,
-              borderWidth: styles.borderWidth,
-              borderRadius: styles.borderRadius,
-              minHeight: 48,
-            }}
-            textStyle={{
-              color: styles.color,
-              fontFamily: styles.fontFamily,
-              fontSize: styles.fontSize,
-            }}
-            dropDownContainerStyle={{
-              backgroundColor: styles.backgroundColor,
-              borderColor: styles.borderColor,
-              zIndex,
-            }}
-            placeholderStyle={{
-              color: '#888',
-              fontFamily: styles.fontFamily,
-            }}
-            disabledStyle={{ opacity: 0.5 }}
-          />
-        </YStack>
+    <YStack gap={2} style={[
+      // { width: '100%', zIndex, elevation: zIndex, overflow: 'visible' },
+      { width: '100%' }, 
+      style]}>
+      <DropDownPicker
+        open={open}
+        value={value}
+        items={items}
+        setOpen={setOpen}
+        // listMode="SCROLLVIEW" 
+        listMode="SCROLLVIEW"  
+        dropDownDirection="AUTO"
+        placeholder={placeholder}
+        disabled={disabled}
+        onSelectItem={onSelectItem}
+        zIndex={zIndex}
+        zIndexInverse={zIndexInverse}
+        // style={{
+        //   backgroundColor: styles.backgroundColor,
+        //   borderColor: styles.borderColor,
+        //   borderWidth: styles.borderWidth,
+        //   borderRadius: styles.borderRadius,
+        //   minHeight: 48,
+        // }}
+        // textStyle={{
+        //   color: styles.color,
+        //   fontFamily: styles.fontFamily,
+        //   fontSize: styles.fontSize,
+        // }}
+        // dropDownContainerStyle={{
+        //   // backgroundColor: styles.backgroundColor,
+        //   backgroundColor: 'red',
+        //   // borderColor: styles.borderColor,
+        //   borderColor: 'pink',
+        //   // height: 500,
+
+        //   zIndex: 2000, // 👈 make this higher
+        //   elevation: 10, // 👈 for Android
+        // }}
+        // containerStyle={{
+        //   zIndex: 3000, // 👈 very important for iOS
+        // }}
+        // placeholderStyle={{
+        //   color: '#888',
+        //   fontFamily: styles.fontFamily,
+        // }}
+        // disabledStyle={{ opacity: 0.5 }}
+
+      style={{
+        backgroundColor: styles.backgroundColor,
+        borderColor: styles.borderColor,
+        borderWidth: styles.borderWidth,
+        borderRadius: styles.borderRadius,
+        minHeight: 48,
+      }}
+      textStyle={{
+        color: styles.color,
+        fontFamily: styles.fontFamily,
+        fontSize: styles.fontSize,
+      }}
+      dropDownContainerStyle={{
+        backgroundColor: styles.backgroundColor,
+        borderColor: styles.borderColor,
+        zIndex,
+      }}
+      placeholderStyle={{
+        color: '#888',
+        fontFamily: styles.fontFamily,
+      }}
+      disabledStyle={{ opacity: 0.5 }}
+      />
+    </YStack>
 
   );
 };

@@ -8,24 +8,19 @@ import { YStack } from 'tamagui'
 
 const HomeScreen = () => {
 
-  const { functions, states } = useHomeController()
+  const { functions, components , styles , states } = useHomeController()
 
   return (
     <YStack flex={1}>
       <FlashList
         data={homeData}
         renderItem={functions.renderItem}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={{
-          paddingBottom: 32,
-        }}
-        ListHeaderComponent={
-          <YStack mb={20} position="relative">
-            <UHeaderWithBackground
-            />
-            <HeroBanner image='' title='' />
-          </YStack>
+        keyExtractor={functions.keyExtractor}
+        contentContainerStyle={styles.contentContainerStyle}
+        ListHeaderComponent={ 
+          components.listHeaderComponent
         }
+        showsVerticalScrollIndicator={false}
       />
     </YStack>
   )

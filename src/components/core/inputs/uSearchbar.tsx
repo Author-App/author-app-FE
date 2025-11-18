@@ -28,16 +28,33 @@ interface StylesType extends GetProps<typeof XStack> {
 
 const getVariantStyle = (variant: UInputVariant = 'primary'): StylesType => {
   const baseStyles: StylesType = {
-    backgroundColor: '$primaryAlpha1',
-    hoverBackgroundColor: '$primaryAlpha2',
-    pressBackgroundColor: '$primaryAlpha3',
-    borderColor: '$transparent',
-    borderWidth: 0,
+    backgroundColor: '#FFFFFF', // clean white
+    hoverBackgroundColor: '#F9F5ED', // soft warm hover tone
+    pressBackgroundColor: '#EFE3CA', // slightly deeper on press
+    borderColor: '#E5D7C1', // subtle beige border
+    borderWidth: 1,
     py: 10,
-    px: 8,
+    px: 10,
     ...(isWeb && { height: 'auto', flex: 1 }),
-    borderRadius: 999,
+    borderRadius: 20, // softer edges
     boxSizing: 'border-box',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+    elevation: 2,
+
+
+    // backgroundColor: '$primaryAlpha1',
+    // hoverBackgroundColor: '$primaryAlpha2',
+    // pressBackgroundColor: '$primaryAlpha3',
+    // borderColor: '$transparent',
+    // borderWidth: 0,
+    // py: 10,
+    // px: 8,
+    // ...(isWeb && { height: 'auto', flex: 1 }),
+    // borderRadius: 999,
+    // boxSizing: 'border-box',
   };
 
   switch (variant) {
@@ -61,6 +78,64 @@ const getVariantStyle = (variant: UInputVariant = 'primary'): StylesType => {
         hoverBackgroundColor: '$primaryAlpha1',
         pressBackgroundColor: '$primaryAlpha2',
       };
+    case 'quaternary':
+      return {
+
+        ...baseStyles,
+        backgroundColor: '#E0D3BE', // slightly darker beige than screen bg (#F3E9D6)
+        borderColor: '#CBB89A',
+        borderWidth: 1,
+        borderRadius: 20,
+        shadowColor: '#BFAE8F',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 5,
+        py: 10,
+        px: 12,
+
+        // ...baseStyles,
+        // backgroundColor: '#D9C3A3', // soft caramel brown
+        // borderColor: '#C8AC87',
+        // borderWidth: 1,
+        // borderRadius: 22,
+        // shadowColor: '#B59B75',
+        // shadowOffset: { width: 0, height: 4 },
+        // shadowOpacity: 0.25,
+        // shadowRadius: 8,
+        // elevation: 4,
+        // py: 10,
+        // px: 12,
+
+        // ...baseStyles,
+        // backgroundColor: 'rgba(255, 255, 255, 0.85)', // translucent glass feel
+        // hoverBackgroundColor: 'rgba(255, 255, 255, 0.95)',
+        // pressBackgroundColor: 'rgba(250, 250, 250, 0.9)',
+        // borderColor: 'rgba(255, 255, 255, 0.6)',
+        // borderWidth: 1,
+        // borderRadius: 22,
+        // shadowColor: '#D1C3A7',
+        // shadowOffset: { width: 0, height: 4 },
+        // shadowOpacity: 0.25,
+        // shadowRadius: 8,
+        // elevation: 5,
+        // py: 10,
+        // px: 12,
+
+
+        // ...baseStyles,
+        // backgroundColor: '#FFFFFF',
+        // hoverBackgroundColor: '#F8F4EB',
+        // pressBackgroundColor: '#EFE3CA',
+        // borderColor: '#E5D7C1',
+
+
+        // ...baseStyles,
+        // backgroundColor: '$white',
+        // hoverBackgroundColor: '$primaryAlpha1',
+        // pressBackgroundColor: '$primaryAlpha2',
+        // borderColor: '$white',
+      };
     default:
       return baseStyles;
   }
@@ -69,7 +144,7 @@ const getVariantStyle = (variant: UInputVariant = 'primary'): StylesType => {
 const USearchbar = ({
   search,
   onSearchChange,
-  onClear = () => {},
+  onClear = () => { },
   variant = 'primary',
   backgroundColor,
   bg,
@@ -152,6 +227,7 @@ const USearchbar = ({
         hoverStyle={{ backgroundColor: '$transparent' }}
         focusStyle={{ backgroundColor: '$transparent' }}
         disabled={disabled}
+        variant='quaternary'
         {...props}
       />
 

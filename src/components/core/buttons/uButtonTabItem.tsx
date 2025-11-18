@@ -31,6 +31,20 @@ const getVariantStyle = (
   useInternalBorder: boolean = true,
   isSelected: boolean = false
 ): StylesType => {
+  // const baseStyles: StylesType = {
+  //   backgroundColor: '$transparent',
+  //   activeBackgroundColor: '$transparent',
+  //   borderColor: '$transparent',
+  //   hoverBackgroundColor: '$primaryAlpha2',
+  //   hoverBorderColor: '$transparent',
+  //   pressBackgroundColor: '$primaryAlpha3',
+  //   pressBorderColor: '$transparent',
+  //   px: 16,
+  //   py: 4,
+  //   color: '$primary7',
+  //   height: 'auto',
+  // };
+
   const baseStyles: StylesType = {
     backgroundColor: '$transparent',
     activeBackgroundColor: '$transparent',
@@ -43,20 +57,21 @@ const getVariantStyle = (
     py: 4,
     color: '$primary7',
     height: 'auto',
+    marginRight: 10
   };
 
   switch (variant) {
     case 'style-1':
       return {
         ...baseStyles,
-        activeBackgroundColor: '$primary7',
-        backgroundColor: '$primaryAlpha1',
+        activeBackgroundColor: '$secondary',
+        backgroundColor: '$transparent',
         borderColor: '$primaryAlpha0',
         minHeight: 28,
-        textVariant: 'text-sm',
+        textVariant: 'text-md',
         lineHeight: 19,
-        textActiveColor: '$neutral1',
-        borderRadius: 999,
+        textActiveColor: '$black',
+        borderRadius: 10,
       };
     case 'style-2':
       return {

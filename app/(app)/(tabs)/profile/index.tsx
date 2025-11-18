@@ -1,6 +1,7 @@
 import IconCalender from "@/assets/icons/iconCalender";
 import IconFacebookSilver from "@/assets/icons/iconFacebookSilver";
 import IconInsta from "@/assets/icons/iconInsta";
+import IconSettings from "@/assets/icons/iconSettings";
 import iconTwitter from "@/assets/icons/iconTwitter";
 import assets from "@/assets/images";
 import UIconButton from "@/src/components/core/buttons/uIconButtonVariants";
@@ -19,7 +20,7 @@ const ProfileScreen = () => {
 
   const handleLogout = () => {
     dispatch(logOut());
-    router.replace('/(public)/login'); 
+    router.replace('/(public)/login');
   };
 
   return (
@@ -31,7 +32,7 @@ const ProfileScreen = () => {
       <YStack flex={1} >
         <YStack mb={20} position="relative">
           <UHeaderWithBackground
-          title="Author Profile"
+            title="Author Profile"
           />
           <YStack
             width="95%"
@@ -63,8 +64,16 @@ const ProfileScreen = () => {
                   }}
                 />
               </View>
+              <UIconButton
+                variant="quaternary-sm"
+                icon={IconSettings}
+                onPress={() => {
+                  router.push('/(app)/settings')
+                }}
+                style={{ marginLeft: 'auto' }}
+              />
 
-              <XStack mt={20} gap={15} mr={15}>
+              {/* <XStack mt={20} gap={15} mr={15}>
                 <UIconButton
                   variant="tertiary-md"
                   icon={iconTwitter}
@@ -83,7 +92,27 @@ const ProfileScreen = () => {
                   icon={IconFacebookSilver}
                   onPress={() => console.log('Apple login')}
                 />
-              </XStack>
+              </XStack> */}
+            </XStack>
+            <XStack marginVertical={15} gap={15}>
+              <UIconButton
+                variant="tertiary-md"
+                icon={iconTwitter}
+                onPress={() => console.log('Facebook login')}
+
+              />
+
+              <UIconButton
+                variant="tertiary-md"
+                icon={IconInsta}
+                onPress={() => console.log('Google login')}
+              />
+
+              <UIconButton
+                variant="tertiary-md"
+                icon={IconFacebookSilver}
+                onPress={() => console.log('Apple login')}
+              />
             </XStack>
 
             <UText variant="heading-h2" color={'$black'} mt={10}>About Stanley Padden</UText>

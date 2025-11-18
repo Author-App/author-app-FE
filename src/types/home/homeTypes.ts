@@ -1,12 +1,13 @@
+import { ImageSourcePropType } from 'react-native';
 
 export interface HeroData {
-  image: string;
+  image: ImageSourcePropType; // ✅ changed from string
   eyebrow?: string;
   title: string;
   subtitle?: string;
   ctaLabel?: string;
   badge?: 'New' | 'Live' | 'Free' | string;
-  progress?: number; 
+  progress?: number;
   tint?: string;
   icon?: string;
   blurViewIntensity?: number;
@@ -14,7 +15,7 @@ export interface HeroData {
 
 export interface CarouselItem {
   id: number;
-  cover: string;
+  cover: ImageSourcePropType; // ✅ changed from string
   title: string;
   author?: string;
   narrator?: string;

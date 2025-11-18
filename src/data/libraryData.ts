@@ -1,6 +1,44 @@
 import assets from "@/assets/images";
 import { BookCardProps } from "../types/library/libraryTypes";
 
+export const libraryData = [
+  {
+    id: 1,
+    cover: assets.images.articleImage1,
+    title: 'The Desert Kings Heir',
+    author: 'Stanley Padden',
+    isLocked: false,
+  },
+  {
+    id: 2,
+    cover: assets.images.articleImage2,
+    title: 'Crusaders Oath',
+    author: 'Stanley Padden',
+    isLocked: true,
+  },
+  {
+    id: 3,
+    cover: assets.images.articleImage3,
+    title: 'Whispers Great Wall',
+    author: 'Stanley Padden',
+    isLocked: false,
+  },
+  {
+    id: 4,
+    cover: assets.images.articleImage4,
+    title: 'Kens Oath',
+    author: 'Stanley Padden',
+    isLocked: true,
+  },
+  {
+    id: 5,
+    cover: assets.images.articleImage5,
+    title: 'Beent Sun',
+    author: 'Stanley Padden',
+    isLocked: false,
+  },
+]
+
 export const booksData: BookCardProps[] = [
   {
     id: 1,
@@ -10,7 +48,7 @@ export const booksData: BookCardProps[] = [
     summary: 'A mysterious journey through time and identity that redefines destiny.',
     totalMinutes: 50,
     minutesCompleted: 20,
-    percentage: (20 / 50) * 100, 
+    percentage: (20 / 50) * 100,
   },
   {
     id: 2,
@@ -20,7 +58,7 @@ export const booksData: BookCardProps[] = [
     summary: 'An emotional adventure of love, loss, and rediscovery across continents.',
     totalMinutes: 45,
     minutesCompleted: 15,
-    percentage: (15 / 45) * 100, 
+    percentage: (15 / 45) * 100,
   },
   {
     id: 3,
@@ -30,7 +68,7 @@ export const booksData: BookCardProps[] = [
     summary: 'A thrilling tale of secrets hidden in plain sight within an ancient city.',
     totalMinutes: 55,
     minutesCompleted: 30,
-    percentage: (30 / 55) * 100, 
+    percentage: (30 / 55) * 100,
   },
 ];
 
@@ -44,7 +82,7 @@ export const audiobooksData: BookCardProps[] = [
     summary: 'A mysterious journey through time and identity that redefines destiny.',
     totalMinutes: 50,
     minutesCompleted: 20,
-    percentage: (20 / 50) * 100, 
+    percentage: (20 / 50) * 100,
   },
   {
     id: 2,
@@ -54,7 +92,7 @@ export const audiobooksData: BookCardProps[] = [
     summary: 'An emotional adventure of love, loss, and rediscovery across continents.',
     totalMinutes: 45,
     minutesCompleted: 15,
-    percentage: (15 / 45) * 100, 
+    percentage: (15 / 45) * 100,
   },
   {
     id: 3,
@@ -64,6 +102,6 @@ export const audiobooksData: BookCardProps[] = [
     summary: 'A thrilling tale of secrets hidden in plain sight within an ancient city.',
     totalMinutes: 55,
     minutesCompleted: 30,
-    percentage: (30 / 55) * 100, 
+    percentage: (30 / 55) * 100,
   },
 ];

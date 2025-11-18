@@ -91,7 +91,7 @@ const getVariantStyle = (variant: ButtonVariant = 'primary-md'): StylesType => {
         padding: 4,
         iconSize: 20,
       };
-    case 'tertiary-md':
+    case 'tertiary-md':   //white
       return {
         ...baseStyles,
         backgroundColor: '$neutral0',
@@ -103,6 +103,23 @@ const getVariantStyle = (variant: ButtonVariant = 'primary-md'): StylesType => {
         hoverBorderColor: '$primary7',
         iconColor: '$primary7',
         borderWidth: 1,
+      };
+    case 'tertiary-lg':   //white
+      return {
+        ...baseStyles,
+        backgroundColor: '$neutral0',
+        pressBackgroundColor: '$neutral2',
+        hoverBackgroundColor: '$neutral1',
+        // borderColor: '$primary7',
+        borderColor: '$primary2',
+        pressBorderColor: '$primary7',
+        hoverBorderColor: '$primary7',
+        iconColor: '$primary7',
+        borderWidth: 1,
+        iconSize: 32,         
+        padding: 10,
+        width: 60,           
+        height: 60,
       };
     case 'quaternary-sm':
       return {
@@ -116,7 +133,7 @@ const getVariantStyle = (variant: ButtonVariant = 'primary-md'): StylesType => {
         padding: 4,
         iconSize: 20,
       };
-    case 'quaternary-md':
+    case 'quaternary-md':  //transparent bg with silver outline
       return {
         ...baseStyles,
         backgroundColor: '$transparent',
@@ -136,6 +153,35 @@ const getVariantStyle = (variant: ButtonVariant = 'primary-md'): StylesType => {
         height: 20,
         padding: 3,
         iconSize: 18,
+      };
+
+    case 'quinary-md':   //transparent
+      return {
+        ...baseStyles,
+        backgroundColor: '$transparent',
+        pressBackgroundColor: '$transparent',
+        hoverBackgroundColor: '$transparent',
+        pressBorderColor: '$transparent',
+        hoverBorderColor: '$transparent',
+
+        // backgroundColor: '$secondary',
+        // pressBackgroundColor: '$neutral2',
+        // hoverBackgroundColor: '$neutral1',
+        // pressBorderColor: '$primary7',
+        // hoverBorderColor: '$primary7',
+      };
+    case 'quinary-sm':
+      return {
+        ...baseStyles,
+        backgroundColor: '$neutral0',
+        pressBackgroundColor: '$neutral2',
+        hoverBackgroundColor: '$neutral1',
+        // borderColor: '$primary7',
+        borderColor: '$primary2',
+        pressBorderColor: '$primary7',
+        hoverBorderColor: '$primary7',
+        iconColor: '$primary7',
+        borderWidth: 1,
       };
 
     default:
