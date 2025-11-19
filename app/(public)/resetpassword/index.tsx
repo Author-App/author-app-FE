@@ -75,7 +75,7 @@ const ResetPassword = () => {
                             color="$white"
                             // fontWeight={700}
                             textDecorationLine='underline'
-                            onPress={() => router.push('/(public)/login' as any)}>
+                            onPress={() => router.push('/(public)/login')}>
                             Back to Login
                         </UText>
                     </XStack>

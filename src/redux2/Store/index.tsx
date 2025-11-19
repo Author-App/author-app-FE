@@ -28,11 +28,17 @@ const apiErrorHandler = (store: any) => (next: any) => (action: any) => {
 const authConfig = {
     key: 'author_app',
     storage: AsyncStorage,
+
+    whitelist: ['token', 'user', 'refreshToken', 'isLoggedIn', 'rememberedEmail', 'rememberedPassword'],
+
+    // whitelist: ['auth'], // persist only auth state
 };
 
 const authReducer = persistReducer(authConfig, AuthSlice);
 
 const rootReducer = combineReducers({
+    // auth: persistReducer(authConfig, AuthSlice),
+    // [authApi.reducerPath]: authApi.reducer,
     auth: authReducer,
     [authApi.reducerPath]: authApi.reducer,
     [userApi.reducerPath]: userApi.reducer,
@@ -63,4 +69,8 @@ export const store = configureStore({
 });
 
 export const persistor = persistStore(store);
+
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
+
 

@@ -1,7 +1,8 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { loginValidationSchema, signupValidationSchema } from "@/src/utils/validator";
-import { showSuccessToast } from "@/src/utils/toast";
+import { signupValidationSchema } from "@/src/utils/validator";
+import { showErrorToast, showSuccessToast } from "@/src/utils/toast";
+import { useSignupMutation } from "../redux2/Apis/Auth";
 
 
 const initialValues = {
@@ -12,27 +13,40 @@ const initialValues = {
 
 const useSignupController = () => {
 
-    const [loading, setLoading] = useState<boolean>(false);
     const [submitted, setSubmitted] = useState<boolean>(false);
+
+    const [signup, { data, isLoading, error }] = useSignupMutation();
 
 
     const router = useRouter();
 
     const handleSubmit = async (values: any, { resetForm, setSubmitting }: { resetForm: () => void; setSubmitting: (isSubmitting: boolean) => void }) => {
         try {
-            setLoading(true);
 
-            await new Promise((resolve) => setTimeout(resolve, 2000));
+            const parts = values.fullName.trim().split(" ");
+            const firstName = parts[0];
+            const lastName = parts.slice(1).join(" ");
 
-            console.log("THIS IS VALUESS", values);
+            const payload = {
+                firstName: firstName,
+                lastName: lastName || "",
+                email: values.email,
+                password: values.password,
+                deviceId: "abcd1234-ab",
+                timeZone: "GMT",
+            };
 
-            router.replace('/(public)/login');
-            showSuccessToast('You’ve signed up successfully')
-            resetForm();
-        } catch (error) {
-            console.log("THIS IS ERROR", error);
-        } finally {
-            setLoading(false);
+            const res = await signup(payload).unwrap();
+            if (res) {
+                console.log("THIS IS RES", res);
+
+                router.replace('/(public)/login');
+                showSuccessToast('You’ve signed up successfully')
+                resetForm();
+
+            }
+        } catch (err: any) {
+            showErrorToast(err?.data?.message)
         }
     }
 
@@ -43,11 +57,11 @@ const useSignupController = () => {
         },
         functions: {
             handleSubmit,
-            setLoading,
             setSubmitted
         },
         states: {
-            loading,
+            loading: isLoading,
+            error: error,
             submitted,
         },
         router,

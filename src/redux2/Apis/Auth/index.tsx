@@ -44,22 +44,38 @@ export const authApi = createApi({
         }),
 
         verifycode: builder.mutation({
-            query: body => ({
+            query: ({ token, code }) => ({
                 url: `/password/verify`,
                 method: 'POST',
-                body,
+                headers: {
+                    'x-forgot-password': token,
+                },
+                body: {
+                    code,
+                },
             }),
         }),
 
-        resetPassword: builder.mutation<any, FormData>({
-            query: (formData) => ({
-                url: '/password/reset',
+        resetPassword: builder.mutation({
+
+            query: ({ token, password }) => ({
+                url: `/password/reset`,
                 method: 'POST',
-                body: formData,
+                headers: {
+                    'x-reset-password': token,
+                },
+                body: {
+                    password,
+                },
             }),
+            // query: (formData) => ({
+            //     url: '/password/reset',
+            //     method: 'POST',
+            //     body: formData,
+            // }),
         }),
-        
-        
+
+
 
 
     }),
@@ -71,5 +87,5 @@ export const {
     useForgotPasswordMutation,
     useVerifycodeMutation,
     useResetPasswordMutation,
-    
+
 } = authApi;

@@ -1,7 +1,7 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { loginValidationSchema } from "../utils/validator";
-import { showSuccessToast } from "../utils/toast";
+import { showErrorToast, showSuccessToast } from "../utils/toast";
 import { useDispatch } from "react-redux";
 import { useLoginMutation } from "../redux2/Apis/Auth";
 // import { useLoginMutation } from "../redux/Apis/Auth";
@@ -14,7 +14,6 @@ const initialValues = {
 
 const useLoginController = () => {
 
-    const [loading, setLoading] = useState<boolean>(false);
     const [submitted, setSubmitted] = useState<boolean>(false);
 
     const [login, { data, isLoading, error }] = useLoginMutation();
@@ -26,41 +25,25 @@ const useLoginController = () => {
     const handleSubmit = async (values: any, { resetForm, setSubmitting }: { resetForm: () => void; setSubmitting: (isSubmitting: boolean) => void }) => {
 
         try {
-            setSubmitted(true);
-            setLoading(true);
+            const payload = {
+                email: values.email,
+                password: values.password,
+                deviceId: "abcd1234-ab",
+                timeZone: "GMT",
+            }
 
-            console.log("Login form values:", values);
+            // const res = await login(payload).unwrap();
 
-            const res = await login(values).unwrap();
-            console.log("Login API Response:", res);
+            const res = await login(payload);   // REMOVE unwrap()
 
-            showSuccessToast("You’ve logged in successfully");
-
-            router.replace("/(app)/(tabs)/(home)");
-
-            resetForm();
-        } catch (error) {
-            console.log("LOGIN ERROR", error);
-        } finally {
-            setLoading(false);
+            if (res?.data) {
+                showSuccessToast("You’ve logged in successfully");
+                router.replace("/(app)/(tabs)/(home)");
+                resetForm();
+            }
+        } catch (err: any) {
+            showErrorToast(err?.data?.message)
         }
-
-        // try {
-        //     setLoading(true);
-
-        //     await new Promise((resolve) => setTimeout(resolve, 2000));
-
-        //     console.log("THIS IS VALUESS", values);
-
-        //     router.replace('/(app)/(tabs)/(home)');
-        //     showSuccessToast('You’ve logged in successfully')
-
-        //     resetForm();
-        // } catch (error) {
-        //     console.log("THIS IS ERROR", error);
-        // } finally {
-        //     setLoading(false);
-        // }
     }
 
     return {
@@ -70,11 +53,11 @@ const useLoginController = () => {
         },
         functions: {
             handleSubmit,
-            setLoading,
             setSubmitted
         },
         states: {
-            loading,
+            loading: isLoading,
+            error: error,
             submitted,
         },
         router,

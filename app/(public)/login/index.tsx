@@ -129,7 +129,7 @@ const Login = () => {
                         <UText
                             variant="text-sm"
                             color="$white"
-                            onPress={() => router.push('/(public)/signup' as any)}>
+                            onPress={() => router.push('/(public)/signup')}>
                             Sign Up
                         </UText>
                     </XStack>

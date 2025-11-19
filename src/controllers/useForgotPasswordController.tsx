@@ -1,6 +1,8 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { forgotPasswordFormValidator } from "@/src/utils/validator";
+import { useForgotPasswordMutation } from "../redux2/Apis/Auth";
+import { showErrorToast, showSuccessToast } from "../utils/toast";
 
 
 const initialValues = {
@@ -9,28 +11,51 @@ const initialValues = {
 
 const useForgotPasswordController = () => {
 
-    const [loading, setLoading] = useState(false);
+    // const [loading, setLoading] = useState(false);
     const [submitted, setSubmitted] = useState(false);
+
+    const [forgotPassword, { data, isLoading, error }] = useForgotPasswordMutation();
 
 
     const router = useRouter();
 
     const handleSubmit = async (values: any, { resetForm, setSubmitting }: { resetForm: () => void; setSubmitting: (isSubmitting: boolean) => void }) => {
         try {
-            setLoading(true);
 
-            await new Promise((resolve) => setTimeout(resolve, 2000));
+            const payload = {
+                email: values.email,
+            };
 
-            console.log("THIS IS VALUESS", values);
+            const res = await forgotPassword(payload).unwrap();
+            if (res) {
+                console.log("THIS IS RES", res);
+                router.push({
+                    pathname: '/(public)/verificationCode',
+                    params: {
+                        token: res?.data?.token,  // or the correct token field
+                    }
+                });
+                resetForm();
 
-            router.push('/(public)/verificationCode');
-
-            resetForm();
-        } catch (error) {
-            console.log("THIS IS ERROR", error);
-        } finally {
-            setLoading(false);
+            }
+        } catch (err: any) {
+            showErrorToast(err?.data?.message)
         }
+        // try {
+        //     setLoading(true);
+
+        //     await new Promise((resolve) => setTimeout(resolve, 2000));
+
+        //     console.log("THIS IS VALUESS", values);
+
+        //     router.push('/(public)/verificationCode');
+
+        //     resetForm();
+        // } catch (error) {
+        //     console.log("THIS IS ERROR", error);
+        // } finally {
+        //     setLoading(false);
+        // }
     }
 
     return {
@@ -40,11 +65,12 @@ const useForgotPasswordController = () => {
         },
         functions: {
             handleSubmit,
-            setLoading,
+            // setLoading,
             setSubmitted
         },
         states: {
-            loading,
+            loading: isLoading,
+            error: error,
             submitted,
         },
         router,

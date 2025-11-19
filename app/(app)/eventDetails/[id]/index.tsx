@@ -2,7 +2,7 @@ import React from "react";
 import UHeaderWithBackground from "@/src/components/core/layout/uHeaderWithBackground";
 import UText from "@/src/components/core/text/uText";
 import { exploreData } from "@/src/data/exploreData";
-import { logOut } from "@/src/redux/Slice/AuthSlice";
+// import { logOut } from "@/src/redux/Slice/AuthSlice";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ScrollView, useWindowDimensions, View } from "react-native";
 import { useDispatch } from "react-redux";
@@ -11,6 +11,7 @@ import IconCalender from "@/assets/icons/iconCalender";
 import IconDuration from "@/assets/icons/iconDuration";
 import IconLocation from "@/assets/icons/iconLocation";
 import UTextButton from "@/src/components/core/buttons/uTextButton";
+import { logOut } from "@/src/redux2/Slice/AuthSlice";
 
 const EventDetailScreen = () => {
   const { id } = useLocalSearchParams();

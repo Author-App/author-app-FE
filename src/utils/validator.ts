@@ -30,7 +30,7 @@ export const forgotPasswordFormValidator = Yup.object().shape({
 export const codeValidationSchema = Yup.object().shape({
     code: Yup
         .string()
-        .min(4, 'Verification code must be 4 characters')
+        .min(6, 'Verification code must be 6 characters')
         .required('Verification code is required'),
 });
 

@@ -12,8 +12,9 @@ import { getTokenValue } from 'tamagui';
 import { PortalProvider } from '@tamagui/portal';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
-import { persistor, store } from '@/src/redux/Store';
+// import { persistor, store } from '@/src/redux/Store';
 import Toast from 'react-native-toast-message';
+import { persistor, store } from '@/src/redux2/Store';
 
 
 export default function RootLayout() {

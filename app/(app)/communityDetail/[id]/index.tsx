@@ -1,13 +1,14 @@
 import UHeaderWithBackground from "@/src/components/core/layout/uHeaderWithBackground";
 import UText from "@/src/components/core/text/uText";
 import { communityData } from "@/src/data/communityData";
-import { logOut } from "@/src/redux/Slice/AuthSlice";
+// import { logOut } from "@/src/redux/Slice/AuthSlice";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Image, ScrollView, View, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from "react-native";
 import { useDispatch } from "react-redux";
 import { XStack, YStack } from "tamagui";
 import { useState } from "react";
 import UTextButton from "@/src/components/core/buttons/uTextButton";
+import { logOut } from "@/src/redux2/Slice/AuthSlice";
 
 const CommunityDetailScreen = () => {
     const { id } = useLocalSearchParams();

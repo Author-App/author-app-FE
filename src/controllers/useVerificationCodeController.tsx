@@ -1,6 +1,8 @@
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import { codeValidationSchema } from "@/src/utils/validator";
+import { showErrorToast } from "../utils/toast";
+import { useVerifycodeMutation } from "../redux2/Apis/Auth";
 
 
 const initialValues = {
@@ -9,7 +11,12 @@ const initialValues = {
 
 const useVerificationCodeController = () => {
 
-    const [loading, setLoading] = useState<boolean>(false);
+    const { token } = useLocalSearchParams();
+
+    const [verifycode, { data, isLoading, error }] = useVerifycodeMutation();
+
+
+    // const [loading, setLoading] = useState<boolean>(false);
     const [submitted, setSubmitted] = useState<boolean>(false);
 
 
@@ -22,7 +29,7 @@ const useVerificationCodeController = () => {
     ) => {
         setFieldValue("code", text);
 
-        if (text.length === 4) {
+        if (text.length === 6) {
             handleSubmit();
         }
     };
@@ -30,20 +37,47 @@ const useVerificationCodeController = () => {
 
     const handleSubmit = async (values: any, { resetForm, setSubmitting }: { resetForm: () => void; setSubmitting: (isSubmitting: boolean) => void }) => {
         try {
-            setLoading(true);
 
-            await new Promise((resolve) => setTimeout(resolve, 2000));
+            const payload = {
+                code: values.code,
+            };
 
-            console.log("THIS IS VALUESS", values);
+            // const res = await verifycode(payload).unwrap();
+            const res = await verifycode({
+                token,          // ← sent in header later
+                code: values.code,
+            }).unwrap();
+            if (res) {
+                console.log("THIS IS RES", res);
+                router.push({
+                    pathname: '/(public)/resetPassword',
+                    params: {
+                        token: res?.data?.token,  // or the correct token field
+                    }
+                });
+                resetForm();
 
-            router.push('/(public)/resetPassword');
-
-            resetForm();
-        } catch (error) {
-            console.log("THIS IS ERROR", error);
-        } finally {
-            setLoading(false);
+            }
+        } catch (err: any) {
+            showErrorToast(err?.data?.message)
         }
+
+
+        // try {
+        //     setLoading(true);
+
+        //     await new Promise((resolve) => setTimeout(resolve, 2000));
+
+        //     console.log("THIS IS VALUESS", values);
+
+        //     router.push('/(public)/resetPassword');
+
+        //     resetForm();
+        // } catch (error) {
+        //     console.log("THIS IS ERROR", error);
+        // } finally {
+        //     setLoading(false);
+        // }
     }
 
     return {
@@ -53,12 +87,12 @@ const useVerificationCodeController = () => {
         },
         functions: {
             handleSubmit,
-            setLoading,
             setSubmitted,
             handleOTPChange,
         },
         states: {
-            loading,
+            loading: isLoading,
+            error: error,
             submitted,
         },
         router,

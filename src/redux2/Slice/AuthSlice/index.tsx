@@ -22,9 +22,16 @@ const AuthSlice = createSlice({
 
   reducers: {
     logOut: state => {
-      state.isLoggedIn = false;
-      state.token = null;
+
       state.user = null;
+      state.token = null; 
+      state.refreshToken = null; 
+      state.isLoggedIn = false;
+
+
+      // state.isLoggedIn = false;
+      // state.token = null;
+      // state.user = null;
     },
     rememberCredentials: (state, action) => {
       const { email, password } = action.payload;
@@ -53,6 +60,9 @@ const AuthSlice = createSlice({
           state.token = accessToken;   // store access token
           state.refreshToken = refreshToken; // optional: if you want to store refresh token
           state.isLoggedIn = true;
+
+          console.log("THIS IS TOKEN FROM SLICE", state.token);
+          
         } else {
           Toast.show({
             type: 'error',

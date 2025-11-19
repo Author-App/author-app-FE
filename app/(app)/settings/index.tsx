@@ -14,14 +14,19 @@ import UImage from "@/src/components/core/image/uImage";
 import UHeader from "@/src/components/core/layout/uHeader";
 import UText from "@/src/components/core/text/uText";
 import useSettingsController from "@/src/controllers/useSettingsController";
+import { logOut } from "@/src/redux2/Slice/AuthSlice";
+import { persistor } from "@/src/redux2/Store";
 import { getInitials } from "@/src/utils/helper";
 import { useRouter } from "expo-router";
+import { useDispatch } from "react-redux";
 import { YStack, XStack, Switch, Card, ScrollView } from "tamagui";
 
 const SettingsScreen = () => {
   const { functions, states } = useSettingsController();
 
   const router = useRouter();
+
+  const dispatch = useDispatch();
 
   const accountOptions = [
     {
@@ -55,7 +60,7 @@ const SettingsScreen = () => {
       onPress: () =>
         router.push({
           pathname: "/(app)/subscription",
-          params: { premium: true},
+          params: { premium: true },
         }),
     },
     {
@@ -66,7 +71,11 @@ const SettingsScreen = () => {
     {
       label: "Logout",
       icon: <IconLogout />,
-      onPress: () => router.push("/(public)/login"),
+      onPress: () => {
+        dispatch(logOut());
+        persistor.purge();
+        router.push("/(public)/login");
+      },
     },
     {
       label: "Delete Account",

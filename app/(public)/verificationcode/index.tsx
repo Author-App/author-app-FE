@@ -39,7 +39,7 @@ const VerificationCode = () => {
                     </UText>
                     <UKeyboardAvoidingView gap={16} mt={25}>
                         <OTPTextView
-                            inputCount={4}
+                            inputCount={6}
                             keyboardType="number-pad"
                             handleTextChange={(text) =>
                                 functions.handleOTPChange(text, formik.setFieldValue, formik.handleSubmit)
@@ -86,7 +86,7 @@ const VerificationCode = () => {
                             color="$white"
                             // fontWeight={700}
                             textDecorationLine='underline'
-                            onPress={() => router.push('/(public)/login' as any)}>
+                            onPress={() => router.push('/(public)/login')}>
                             Back to Login
                         </UText>
                     </XStack>
