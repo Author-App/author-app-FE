@@ -9,42 +9,25 @@ import { ScrollView } from 'react-native';
 import { Button, Card, Image, Progress, Text, View, XStack, YStack } from 'tamagui';
 import { Rating } from 'react-native-ratings';
 import IconStar from '@/assets/icons/iconStar';
+import useBookDetailController from '@/src/controllers/useBookDetailsController';
+import { formatDate } from '@/src/utils/helper';
+import UImage from '@/src/components/core/image/uImage';
+import RatingModal from '@/src/components/core/modals/ratingModal';
+import { useState } from 'react';
 
-
-const reviewsData = [
-    {
-        id: 1,
-        name: 'Mara',
-        date: 'Sep 2025',
-        reviewTitle: 'Couldn’t put it down.',
-        reviewBody: 'Rich worldbuilding and a grounded hero. The desert politics felt believable.',
-        avatar: assets.images.padden,
-        rating: 5,
-    },
-    {
-        id: 2,
-        name: 'John Peter',
-        date: 'Sep 2025',
-        reviewTitle: 'Great pacing.',
-        reviewBody: 'Loved the battles; wanted a longer epilogue.',
-        avatar: assets.images.padden,
-        rating: 3,
-    },
-]
-
-const ratingsDistribution = [
-    { stars: 5, percent: 62 },
-    { stars: 4, percent: 22 },
-    { stars: 3, percent: 9 },
-    { stars: 2, percent: 4 },
-    { stars: 1, percent: 3 },
-]
 
 const BookDetail = () => {
-    const { id } = useLocalSearchParams();
+    const { states, functions } = useBookDetailController();
+    const { book, moreBooks, ratingStats, loading, error , modalVisible } = states;
 
-    console.log("THIS IS BOOK DETAILS ID", id);
-    const book = libraryData.find(b => b.id === Number(id));
+    if (loading) return <UText>Loading...</UText>;
+    if (error) return <UText>Error fetching book</UText>;
+    if (!book) return <UText>No data</UText>;
+
+    console.log("THIS IS MORE BOOKS", moreBooks);
+
+    console.log("THIS IS RATING STATS", ratingStats);
+
 
     return (
         <YStack flex={1} backgroundColor={'$white'}>
@@ -69,7 +52,7 @@ const BookDetail = () => {
                     >
                         <View style={{ width: '100%', height: 200, overflow: 'hidden', borderRadius: 15 }}>
                             <Image
-                                source={book?.cover}
+                                source={{ uri: book.thumbnail || book.cover }}
                                 style={{
                                     width: '100%',
                                     height: 'auto',
@@ -95,7 +78,7 @@ const BookDetail = () => {
                 </YStack>
                 <YStack mt={'45%'} px={20}>
                     <XStack justifyContent='center' gap={10} mt={20}>
-                        <YStack
+                        {/* <YStack
                             backgroundColor={'$white'}
                             borderColor={'#7b6f5c'}
                             borderWidth={1}
@@ -113,7 +96,25 @@ const BookDetail = () => {
                             py={6}
                         >
                             <UText variant='text-sm' color={'$white'}>New</UText>
-                        </YStack>
+                        </YStack> */}
+
+                        {/* {console.log("THIS IS BOOK", book?.tags)} */}
+
+                        {
+                            book?.tags?.map((tag, index) =>
+
+                                <YStack
+                                    backgroundColor={'#1e3a8a'}
+                                    // style={{ backgroundColor: tag?.color }}
+                                    borderRadius={10}
+                                    px={12}
+                                    py={6}
+                                    key={index}
+                                >
+                                    <UText variant='text-sm' color={'$white'}>{tag?.name}</UText>
+                                </YStack>
+                            )
+                        }
 
                         {
                             book?.isLocked &&
@@ -128,18 +129,19 @@ const BookDetail = () => {
                         }
                     </XStack>
                     <UText variant='text-md' mt={20} lineHeight={22}>
-                        Set against the vast desert backdrop, a young heir learns the weight of his legacy, battles internal and external foes, and uncovers secrets that could change the empire.
+                        {book?.description}
                     </UText>
 
                     <UText variant='heading-h2' mt={25}>
                         Synopsis
                     </UText>
                     <UText variant='text-md' mt={10} lineHeight={22}>
-                        In the heart of the scorching desert, Prince Aric stands at the precipice of power. The ancient sands whisper tales of his lineage, and the weight of the crown presses down upon him. Confronted by enemies and guided by destiny, his choices could reshape the empire forever.
+                        {book.synopsis}
                     </UText>
-                    {book?.isLocked ?
-                        <UTextButton variant='secondary-md' height={50} mt={20}>Purchase Book</UTextButton> :
-                        <UTextButton variant='secondary-md' height={50} mt={20}>Start reading</UTextButton>
+                    {book.isFree ?
+                        <UTextButton variant='secondary-md' height={50} mt={20}>Start reading</UTextButton> :
+                        <UTextButton variant='secondary-md' height={50} mt={20}>Purchase Book – {book.price} {book.currency}</UTextButton>
+
                     }
 
                     <XStack width={'100%'} jc={'space-between'} my={20}>
@@ -154,7 +156,7 @@ const BookDetail = () => {
 
                     <FlashList
                         horizontal
-                        data={booksData}
+                        data={moreBooks}
                         ItemSeparatorComponent={() => <View style={{ width: 16 }} />}
                         // optional: add some side padding
                         contentContainerStyle={{ paddingRight: 20, backgroundColor: '$white' }}
@@ -171,7 +173,7 @@ const BookDetail = () => {
                             >
                                 <View style={{ width: '100%', height: 150, overflow: 'hidden', borderTopLeftRadius: 15, borderTopRightRadius: 15 }}>
                                     <Image
-                                        source={book?.cover}
+                                        source={{ uri: item.thumbnail }}
                                         style={{
                                             width: '100%',
                                             height: 'auto',
@@ -208,15 +210,12 @@ const BookDetail = () => {
                         <XStack alignItems="center" width={'100%'} jc={'space-between'}>
                             <YStack width={'65%'} gap={12}>
 
-                                {ratingsDistribution.map((item) => (
-                                    <XStack key={item.stars} alignItems="center" gap={5}>
-                                        <UText variant='text-sm' width={15}>{item.stars}</UText>
-                                        <Progress value={item.percent} backgroundColor="$neutral1" height={6} flex={1}>
+                                {Object.entries(ratingStats.breakdown).map(([star, count]) => (
+                                    <XStack key={star} alignItems="center" gap={5}>
+                                        <UText variant='text-sm' width={15}>{star}</UText>
+                                        <Progress value={count * 20} backgroundColor="$neutral1" height={6} flex={1}>
                                             <Progress.Indicator backgroundColor="$notice5" />
                                         </Progress>
-                                        {/* <Text width={30} textAlign="right">
-                                            {item.percent}%
-                                        </Text> */}
                                     </XStack>
                                 ))}
                             </YStack>
@@ -224,19 +223,19 @@ const BookDetail = () => {
                                 <YStack>
                                     <XStack ai={'center'}>
                                         <UText variant='heading-h1-bold'>
-                                            4.6
+                                            {ratingStats.average.toFixed(1)}
                                         </UText>
-                                        <IconStar/>
+                                        <IconStar />
                                     </XStack>
 
-                                    <UText variant='text-sm' color="$color10">273 ratings</UText>
+                                    <UText variant='text-sm' color="$color10">{ratingStats.total} ratings</UText>
                                 </YStack>
 
                                 <YStack mt={25}>
                                     <UText variant='heading-h1-bold'>
-                                        88%
+                                        {ratingStats.recommended}%
                                     </UText>
-                                    <UText  variant='text-sm' color="$color10">Recommended</UText>
+                                    <UText variant='text-sm' color="$color10">Recommended</UText>
                                 </YStack>
                             </YStack>
 
@@ -244,32 +243,38 @@ const BookDetail = () => {
                         </XStack>
 
                         {/* Write Review Button */}
-                        <UTextButton variant='primary-md' mt={30} mb={20}>
+                        <UTextButton variant='primary-md' mt={30} mb={20} onPress={() => functions.setModalVisible(true)}>
                             Write a Review
+
                         </UTextButton>
 
                         {/* Reviews List */}
                         <YStack space="$4">
-                            {reviewsData.map((item) => (
-                                <XStack key={item.id} space="$3">
-                                    <Image
-                                        source={{ uri: item.avatar }}
+                            {ratingStats.userReviews.map((review) => (
+                                <XStack key={review.id} space="$3">
+                                    <UImage
+                                        imageSource={review.avatar}          // avatar URL from backend
+                                        fallBackText={review.username}       // fallback text if avatar is missing
+                                        style={{ width: 45, height: 45, borderRadius: 999 }}
+                                    />
+                                    {/* <Image
+                                        source={{ uri: review.avatar }}
                                         style={{
                                             width: 45,
                                             height: 45,
                                             borderRadius: 999,
                                         }}
-                                    />
+                                    /> */}
                                     <YStack flex={1}>
                                         <XStack justifyContent="space-between" alignItems="center">
-                                            <UText variant='heading-h2-bold'>{item.name}</UText>
-                                            <UText variant='text-xs' color="$color9">{item.date}</UText>
+                                            <UText variant='heading-h2-bold'>{review.username}</UText>
+                                            <UText variant='text-xs' color="$color9">{formatDate(review?.submittedAt)}</UText>
                                         </XStack>
                                         <Rating
                                             type="custom"
                                             imageSize={18}
                                             readonly
-                                            startingValue={item.rating}
+                                            startingValue={review.rating}
                                             ratingColor="#d4af37"   // gold-like color
                                             // tintColor="#fff9ee"     
                                             ratingBackgroundColor="#e5e5e5"
@@ -278,7 +283,7 @@ const BookDetail = () => {
                                         {/* <Text fontWeight="600" mt="$1">
                                             {item.reviewTitle}
                                         </Text> */}
-                                        <UText variant='text-xs' color="$color10">{item.reviewBody}</UText>
+                                        <UText variant='text-xs' color="$color10">{review.comment}</UText>
                                     </YStack>
                                 </XStack>
                             ))}
@@ -287,6 +292,14 @@ const BookDetail = () => {
 
 
                 </YStack>
+
+                <RatingModal
+                    visible={modalVisible}
+                    onClose={() => functions.setModalVisible(false)}
+                    onSubmit={functions.handleSubmit}
+                    allowRating={true}  // can be false if only review is needed
+                    allowReview={true}  // can be false if only rating is needed
+                />
 
 
             </ScrollView >

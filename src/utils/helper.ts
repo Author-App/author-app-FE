@@ -18,3 +18,15 @@ export const getInitials = (name: string | null | undefined): string => {
 
   return initials.slice(0, 2);
 };
+
+export const formatDate = (isoDate: string): string => {
+  const date = new Date(isoDate);
+
+  const options: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: 'short',
+    day: '2-digit',
+  };
+
+  return date.toLocaleDateString('en-US', options);
+};

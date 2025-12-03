@@ -10,7 +10,7 @@ interface CarouselBooksProps {
     cover: ImageSourcePropType;
     title: string;
   }[];
-  onPressItem: (id: number) => void;
+  onPressItem: (item: Object) => void;
 }
 
 const CarouselBooks: React.FC<CarouselBooksProps> = ({ data, onPressItem }) => {
@@ -32,7 +32,8 @@ const CarouselBooks: React.FC<CarouselBooksProps> = ({ data, onPressItem }) => {
           height={167}
           padding={4}
           mr={10}
-          onPress={() => onPressItem(item.id)}
+          // onPress={() => onPressItem(item.id)}
+          onPress={() => onPressItem?.(item)}
           pressStyle={{ opacity: 0.85 }}
           backgroundColor={'$card'}
           borderRadius={15}

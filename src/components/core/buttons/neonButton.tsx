@@ -1,10 +1,11 @@
-import { LinearGradient } from 'expo-linear-gradient'
+// import { LinearGradient } from 'expo-linear-gradient'
 import { ActivityIndicator } from 'react-native'
 import { Button } from 'tamagui'
 import UText from '../text/uText'
 import { ButtonProps } from './uButton'
 import { StyleProp } from 'react-native'
 import { ViewStyle } from 'react-native'
+import { LinearGradient } from '@tamagui/linear-gradient';
 
 type NeonButtonProps = ButtonProps & {
     loading?: boolean

@@ -34,6 +34,9 @@ const HeroBanner: React.FC<HeroBannerProps> = ({
 }) => {
   const shouldShowIcon = type === 'audiobook'
 
+  console.log("This is title,", title);
+  
+
   return (
     <YStack
       width="95%"
@@ -64,7 +67,7 @@ const HeroBanner: React.FC<HeroBannerProps> = ({
           NEW RELEASE
         </UText>
         <UText variant="heading-h1" color={'#F2EAD2'} fontWeight={'700'}  marginLeft={'auto'} mt={-5}>
-          “SHADOWS OF SUMER”
+          “{title}”
         </UText>
       </BlurView>
     </YStack>

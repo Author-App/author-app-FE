@@ -7,6 +7,7 @@ import UText from '../text/uText';
 interface UInputProps extends Omit<GetProps<typeof TamaguiInput>, 'variant'> {
   variant?: UInputVariant;
   error?: string;
+  textAlignVertical?: 'top' | 'center' | 'bottom';
 }
 
 interface StylesType extends Omit<GetProps<typeof TamaguiInput>, 'ref'> {
@@ -104,6 +105,7 @@ const UInput = forwardRef<any, UInputProps>(
           <TamaguiInput
             ref={ref}
             unstyled
+            textAlignVertical={props.textAlignVertical} 
             pressStyle={{
               backgroundColor: pressBackgroundColor,
               borderColor: borderColor || variantBorderColor,

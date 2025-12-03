@@ -36,13 +36,24 @@ const useLoginController = () => {
 
             const res = await login(payload);   // REMOVE unwrap()
 
+            console.log("THIS IS RES", res);
+
+
             if (res?.data) {
                 showSuccessToast("You’ve logged in successfully");
                 router.replace("/(app)/(tabs)/(home)");
                 resetForm();
             }
+            if (res?.error) {
+                const message = res?.error?.data?.message || "Something went wrong";
+                showErrorToast(message);
+                return;
+            }
+
         } catch (err: any) {
             showErrorToast(err?.data?.message)
+            console.log("ERROR", error);
+
         }
     }
 

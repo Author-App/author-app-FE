@@ -4,14 +4,13 @@
   "version": "1.0.0",
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web"
   },
   "dependencies": {
     "@danielsledz/react-native-skeleton-placeholder": "^1.0.2",
     "@expo/vector-icons": "^15.0.2",
-    "@mattermost/react-native-paste-input": "^0.8.1",
     "@react-native-async-storage/async-storage": "1.23.1",
     "@react-native-community/datetimepicker": "8.2.0",
     "@react-native-masked-view/masked-view": "^0.3.2",
@@ -31,7 +30,6 @@
     "expo-image": "^3.0.9",
     "expo-image-manipulator": "^13.0.6",
     "expo-image-picker": "^16.0.6",
-    "expo-linear-gradient": "~14.0.2",
     "expo-linking": "~8.0.8",
     "expo-media-library": "^17.0.6",
     "expo-router": "~6.0.11",

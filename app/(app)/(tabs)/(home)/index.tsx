@@ -13,7 +13,7 @@ const HomeScreen = () => {
   return (
     <YStack flex={1}>
       <FlashList
-        data={homeData}
+        data={states.homeSections}
         renderItem={functions.renderItem}
         keyExtractor={functions.keyExtractor}
         contentContainerStyle={styles.contentContainerStyle}

@@ -12,22 +12,64 @@ import { bannerConfig } from "../config/bannerConfig";
 import CarouselArticles from "../components/home/carousel/carouselArticles";
 import CarouselBooks from "../components/home/carousel/carouselBooks";
 import UHeaderWithBackground from "../components/core/layout/uHeaderWithBackground";
+import { useGetHomeQuery } from "../redux2/Apis/Home";
 
 
 const useHomeController = () => {
-    const [loading, setLoading] = useState(false)
-    const [error, setError] = useState(false)
+
+    const { data, isLoading, error, refetch } = useGetHomeQuery(null);
+
+    console.log("THIS IS DATA", data);
 
 
-    // useEffect(() => {
-    //     const timer = setTimeout(() => {
-    //         setLoading(false);
-    //     }, 2000); // 2 seconds
+    // const [loading, setLoading] = useState(false)
+    // const [error, setError] = useState(false)
 
-    //     return () => clearTimeout(timer);
-    // }, []);
 
-    const handleRetry = useCallback(() => setError(false), []);
+    // const handleRetry = useCallback(() => setError(false), []);
+
+    const handleRetry = useCallback(() => refetch(), [refetch]);
+
+    const homeSections = useMemo(() => {
+        if (!data?.data) return [];
+
+        const api = data.data;
+
+        return [
+            // {
+            //     id: "hero-banner",
+            //     type: "hero",
+            //     subtype: "banner",
+            //     title: api.banner.title,
+            //     // data: api.banner,
+            // },
+            {
+                id: "trending-books-section",
+                type: "carousel",
+                subtype: "books",
+                title: "Trending Books",
+                data: api.trendingBooks,
+            },
+            {
+                id: "articles-section",
+                type: "carousel",
+                subtype: "articles",
+                title: "Featured Articles",
+                data: api.articles,
+            },
+            {
+                id: "audio-books-section",
+                type: "carousel",
+                subtype: "audiobooks",
+                title: "New Audiobooks",
+                data: api.audioBooks,
+            },
+        ];
+    }, [data]);
+
+    console.log("THIS IS HOME SECTIONSS", JSON.stringify(homeSections, null, 2));
+
+
 
     const errorView = useMemo(
         () => (
@@ -49,19 +91,27 @@ const useHomeController = () => {
 
     const renderItem: ListRenderItem<HomeItem> = useCallback(
         ({ item }) => {
-            if (loading) return loadingSkeleton(item.type);
+            if (isLoading) return loadingSkeleton(item.type);
             if (error) return errorView;
 
-            if (item.type === "hero") {
-                const config = bannerConfig[item.subtype || "audiobook"];
-                return (
-                    <HeroBanner
-                        {...config}
-                        type={item.subtype}
-                        onPressCTA={() => console.log("Navigating to details")}
-                    />
-                );
-            }
+            // console.log("THIS IS ITEM", item);
+
+
+            // if (item.type === "hero") {
+
+            //     // console.log("THIS IS ITEM OF HERO", item);
+
+
+            //     // const config = bannerConfig[item.subtype || "audiobook"];
+            //     return (
+            //         <HeroBanner
+            //             // {...config}
+            //             title={item.title}
+            //             type={item.subtype}
+            //             onPressCTA={() => console.log("Navigating to details")}
+            //         />
+            //     );
+            // }
 
             if (item.type === "carousel") {
                 const carouselContent = (() => {
@@ -80,9 +130,25 @@ const useHomeController = () => {
                             return (
                                 <CarouselBooks
                                     data={item.data}
-                                    onPressItem={(id) =>
-                                        router.push(`/(app)/bookDetail/${id}`)
+                                    onPressItem={(item) =>
+                                        router.push({
+                                            pathname: "/(app)/bookDetail/[id]",
+                                            params: {
+                                                id: item.id,
+                                                // title: item.title,
+                                                // cover: item.cover,
+                                            },
+                                        })
                                     }
+                                // onPressItem={() =>
+                                //     router.push({
+                                //         pathname: '/(app)/bookDetail/[id]',
+                                //         params: { id: item.id },
+                                //     })
+                                // }
+                                // onPressItem={(id) =>
+                                //     router.push(`/(app)/bookDetail/${id}`)
+                                // }
                                 />
                             );
                         default:
@@ -99,16 +165,33 @@ const useHomeController = () => {
 
             return null;
         },
-        [loading, error, errorView, loadingSkeleton]
+        [isLoading, error]
+        // [loading, error, errorView, loadingSkeleton]
     );
-
 
     const listHeaderComponent = useMemo(() => (
         <YStack mb={20} position="relative">
             <UHeaderWithBackground />
-            <HeroBanner image="" title="" />
+            {data?.data?.banner && (
+                <HeroBanner
+                    image={data.data.banner.image || ""}
+                    title={data.data.banner.title}
+                    subtitle={data.data.banner.subtitle}
+                    eyebrow={data.data.banner.eyebrow}
+                    badge={data.data.banner.badge}
+                    onPressCTA={() => console.log("Navigating to banner details")}
+                />
+            )}
         </YStack>
-    ), []);
+    ), [data]);
+
+
+    // const listHeaderComponent = useMemo(() => (
+    //     <YStack mb={20} position="relative">
+    //         <UHeaderWithBackground />
+    //         <HeroBanner image="" title="" />
+    //     </YStack>
+    // ), []);
 
     const keyExtractor = useMemo(() => (item: any) => item.id, []);
 
@@ -125,7 +208,7 @@ const useHomeController = () => {
             renderItem,
             keyExtractor,
             handleRetry,
-            setLoading,
+            // setLoading,
         },
         components: {
             listHeaderComponent,
@@ -134,8 +217,11 @@ const useHomeController = () => {
             contentContainerStyle,
         },
         states: {
-            loading,
+            loading: isLoading,
             error,
+            // homeSections: data?.homeSections || [],
+            homeSections
+
         },
     }
 

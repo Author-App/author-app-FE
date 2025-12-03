@@ -1,6 +1,7 @@
 import React from "react";
-import { LinearGradient } from "expo-linear-gradient";
 import UText from "@/src/components/core/text/uText";
+// import { LinearGradient } from "expo-linear-gradient";
+import { LinearGradient } from '@tamagui/linear-gradient';
 
 const PremiumBadge = () => {
   return (
