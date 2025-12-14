@@ -13,6 +13,8 @@ import { bankApi } from '../Apis/Bank';
 import { generalContentApi } from '../Apis/GeneralContent';
 import { homeApi } from '../Apis/Home';
 import { booksApi } from '../Apis/Books';
+import { ordersApi } from '../Apis/Orders';
+import { articlesApi } from '../Apis/Articles';
 
 const apiErrorHandler = (store: any) => (next: any) => (action: any) => {
     if (action.type.endsWith('/rejected') && action?.payload?.data?.data?.message?.failed) {
@@ -44,6 +46,8 @@ const rootReducer = combineReducers({
     auth: authReducer,
     [authApi.reducerPath]: authApi.reducer,
     [homeApi.reducerPath]: homeApi.reducer,
+    [articlesApi.reducerPath]: articlesApi.reducer,
+    [ordersApi.reducerPath]: ordersApi.reducer,
     [booksApi.reducerPath]: booksApi.reducer,
     [userApi.reducerPath]: userApi.reducer,
     [bookingApi.reducerPath]: bookingApi.reducer,
@@ -63,7 +67,9 @@ export const store = configureStore({
         })
             .concat(authApi.middleware)
             .concat(homeApi.middleware)
+            .concat(ordersApi.middleware)
             .concat(booksApi.middleware)
+            .concat(articlesApi.middleware)
             .concat(userApi.middleware)
             .concat(bookingApi.middleware)
             .concat(slotsApi.middleware)

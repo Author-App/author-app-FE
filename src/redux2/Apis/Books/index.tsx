@@ -9,8 +9,15 @@ export const booksApi = createApi({
         getBookDetail: builder.query({
             query: (id) => `/books/${id}`,
         }),
+
+        getAllBooks: builder.query({
+            query: ({ type }) => ({
+                url: `/books`,
+                params: { type }, // <-- send ?type=ebook OR ?type=audiobook
+            }),
+        }),
     }),
 });
 
-export const { useGetBookDetailQuery } = booksApi;
+export const { useGetBookDetailQuery , useGetAllBooksQuery} = booksApi;
 

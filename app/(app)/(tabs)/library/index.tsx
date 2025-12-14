@@ -15,7 +15,7 @@ import { Text, XStack, YStack } from 'tamagui';
 const LibraryScreen = () => {
 
   const {
-    router, currentData, categoryOptions, sortOptions, activeTab, setActiveTab, 
+    router, currentData, categoryOptions, sortOptions, activeTab, setActiveTab,
     selectedValue, setSelectedValue, selectedSortValue, setSelectedSortValue, numColumns } = useLibraryController();
 
 
@@ -25,7 +25,7 @@ const LibraryScreen = () => {
       backgroundColor={'$white'}>
 
       <FlashList
-        data={libraryData}
+        data={currentData}
         keyExtractor={(item) => String(item.id)}
         showsVerticalScrollIndicator={false}
         numColumns={numColumns}
@@ -66,7 +66,7 @@ const LibraryScreen = () => {
 
               <View style={{ width: '98%', height: 120, overflow: 'hidden', borderRadius: 15 }}>
                 <Image
-                  source={item.cover}
+                  source={{ uri: item.thumbnail }}
                   style={{
                     width: '98%',
                     height: 'auto',
@@ -78,7 +78,7 @@ const LibraryScreen = () => {
                   }}
                 />
 
-                {item.isLocked && (
+                {(!item.isFree && !item.hasAccess )&& (
                   <View
                     style={{
                       ...StyleSheet.absoluteFillObject,
@@ -143,9 +143,12 @@ const LibraryScreen = () => {
                     label="State"
                     placeholder="All Categories"
                     onSelectItem={e => {
-                      console.log('Selected item:', e);
-                      setSelectedValue(e?.value?.toString() ?? null);
-                      // setSelectedSortValue(e?.value)
+                      // console.log('Selected item:', e);
+                      // setSelectedValue(e?.value?.toString() ?? null);
+
+                      const newType = e?.value?.toString() ?? '';
+                      setSelectedValue(newType);
+                      setActiveTab(newType);
                     }}
                     style={{ width: '48%' }}
 

@@ -28,8 +28,12 @@ const CarouselArticles: React.FC<CarouselArticlesProps> = ({ data, onPressItem }
         }}
         renderItem={({ item }) => (
               <YStack mx={8}
-              width={110} alignItems="center">
-                <TouchableOpacity onPress={onPressItem} style={{ width: 100, height: 100, overflow: 'hidden', borderRadius: 50 }}>
+              width={110} alignItems="center"
+              // onPress={() => onPressItem?.(item)}
+              pressStyle={{ opacity: 0.85 }}>
+                <TouchableOpacity 
+              onPress={() => onPressItem?.(item)}
+                 style={{ width: 100, height: 100, overflow: 'hidden', borderRadius: 50 }}>
                   <Image
                     source={{uri : item.image}}
                     style={{

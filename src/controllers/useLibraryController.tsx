@@ -3,18 +3,28 @@ import { useMemo, useState } from "react";
 import { forgotPasswordFormValidator } from "@/src/utils/validator";
 import { audiobooksData, booksData } from "../data/libraryData";
 import { Dimensions } from "react-native";
+import { useGetAllBooksQuery } from "../redux2/Apis/Books";
 
 
 const useLibraryController = () => {
-    const [activeTab, setActiveTab] = useState<'Books' | 'Audiobooks'>('Books');
+    const [activeTab, setActiveTab] = useState<'ebook' | 'audiobook' | ''>('');
     const [search, setSearch] = useState('');
     const [selectedValue, setSelectedValue] = useState<string | null>(null);
     const [selectedSortValue, setSelectedSortValue] = useState<string | null>(null);
 
-    const currentData = activeTab === 'Books' ? booksData : audiobooksData;
+    // const currentData = activeTab === 'Books' ? booksData : audiobooksData;
+
+    // Convert tab to param
+    // const type = activeTab;
+
+    // Call API
+    const { data, isLoading, isError } = useGetAllBooksQuery({ type: activeTab });
+
+    const currentData = data?.data?.books ?? [];
     const categoryOptions = [
-        { label: 'Books', value: 'books' },
-        { label: 'Audio Books', value: 'audioBooks' },
+        { label: 'All', value: '' },
+        { label: 'Books', value: 'ebook' },
+        { label: 'Audio Books', value: 'audiobook' },
     ];
 
     const sortOptions = [
@@ -35,6 +45,7 @@ const useLibraryController = () => {
     }, [screenWidth]);
 
     return {
+
         router,
         currentData,
         categoryOptions,
@@ -46,6 +57,19 @@ const useLibraryController = () => {
         selectedSortValue,
         setSelectedSortValue,
         numColumns,
+        isLoading,
+        isError
+        // router,
+        // currentData,
+        // categoryOptions,
+        // sortOptions,
+        // activeTab,
+        // setActiveTab,
+        // selectedValue,
+        // setSelectedValue,
+        // selectedSortValue,
+        // setSelectedSortValue,
+        // numColumns,
     };
 
 }

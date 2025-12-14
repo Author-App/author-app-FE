@@ -42,8 +42,9 @@ const CarouselBooks: React.FC<CarouselBooksProps> = ({ data, onPressItem }) => {
           borderWidth={1}
           borderColor={'rgba(0,0,0,0.04)'}
         >
+          {/* {console.log("THIS IS ITEM THUMBNAIL")} */}
 
-          <Image source={item.cover} style={{ width: 100, height: 90, borderRadius: 15 }} />
+          <Image source={{uri : item.image}} style={{ width: 100, height: 90, borderRadius: 15 }} />
 
 
           <UText numberOfLines={2} variant="text-sm" textAlign='center' width={'90%'} mt={4}>

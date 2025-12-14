@@ -15,6 +15,7 @@ import { PersistGate } from 'redux-persist/integration/react';
 // import { persistor, store } from '@/src/redux/Store';
 import Toast from 'react-native-toast-message';
 import { persistor, store } from '@/src/redux2/Store';
+import { StripeProvider } from '@stripe/stripe-react-native';
 
 
 export default function RootLayout() {
@@ -31,14 +32,20 @@ export default function RootLayout() {
         <AppHead />
         <Provider store={store}>
           <PersistGate loading={null} persistor={persistor}>
-            <AppTamaguiProvider>
-              <PortalProvider>
+            <StripeProvider
+              publishableKey="pk_test_51L1ATfBTKelq0tNXOX5ZQOZMecvHAFaUCF2fxKHMHhQaqtIMiHFest9P7a4NVx2xf2ljr7WpfYcJy66AbGfd4xhf004NNz3QtX"
+              merchantIdentifier="merchant.com.your-app.example" // iOS only
+              urlScheme="yourapp" // needed for 3DS redirect
+            >
+              <AppTamaguiProvider>
+                <PortalProvider>
                   <FontProvider>
                     <Slot />
-                     <Toast/>
+                    <Toast />
                   </FontProvider>
-              </PortalProvider>
-            </AppTamaguiProvider>
+                </PortalProvider>
+              </AppTamaguiProvider>
+            </StripeProvider>
           </PersistGate>
         </Provider>
       </GestureHandlerRootView>

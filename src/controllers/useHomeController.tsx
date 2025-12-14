@@ -13,24 +13,35 @@ import CarouselArticles from "../components/home/carousel/carouselArticles";
 import CarouselBooks from "../components/home/carousel/carouselBooks";
 import UHeaderWithBackground from "../components/core/layout/uHeaderWithBackground";
 import { useGetHomeQuery } from "../redux2/Apis/Home";
+import SkeletonArticlesCarousel from "../components/home/skeletons/skeletonArticlesCarousel";
+import SkeletonBooksCarousel from "../components/home/skeletons/skeletonBooksCarousel";
 
 
 const useHomeController = () => {
 
     const { data, isLoading, error, refetch } = useGetHomeQuery(null);
 
-    console.log("THIS IS DATA", data);
-
-
-    // const [loading, setLoading] = useState(false)
-    // const [error, setError] = useState(false)
-
+    // console.log("THIS IS DATA", data);
 
     // const handleRetry = useCallback(() => setError(false), []);
 
     const handleRetry = useCallback(() => refetch(), [refetch]);
 
+    // const placeholderSections = [
+    //     { id: "skeleton-1", type: "hero" },
+    //     { id: "skeleton-2", type: "carousel" },
+    //     { id: "skeleton-3", type: "carousel" },
+    // ];
+
+    const placeholderSections = [
+        { id: "skeleton-hero", type: "hero" },
+        { id: "skeleton-articles", type: "carousel", subtype: "articles" },
+        { id: "skeleton-books", type: "carousel", subtype: "books" },
+    ];
+
+
     const homeSections = useMemo(() => {
+        if (isLoading) return placeholderSections;
         if (!data?.data) return [];
 
         const api = data.data;
@@ -65,9 +76,9 @@ const useHomeController = () => {
                 data: api.audioBooks,
             },
         ];
-    }, [data]);
+    }, [data, isLoading]);
 
-    console.log("THIS IS HOME SECTIONSS", JSON.stringify(homeSections, null, 2));
+    // console.log("THIS IS HOME SECTIONSS", JSON.stringify(homeSections, null, 2));
 
 
 
@@ -83,15 +94,27 @@ const useHomeController = () => {
         [handleRetry]
     );
 
-    const loadingSkeleton = useCallback((type: string) => {
-        if (type === "hero") return <SkeletonHero />;
-        if (type === "carousel") return <SkeletonCarousel />;
+    // 🎯 Skeleton by exact subtype size
+    const loadingSkeleton = useCallback((item: HomeItem) => {
+        if (item.type === "hero") return <SkeletonHero />;
+
+        if (item.type === "carousel") {
+            if (item.subtype === "articles") return <SkeletonArticlesCarousel />;
+            return <SkeletonBooksCarousel />;
+        }
+
         return null;
     }, []);
 
+    // const loadingSkeleton = useCallback((type: string) => {
+    //     if (type === "hero") return <SkeletonHero />;
+    //     if (type === "carousel") return <SkeletonCarousel />;
+    //     return null;
+    // }, []);
+
     const renderItem: ListRenderItem<HomeItem> = useCallback(
         ({ item }) => {
-            if (isLoading) return loadingSkeleton(item.type);
+            if (isLoading) return loadingSkeleton(item);
             if (error) return errorView;
 
             // console.log("THIS IS ITEM", item);
@@ -120,9 +143,19 @@ const useHomeController = () => {
                             return (
                                 <CarouselArticles
                                     data={item.data}
-                                    onPressItem={(id) =>
-                                        router.push(`/(app)/article/${id}`)
+                                    onPressItem={(item) =>
+                                        router.push({
+                                            pathname: "/(app)/article/[id]",
+                                            params: {
+                                                id: item.id,
+                                                // title: item.title,
+                                                // cover: item.cover,
+                                            },
+                                        })
                                     }
+                                // onPressItem={(id) =>
+                                //     router.push(`/(app)/article/${id}`)
+                                // }
                                 />
                             );
                         case "books":
@@ -165,7 +198,7 @@ const useHomeController = () => {
 
             return null;
         },
-        [isLoading, error]
+        [isLoading, error, loadingSkeleton, errorView]
         // [loading, error, errorView, loadingSkeleton]
     );
 
