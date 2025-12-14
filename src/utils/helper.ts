@@ -30,3 +30,28 @@ export const formatDate = (isoDate: string): string => {
 
   return date.toLocaleDateString('en-US', options);
 };
+
+export const formatDuration = (durationSec: number): string => {
+  if (!durationSec || durationSec < 0) return '00:00';
+
+  const minutes = Math.floor(durationSec / 60);
+  const seconds = durationSec % 60;
+
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+};
+
+export const formatTime12h = (time24: string) => {
+  if (!time24) return '';
+
+  const [hourStr, minuteStr] = time24.split(':');
+  let hour = parseInt(hourStr, 10);
+  const minute = parseInt(minuteStr, 10);
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+
+  hour = hour % 12;
+  if (hour === 0) hour = 12;
+
+  return `${hour}${minute > 0 ? `:${minute.toString().padStart(2, '0')}` : ''} ${ampm}`;
+};
+
+

@@ -15,6 +15,7 @@ import { homeApi } from '../Apis/Home';
 import { booksApi } from '../Apis/Books';
 import { ordersApi } from '../Apis/Orders';
 import { articlesApi } from '../Apis/Articles';
+import { exploreApi } from '../Apis/Explore';
 
 const apiErrorHandler = (store: any) => (next: any) => (action: any) => {
     if (action.type.endsWith('/rejected') && action?.payload?.data?.data?.message?.failed) {
@@ -47,6 +48,7 @@ const rootReducer = combineReducers({
     [authApi.reducerPath]: authApi.reducer,
     [homeApi.reducerPath]: homeApi.reducer,
     [articlesApi.reducerPath]: articlesApi.reducer,
+    [exploreApi.reducerPath]: exploreApi.reducer,
     [ordersApi.reducerPath]: ordersApi.reducer,
     [booksApi.reducerPath]: booksApi.reducer,
     [userApi.reducerPath]: userApi.reducer,
@@ -68,6 +70,7 @@ export const store = configureStore({
             .concat(authApi.middleware)
             .concat(homeApi.middleware)
             .concat(ordersApi.middleware)
+            .concat(exploreApi.middleware)
             .concat(booksApi.middleware)
             .concat(articlesApi.middleware)
             .concat(userApi.middleware)
