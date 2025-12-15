@@ -9,6 +9,7 @@ import RenderHTML from "react-native-render-html";
 import { useDispatch } from "react-redux";
 import { XStack, YStack } from "tamagui";
 import { logOut } from "@/src/redux2/Slice/AuthSlice";
+import { BlogItem } from "@/src/types/content/contentTypes";
 
 const BlogDetailScreen = () => {
   const { id } = useLocalSearchParams();
@@ -18,7 +19,7 @@ const BlogDetailScreen = () => {
 
   // ✅ Find the blog post by ID
   const blogSection = exploreData.find((item) => item.id === "blog");
-  const blog = blogSection?.data.find((item) => item.id === Number(id));
+  const blog = blogSection?.data.find((item) => item.id === Number(id)) as BlogItem | undefined;
 
   if (!blog) {
     return (
@@ -93,7 +94,7 @@ const BlogDetailScreen = () => {
               <UText color="$black" fontWeight="600">
                 {blog.author}
               </UText>
-              <UText color="$neutral5" fontSize={12}>
+              <UText color="$neutral5" variant="label-xs">
                 Author
               </UText>
             </YStack>

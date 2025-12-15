@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { memo } from 'react'
 import { Dimensions, ImageBackground, ImageSourcePropType, TouchableOpacity } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { XStack, YStack, YStackProps } from 'tamagui'
@@ -97,4 +97,4 @@ const UHeaderWithBackground: React.FC<UHeaderWithBackgroundProps> = ({
     )
 }
 
-export default UHeaderWithBackground
+export default memo(UHeaderWithBackground)

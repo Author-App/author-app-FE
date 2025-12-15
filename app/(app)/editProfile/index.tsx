@@ -13,11 +13,10 @@ import { Image, View } from "react-native";
 import { ScrollView, YStack } from "tamagui";
 
 const EditProfile = () => {
-    const { validator, values, functions, states, router } = useSettingsController();
+    const { values, functions, states, router } = useSettingsController();
 
     const formik = useFormik({
         initialValues: values.initialValues,
-        validationSchema: validator,
         onSubmit: (values, { resetForm, setSubmitting }) => functions.handleSubmit(values, { resetForm, setSubmitting })
     });
 

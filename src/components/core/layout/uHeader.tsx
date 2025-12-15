@@ -1,5 +1,6 @@
+import { memo } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { XStack, YStack, YStackProps } from 'tamagui';
+import { ColorTokens, XStack, YStack, YStackProps } from 'tamagui';
 
 import USpacer from '@/src/components/core/layout/uSpacer';
 import UText, { UTextProps } from '@/src/components/core/text/uText';
@@ -11,7 +12,7 @@ interface UHeaderProps extends YStackProps {
   rightControl?: React.ReactElement;
   safeAreaDisabled?: boolean;
   textProps?: Partial<UTextProps>;
-  headerColor?: string;
+  headerColor?: ColorTokens | 'transparent';
 }
 
 const UHeader = ({
@@ -71,4 +72,4 @@ const UHeader = ({
   );
 };
 
-export default UHeader;
+export default memo(UHeader);

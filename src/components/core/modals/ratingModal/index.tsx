@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import { XStack, YStack, Button, Input } from 'tamagui';
 import { Rating } from 'react-native-ratings';
 import UText from '@/src/components/core/text/uText';
@@ -138,4 +138,4 @@ const RatingModal = ({
   );
 };
 
-export default RatingModal;
+export default memo(RatingModal);

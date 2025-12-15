@@ -1,16 +1,20 @@
-import React from 'react';
+import React, { memo, useCallback } from 'react';
 import { FlatList, Image, ImageSourcePropType, TouchableOpacity, View } from 'react-native';
 import { YStack } from 'tamagui';
 import UText from '../../core/text/uText';
 import { FlashList } from '@shopify/flash-list';
 
+interface ArticleItem {
+  id: number;
+  cover?: ImageSourcePropType;
+  thumbnail?: string;
+  image?: string;
+  title: string;
+}
+
 interface CarouselArticlesProps {
-  data: {
-    id: number;
-    cover: ImageSourcePropType;
-    title: string;
-  }[];
-  onPressItem: (id: number) => void;
+  data: ArticleItem[];
+  onPressItem: (item: ArticleItem) => void;
 }
 
 const CarouselArticles: React.FC<CarouselArticlesProps> = ({ data, onPressItem }) => {
@@ -35,7 +39,7 @@ const CarouselArticles: React.FC<CarouselArticlesProps> = ({ data, onPressItem }
               onPress={() => onPressItem?.(item)}
                  style={{ width: 100, height: 100, overflow: 'hidden', borderRadius: 50 }}>
                   <Image
-                    source={{uri : item.image}}
+                    source={{ uri: item.thumbnail || item.image }}
                     style={{
                       width: 100,
                       height: 'auto',
@@ -57,4 +61,4 @@ const CarouselArticles: React.FC<CarouselArticlesProps> = ({ data, onPressItem }
   );
 };
 
-export default CarouselArticles;
+export default memo(CarouselArticles);

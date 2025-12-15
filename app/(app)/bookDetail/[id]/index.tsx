@@ -19,10 +19,9 @@ import PaymentModal from '@/src/components/core/modals/paymentModal';
 
 const BookDetail = () => {
     const { states, functions } = useBookDetailController();
-    const { book, moreBooks, ratingStats, loading, error, modalVisible } = states;
+    const { book, moreBooks, ratingStats, loading, modalVisible } = states;
 
     if (loading) return <UText>Loading...</UText>;
-    if (error) return <UText>Error fetching book</UText>;
     if (!book) return <UText>No data</UText>;
 
     // console.log("THIS IS MORE BOOKS", moreBooks);
@@ -108,7 +107,7 @@ const BookDetail = () => {
                             {/* {console.log("THIS IS BOOK", book?.tags)} */}
 
                             {
-                                book?.tags?.map((tag, index) =>
+                                book?.tags?.map((tag: { name: string; color?: string }, index: number) =>
 
                                     <YStack
                                         backgroundColor={'#1e3a8a'}
@@ -175,7 +174,7 @@ const BookDetail = () => {
                                     contentContainerStyle={{ paddingRight: 20, backgroundColor: '$white' }}
                                     style={{ backgroundColor: '$white' }}
                                     showsHorizontalScrollIndicator={false}
-                                    renderItem={({ item }) =>
+                                    renderItem={({ item }: { item: { thumbnail?: string; title?: string; author?: string } }) =>
                                         <Card
                                             // backgroundColor={'$bg2'}
                                             backgroundColor={'$bg2'}
@@ -225,10 +224,10 @@ const BookDetail = () => {
                             <XStack alignItems="center" width={'100%'} jc={'space-between'}>
                                 <YStack width={'65%'} gap={12}>
 
-                                    {Object.entries(ratingStats.breakdown).map(([star, count]) => (
+                                    {ratingStats && Object.entries(ratingStats.breakdown).map(([star, count]) => (
                                         <XStack key={star} alignItems="center" gap={5}>
                                             <UText variant='text-sm' width={15}>{star}</UText>
-                                            <Progress value={count * 20} backgroundColor="$neutral1" height={6} flex={1}>
+                                            <Progress value={(count as number) * 20} backgroundColor="$neutral1" height={6} flex={1}>
                                                 <Progress.Indicator backgroundColor="$notice5" />
                                             </Progress>
                                         </XStack>
@@ -238,17 +237,17 @@ const BookDetail = () => {
                                     <YStack>
                                         <XStack ai={'center'}>
                                             <UText variant='heading-h1-bold'>
-                                                {ratingStats.average.toFixed(1)}
+                                                {ratingStats?.average?.toFixed(1)}
                                             </UText>
                                             <IconStar />
                                         </XStack>
 
-                                        <UText variant='text-sm' color="$color10">{ratingStats.total} ratings</UText>
+                                        <UText variant='text-sm' color="$color10">{ratingStats?.total} ratings</UText>
                                     </YStack>
 
                                     <YStack mt={25}>
                                         <UText variant='heading-h1-bold'>
-                                            {ratingStats.recommended}%
+                                            {ratingStats?.recommended}%
                                         </UText>
                                         <UText variant='text-sm' color="$color10">Recommended</UText>
                                     </YStack>
@@ -268,7 +267,7 @@ const BookDetail = () => {
                                 {
                                     ratingStats?.userReviews?.length > 0 ?
 
-                                        ratingStats?.userReviews.map((review) => (
+                                        ratingStats?.userReviews.map((review: { id: number; avatar?: string; username: string; submittedAt?: string; rating: number; comment?: string }) => (
                                             <XStack key={review.id} space="$3">
                                                 <UImage
                                                     imageSource={review.avatar}          // avatar URL from backend
@@ -279,7 +278,7 @@ const BookDetail = () => {
                                                 <YStack flex={1}>
                                                     <XStack justifyContent="space-between" alignItems="center">
                                                         <UText variant='heading-h2-bold'>{review.username}</UText>
-                                                        <UText variant='text-xs' color="$color9">{formatDate(review?.submittedAt)}</UText>
+                                                        <UText variant='text-xs' color="$color9">{formatDate(review?.submittedAt ?? '')}</UText>
                                                     </XStack>
                                                     <Rating
                                                         type="custom"

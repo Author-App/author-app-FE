@@ -12,6 +12,7 @@ import IconDuration from "@/assets/icons/iconDuration";
 import IconLocation from "@/assets/icons/iconLocation";
 import UTextButton from "@/src/components/core/buttons/uTextButton";
 import { logOut } from "@/src/redux2/Slice/AuthSlice";
+import { EventItem } from "@/src/types/content/contentTypes";
 
 const EventDetailScreen = () => {
   const { id } = useLocalSearchParams();
@@ -20,7 +21,7 @@ const EventDetailScreen = () => {
   const { width } = useWindowDimensions();
 
   const eventsSection = exploreData.find((item) => item.id === "events");
-  const event = eventsSection?.data.find((item) => item.id === Number(id));
+  const event = eventsSection?.data.find((item) => item.id === Number(id)) as EventItem | undefined;
 
   if (!event) {
     return (

@@ -1,11 +1,17 @@
+import { memo } from "react";
 import { Modal, View, TouchableOpacity, TouchableWithoutFeedback, Dimensions } from "react-native";
 import { CardField } from "@stripe/stripe-react-native";
 import UText from "../../text/uText";
 import UTextButton from "../../buttons/uTextButton";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
+interface PaymentModalProps {
+    visible: boolean;
+    onClose: () => void;
+    onPay: () => void;
+}
 
-const PaymentModal = ({ visible, onClose, onPay }) => {
+const PaymentModal = ({ visible, onClose, onPay }: PaymentModalProps) => {
     const insets = useSafeAreaInsets();
 
     const { height: SCREEN_HEIGHT } = Dimensions.get("window");
@@ -50,7 +56,7 @@ const PaymentModal = ({ visible, onClose, onPay }) => {
 
                             <CardField
                                 postalCodeEnabled={true}
-                                placeholder={{ number: "4242 4242 4242 4242" }}
+                                placeholders={{ number: "4242 4242 4242 4242" }}
                                 cardStyle={{ backgroundColor: "#f2f2f2" }}
                                 style={{ height: 55, marginVertical: 20 }}
                             />
@@ -71,4 +77,4 @@ const PaymentModal = ({ visible, onClose, onPay }) => {
     );
 };
 
-export default PaymentModal;
+export default memo(PaymentModal);

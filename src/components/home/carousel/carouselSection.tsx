@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { YStack } from 'tamagui';
 import UText from '../../core/text/uText';
 
@@ -16,5 +16,5 @@ const CarouselSection: React.FC<CarouselSectionProps> = ({ title, children }) =>
   );
 };
 
-export default CarouselSection;
+export default memo(CarouselSection);
 

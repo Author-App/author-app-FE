@@ -3,17 +3,19 @@ import UIconButton from '@/src/components/core/buttons/uIconButtonVariants';
 import UHeader from '@/src/components/core/layout/uHeader';
 import UText from '@/src/components/core/text/uText';
 import { exploreData } from '@/src/data/exploreData';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Href, useLocalSearchParams, useRouter } from 'expo-router';
 import { ScrollView } from 'react-native';
 import { YStack, XStack, View, Card, Separator , Image} from 'tamagui';
-import { Video } from 'expo-av';
+import { Video, ResizeMode } from 'expo-av';
+import { VideoItem } from '@/src/types/content/contentTypes';
 
 const VideoDetail = () => {
     const { id } = useLocalSearchParams();
     const router = useRouter();
 
     const videosSection = exploreData.find((section) => section.subtype === 'videos');
-    const video = videosSection?.data.find((p) => p.id === Number(id));
+    const allVideos = (videosSection?.data ?? []) as VideoItem[];
+    const video = allVideos.find((p) => p.id === Number(id));
 
     if (!video) {
         return (
@@ -47,7 +49,7 @@ const VideoDetail = () => {
                         source={video.video}
                         style={{ width: '100%', height: 230 }}
                         useNativeControls
-                        resizeMode="cover"
+                        resizeMode={ResizeMode.COVER}
                         shouldPlay={false}
                     />
                 </Card>
@@ -58,10 +60,10 @@ const VideoDetail = () => {
                     </UText>
 
                     <XStack ai="center" gap="$2">
-                        <UText color="$color.textSecondary" fontWeight="600">
+                        <UText color="$neutral5" fontWeight="600">
                             Duration:
                         </UText>
-                        <UText color="$color.textSecondary">{video.duration}</UText>
+                        <UText color="$neutral5">{video.duration}</UText>
                     </XStack>
 
                     <Separator borderColor="$color.border" my="$2" />
@@ -76,14 +78,14 @@ const VideoDetail = () => {
                         More Videos
                     </UText>
 
-                    {videosSection?.data
+                    {allVideos
                         .filter((v) => v.id !== Number(id))
                         .map((v) => (
                             <XStack
                                 key={v.id}
                                 gap="$3"
                                 ai="center"
-                                onPress={() => router.push(`/videoDetail/${v.id}`)}
+                                onPress={() => router.push(`/videoDetails/${v.id}` as unknown as Href)}
                             >
                                 {/* <Card w={100} h={60} br="$4" overflow="hidden">
                   <Card.Image source={v.cover} width="100%" height="100%" />
@@ -98,7 +100,7 @@ const VideoDetail = () => {
                                     <UText numberOfLines={1} fontWeight="600">
                                         {v.title}
                                     </UText>
-                                    <UText color="$color.textSecondary" fontSize={13}>
+                                    <UText color="$neutral5" variant="label-xs">
                                         {v.duration}
                                     </UText>
                                 </YStack>

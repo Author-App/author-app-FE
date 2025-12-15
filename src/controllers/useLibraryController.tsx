@@ -1,26 +1,21 @@
 import { useRouter } from "expo-router";
-import { useMemo, useState } from "react";
-import { forgotPasswordFormValidator } from "@/src/utils/validator";
-import { audiobooksData, booksData } from "../data/libraryData";
+import { useCallback, useMemo, useState } from "react";
 import { Dimensions } from "react-native";
 import { useGetAllBooksQuery } from "../redux2/Apis/Books";
+import type { LibraryBook } from "../types/library/libraryTypes";
 
+type ActiveTabType = 'ebook' | 'audiobook' | '';
 
 const useLibraryController = () => {
-    const [activeTab, setActiveTab] = useState<'ebook' | 'audiobook' | ''>('');
+    const [activeTab, setActiveTab] = useState<ActiveTabType>('');
     const [search, setSearch] = useState('');
     const [selectedValue, setSelectedValue] = useState<string | null>(null);
     const [selectedSortValue, setSelectedSortValue] = useState<string | null>(null);
 
-    // const currentData = activeTab === 'Books' ? booksData : audiobooksData;
-
-    // Convert tab to param
-    // const type = activeTab;
-
     // Call API
     const { data, isLoading, isError } = useGetAllBooksQuery({ type: activeTab });
 
-    const currentData = data?.data?.books ?? [];
+    const currentData: LibraryBook[] = data?.data?.books ?? [];
     const categoryOptions = [
         { label: 'All', value: '' },
         { label: 'Books', value: 'ebook' },
@@ -44,6 +39,13 @@ const useLibraryController = () => {
         return 2; // small screens (phones)
     }, [screenWidth]);
 
+    // Type-safe setter for activeTab from dropdown string value
+    const handleSetActiveTab = useCallback((value: string) => {
+        if (value === 'ebook' || value === 'audiobook' || value === '') {
+            setActiveTab(value);
+        }
+    }, []);
+
     return {
 
         router,
@@ -51,25 +53,14 @@ const useLibraryController = () => {
         categoryOptions,
         sortOptions,
         activeTab,
-        setActiveTab,
+        setActiveTab: handleSetActiveTab,
         selectedValue,
         setSelectedValue,
         selectedSortValue,
         setSelectedSortValue,
         numColumns,
         isLoading,
-        isError
-        // router,
-        // currentData,
-        // categoryOptions,
-        // sortOptions,
-        // activeTab,
-        // setActiveTab,
-        // selectedValue,
-        // setSelectedValue,
-        // selectedSortValue,
-        // setSelectedSortValue,
-        // numColumns,
+        isError,
     };
 
 }

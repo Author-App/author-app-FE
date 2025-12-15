@@ -16,6 +16,15 @@ export interface AudiobookCardProps {
   title: string
   narrator: string
   duration: string
+}
 
+// API response book type (from /books endpoint)
+export interface LibraryBook {
+  id: number | string
+  title: string
+  author: string
+  thumbnail: string
+  isFree: boolean
+  hasAccess: boolean
 }
 

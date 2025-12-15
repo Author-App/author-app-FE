@@ -42,11 +42,13 @@ const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
       extraOptions
     );
 
-    if (refresh?.data?.access) {
+    const refreshData = refresh?.data as { access?: string; refresh?: string } | undefined;
+
+    if (refreshData?.access) {
       api.dispatch(
         updateTokens({
-          access: refresh.data.access,
-          refresh: refresh.data.refresh,
+          access: refreshData.access,
+          refresh: refreshData.refresh ?? refreshToken,
         })
       );
 

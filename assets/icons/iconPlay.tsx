@@ -10,7 +10,6 @@ const IconPlay = ({
   // Get theme colors dynamically from Tamagui tokens
   const primary = getTokenValue('$primary');
   const secondary = getTokenValue('$secondary');
-  const shadow = getTokenValue('$shadow');
 
   return (
     <Svg
@@ -27,7 +26,6 @@ const IconPlay = ({
         fill="url(#grad)"
         stroke={primary}
         strokeWidth="1.5"
-        shadowColor={shadow}
       />
 
       {/* Play triangle */}

@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { GetProps, View, XStack } from 'tamagui';
 
 interface USeparatorProps extends GetProps<typeof View> {
@@ -15,4 +16,4 @@ const USeparator = ({ isDark, ...props }: USeparatorProps) => {
   );
 };
 
-export default USeparator;
+export default memo(USeparator);

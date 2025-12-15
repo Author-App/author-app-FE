@@ -1,5 +1,3 @@
-import IconArrowLeft from '@/assets/icons/iconArrowLeft';
-import IconArrowRight from '@/assets/icons/iconArrowRight';
 import IconBack from '@/assets/icons/iconBack';
 import IconForward from '@/assets/icons/iconForward';
 import IconPlay2 from '@/assets/icons/iconPlay2';
@@ -9,7 +7,7 @@ import UProgressBar from '@/src/components/core/display/uProgressBar';
 import UHeader from '@/src/components/core/layout/uHeader';
 import UText from '@/src/components/core/text/uText';
 import { exploreData } from '@/src/data/exploreData';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Href, useLocalSearchParams, useRouter } from 'expo-router';
 
 import { Image } from 'react-native';
 import { FlatList } from 'react-native';
@@ -18,6 +16,7 @@ import { View, XStack, YStack, Card } from 'tamagui';
 import { useEffect, useState } from 'react';
 import { Audio } from 'expo-av';
 import IconPause from '@/assets/icons/iconPause';
+import { PodcastItem } from '@/src/types/content/contentTypes';
 
 const PodcastDetail = () => {
   const { id } = useLocalSearchParams();
@@ -26,7 +25,7 @@ const PodcastDetail = () => {
   const podcastsSection = exploreData.find(
     (section) => section.subtype === 'podcasts'
   );
-  const podcast = podcastsSection?.data.find((p) => p.id === Number(id));
+  const podcast = podcastsSection?.data.find((p) => p.id === Number(id)) as PodcastItem | undefined;
 
   const [player, setPlayer] = useState<Audio.Sound | null>(null);
   const [status, setStatus] = useState({
@@ -36,7 +35,7 @@ const PodcastDetail = () => {
   });
 
   useEffect(() => {
-    let sound;
+    let sound: Audio.Sound | undefined;
 
     const loadAudio = async () => {
       await Audio.setAudioModeAsync({
@@ -60,7 +59,7 @@ const PodcastDetail = () => {
       });
 
       await sound.loadAsync({
-        uri: podcast?.audioUrl,
+        uri: podcast?.audioUrl ?? '',
       });
 
       setPlayer(sound);
@@ -68,39 +67,8 @@ const PodcastDetail = () => {
 
     loadAudio();
 
-    return () => sound?.unloadAsync();
+    return () => { sound?.unloadAsync(); };
   }, [podcast]);
-
-
-  // useEffect(() => {
-  //   let sound: Audio.Sound;
-
-  //   const loadAudio = async () => {
-  //     sound = new Audio.Sound();
-
-  //     sound.setOnPlaybackStatusUpdate((s) => {
-  //       if (s.isLoaded) {
-  //         setStatus({
-  //           isPlaying: s.isPlaying ?? false,
-  //           position: s.positionMillis ?? 0,
-  //           duration: s.durationMillis || 1,
-  //         });
-  //       }
-  //     });
-
-  //     await sound.loadAsync({
-  //       uri: podcast?.audioUrl || "https://example.com/sample.mp3",
-  //     });
-
-  //     setPlayer(sound);
-  //   };
-
-  //   loadAudio();
-
-  //   return () => {
-  //     sound?.unloadAsync();
-  //   };
-  // }, [podcast]);
 
   const handlePlayPause = async () => {
     if (!player) return;
@@ -134,8 +102,9 @@ const PodcastDetail = () => {
     );
   }
 
-  const relatedPodcasts =
-    podcastsSection?.data.filter((p) => p.id !== Number(id)) || [];
+  const relatedPodcasts = (
+    podcastsSection?.data.filter((p) => p.id !== Number(id)) || []
+  ) as PodcastItem[];
 
   const renderHeader = () => (
     <>
@@ -221,14 +190,14 @@ const PodcastDetail = () => {
     </>
   );
 
-  const renderItem = ({ item }) => (
+  const renderItem = ({ item }: { item: PodcastItem }) => (
     <Card
       key={item.id}
       onPress={() =>
         router.push({
-          pathname: '/(app)/podcastDetail/[id]',
+          pathname: '/(app)/podcastDetail/[id]' as unknown as Href,
           params: { id: item.id },
-        })
+        } as unknown as Href)
       }
       pressStyle={{ opacity: 0.7 }}
       br={10}

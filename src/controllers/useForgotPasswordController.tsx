@@ -30,7 +30,7 @@ const useForgotPasswordController = () => {
             if (res) {
                 console.log("THIS IS RES", res);
                 router.push({
-                    pathname: '/(public)/verificationCode',
+                    pathname: '/(public)/verificationcode',
                     params: {
                         token: res?.data?.token,  // or the correct token field
                     }

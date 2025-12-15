@@ -1,4 +1,4 @@
-import { forwardRef, useMemo } from 'react';
+import { forwardRef, memo, useMemo } from 'react';
 import { GetProps, GetThemeValueForKey, Input as TamaguiInput, Text, YStack } from 'tamagui';
 
 import { UInputVariant } from '@/src/components/core/types/input/inputVariants';
@@ -133,4 +133,4 @@ const UInput = forwardRef<any, UInputProps>(
   }
 );
 
-export default UInput;
+export default memo(UInput);

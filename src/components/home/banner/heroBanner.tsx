@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { memo } from 'react'
 import { YStack, XStack, Image } from 'tamagui'
 import UTextButton from '../../core/buttons/uTextButton'
 import UText from '../../core/text/uText'
@@ -74,5 +74,5 @@ const HeroBanner: React.FC<HeroBannerProps> = ({
   )
 }
 
-export default HeroBanner
+export default memo(HeroBanner)
 

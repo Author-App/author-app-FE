@@ -50,7 +50,7 @@ const useVerificationCodeController = () => {
             if (res) {
                 console.log("THIS IS RES", res);
                 router.push({
-                    pathname: '/(public)/resetPassword',
+                    pathname: '/(public)/resetpassword',
                     params: {
                         token: res?.data?.token,  // or the correct token field
                     }

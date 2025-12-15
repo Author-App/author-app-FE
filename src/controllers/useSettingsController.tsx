@@ -1,9 +1,6 @@
 import { useRouter } from "expo-router";
-import { useState } from "react";
-import { editProfileValidationSchema, loginValidationSchema } from "../utils/validator";
+import { useCallback, useState } from "react";
 import { showSuccessToast } from "../utils/toast";
-import { useDispatch } from "react-redux";
-import { useLoginMutation } from "../redux/Apis/Auth";
 
 
 const initialValues = {
@@ -23,7 +20,7 @@ const useSettingsController = () => {
 
     const router = useRouter();
 
-    const handleSubmit = async (values: any, { resetForm, setSubmitting }: { resetForm: () => void; setSubmitting: (isSubmitting: boolean) => void }) => {
+    const handleSubmit = useCallback(async (values: any, { resetForm, setSubmitting }: { resetForm: () => void; setSubmitting: (isSubmitting: boolean) => void }) => {
         try {
             setLoading(true);
 
@@ -39,9 +36,9 @@ const useSettingsController = () => {
         } finally {
             setLoading(false);
         }
-    }
+    }, [router]);
 
-    const handleLogout = async () => {
+    const handleLogout = useCallback(async () => {
         try {
             // clear storage / tokens
             showSuccessToast("Logged out successfully");
@@ -49,20 +46,20 @@ const useSettingsController = () => {
         } catch (error) {
             console.log("Logout error:", error);
         }
-    };
+    }, [router]);
 
     // ✅ Handle delete account
-    const handleDeleteAccount = async () => {
+    const handleDeleteAccount = useCallback(async () => {
         try {
             showSuccessToast("Account deleted successfully");
             router.replace("/login");
         } catch (error) {
             console.log("Delete account error:", error);
         }
-    };
+    }, [router]);
 
     // ✅ Navigation for account options
-    const navigateTo = (screen: string) => {
+    const navigateTo = useCallback((screen: string) => {
         switch (screen) {
             case "Notifications":
                 router.push("/notifications");
@@ -81,10 +78,9 @@ const useSettingsController = () => {
             default:
                 console.warn("Unknown route:", screen);
         }
-    };
+    }, [router]);
 
     return {
-        validator: editProfileValidationSchema,
         values: {
             initialValues,
         },

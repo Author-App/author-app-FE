@@ -1,6 +1,6 @@
+import type { Href } from "expo-router";
 import { router, useRouter } from "expo-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { forgotPasswordFormValidator } from "@/src/utils/validator";
+import { useCallback, useMemo } from "react";
 import SkeletonHero from "../components/home/skeletons/skeletonHero";
 import SkeletonCarousel from "../components/home/skeletons/skeletonCarousel";
 import { Button, Text, YStack } from "tamagui";
@@ -33,14 +33,14 @@ const useHomeController = () => {
     //     { id: "skeleton-3", type: "carousel" },
     // ];
 
-    const placeholderSections = [
+    const placeholderSections: HomeItem[] = [
         { id: "skeleton-hero", type: "hero" },
-        { id: "skeleton-articles", type: "carousel", subtype: "articles" },
-        { id: "skeleton-books", type: "carousel", subtype: "books" },
+        { id: "skeleton-articles", type: "carousel", title: "", subtype: "articles", data: [] },
+        { id: "skeleton-books", type: "carousel", title: "", subtype: "books", data: [] },
     ];
 
 
-    const homeSections = useMemo(() => {
+    const homeSections: HomeItem[] = useMemo(() => {
         if (isLoading) return placeholderSections;
         if (!data?.data) return [];
 
@@ -143,15 +143,13 @@ const useHomeController = () => {
                             return (
                                 <CarouselArticles
                                     data={item.data}
-                                    onPressItem={(item) =>
+                                    onPressItem={(article) =>
                                         router.push({
                                             pathname: "/(app)/article/[id]",
                                             params: {
-                                                id: item.id,
-                                                // title: item.title,
-                                                // cover: item.cover,
+                                                id: article.id,
                                             },
-                                        })
+                                        } as unknown as Href)
                                     }
                                 // onPressItem={(id) =>
                                 //     router.push(`/(app)/article/${id}`)
@@ -163,15 +161,13 @@ const useHomeController = () => {
                             return (
                                 <CarouselBooks
                                     data={item.data}
-                                    onPressItem={(item) =>
+                                    onPressItem={(book) =>
                                         router.push({
                                             pathname: "/(app)/bookDetail/[id]",
                                             params: {
-                                                id: item.id,
-                                                // title: item.title,
-                                                // cover: item.cover,
+                                                id: book.id,
                                             },
-                                        })
+                                        } as unknown as Href)
                                     }
                                 // onPressItem={() =>
                                 //     router.push({

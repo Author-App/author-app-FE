@@ -52,7 +52,7 @@ const VerificationCode = () => {
                                 // textShadowOffset: { width: 0, height: 0 },
                                 // textShadowRadius: 0,
                                 // includeFontPadding: false,
-                            }}
+                            } as object}
 
 
                         />

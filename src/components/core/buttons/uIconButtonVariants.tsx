@@ -1,4 +1,4 @@
-import { forwardRef, useMemo } from 'react';
+import { forwardRef, memo, useMemo } from 'react';
 import { Button as TamaguiButton, Token } from 'tamagui';
 
 import IconPlus from '@/assets/icons/iconPlus';
@@ -235,7 +235,7 @@ const UIconButton = forwardRef<any, UIconButtonProps>((props, ref) => {
       ) : (
         <UIcon
           icon={icon}
-          color={iconProps.color || color || iconColor || 'white'}
+          color={iconProps.color || color || iconColor || '$white'}
           dimen={iconProps.dimen || dimen || iconSize}
         />
       )}
@@ -248,4 +248,4 @@ const UIconButton = forwardRef<any, UIconButtonProps>((props, ref) => {
   );
 });
 
-export default UIconButton;
+export default memo(UIconButton);
