@@ -17,6 +17,7 @@ import useSettingsController from "@/src/controllers/useSettingsController";
 import { logOut } from "@/src/redux2/Slice/AuthSlice";
 import { persistor } from "@/src/redux2/Store";
 import { getInitials } from "@/src/utils/helper";
+import type { Href } from "expo-router";
 import { useRouter } from "expo-router";
 import { useDispatch } from "react-redux";
 import { YStack, XStack, Switch, Card, ScrollView } from "tamagui";
@@ -47,12 +48,12 @@ const SettingsScreen = () => {
     {
       label: "Edit Profile",
       icon: <IconEdit />,
-      onPress: () => router.push("/(app)/editProfile"),
+      onPress: () => router.push("/(app)/editProfile" as Href),
     },
     {
       label: "Change Password",
       icon: <IconChangePassword dimen={20} />,
-      onPress: () => router.push("/(app)/changePassword"),
+      onPress: () => router.push("/(app)/changePassword" as Href),
     },
     {
       label: "Manage Subscription",
@@ -60,8 +61,8 @@ const SettingsScreen = () => {
       onPress: () =>
         router.push({
           pathname: "/(app)/subscription",
-          params: { premium: true },
-        }),
+          params: { premium: "true" },
+        } as unknown as Href),
     },
     {
       label: "Report A Bug",

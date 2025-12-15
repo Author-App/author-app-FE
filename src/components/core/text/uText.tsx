@@ -1,4 +1,4 @@
-import { forwardRef, useMemo } from 'react';
+import { forwardRef, memo, useMemo } from 'react';
 import { TamaguiTextElement, Text, TextProps } from 'tamagui';
 
 import { TextVariant } from '@/src/components/core/types/text/textVariant';
@@ -248,4 +248,4 @@ const UText = forwardRef<TamaguiTextElement, UTextProps>((props, ref) => {
   );
 });
 
-export default UText;
+export default memo(UText);

@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Spacer, SpacerProps } from 'tamagui';
 
 const USpacer = (props: SpacerProps) => {
@@ -10,4 +11,4 @@ const USpacer = (props: SpacerProps) => {
   );
 };
 
-export default USpacer;
+export default memo(USpacer);

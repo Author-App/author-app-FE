@@ -192,9 +192,9 @@ const PodcastDetail = () => {
       mx={20}
       onPress={() =>
         router.push({
-          pathname: '/(app)/podcastDetail/[id]',
+          pathname: '/(app)/podcastDetail/[id]' as unknown as Href,
           params: { id: item.id },
-        })
+        } as unknown as Href)
       }
     >
       <YStack p={12}>

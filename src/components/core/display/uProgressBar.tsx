@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { memo, useEffect } from 'react';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -109,4 +109,4 @@ const UProgressBar = ({
   );
 };
 
-export default UProgressBar;
+export default memo(UProgressBar);

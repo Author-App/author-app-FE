@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { memo, useEffect, useMemo, useRef } from 'react';
 import { TextInput } from 'react-native';
 import {
   useAnimatedStyle,
@@ -250,4 +250,4 @@ const USearchbar = ({
   );
 };
 
-export default USearchbar;
+export default memo(USearchbar);

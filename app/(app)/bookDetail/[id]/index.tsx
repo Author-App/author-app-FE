@@ -19,10 +19,9 @@ import PaymentModal from '@/src/components/core/modals/paymentModal';
 
 const BookDetail = () => {
     const { states, functions } = useBookDetailController();
-    const { book, moreBooks, ratingStats, loading, error, modalVisible } = states;
+    const { book, moreBooks, ratingStats, loading, modalVisible } = states;
 
     if (loading) return <UText>Loading...</UText>;
-    if (error) return <UText>Error fetching book</UText>;
     if (!book) return <UText>No data</UText>;
 
     // console.log("THIS IS MORE BOOKS", moreBooks);
@@ -109,7 +108,7 @@ const BookDetail = () => {
                             {/* {console.log("THIS IS BOOK", book?.tags)} */}
 
                             {
-                                book?.tags?.map((tag, index) =>
+                                book?.tags?.map((tag: { name: string; color?: string }, index: number) =>
 
                                     <YStack
                                         backgroundColor={'#1e3a8a'}

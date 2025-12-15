@@ -3,12 +3,13 @@ import UIconButton from '@/src/components/core/buttons/uIconButtonVariants';
 import UHeader from '@/src/components/core/layout/uHeader';
 import UText from '@/src/components/core/text/uText';
 import { exploreData } from '@/src/data/exploreData';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Href, useLocalSearchParams, useRouter } from 'expo-router';
 import { ScrollView } from 'react-native';
-import { YStack, XStack, View, Card, Separator, Image } from 'tamagui';
-import { Video } from 'expo-av';
 import { useGetMediaDetailQuery, useGetMediaQuery } from '@/src/redux2/Apis/Explore';
 import { formatDuration } from '@/src/utils/helper';
+import { YStack, XStack, View, Card, Separator , Image} from 'tamagui';
+import { Video, ResizeMode } from 'expo-av';
+import { VideoItem } from '@/src/types/content/contentTypes';
 
 const VideoDetail = () => {
 
@@ -80,7 +81,7 @@ const VideoDetail = () => {
                         source={{ uri: video.fileUrl }}
                         style={{ width: '100%', height: 230 }}
                         useNativeControls
-                        resizeMode="cover"
+                        resizeMode={ResizeMode.COVER}
                         shouldPlay={false}
                     />
                 </Card>
@@ -91,7 +92,7 @@ const VideoDetail = () => {
                     </UText>
 
                     <XStack ai="center" gap="$2">
-                        <UText color="$color.textSecondary" fontWeight="600">
+                        <UText color="$neutral5" fontWeight="600">
                             Duration:
                         </UText>
                         <UText color="$color.textSecondary">{Math.floor(video.durationSec / 60)} mins</UText>

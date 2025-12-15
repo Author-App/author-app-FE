@@ -1,4 +1,4 @@
-import { PropsWithChildren, useCallback, useMemo, useRef } from 'react';
+import { memo, PropsWithChildren, useCallback, useMemo, useRef } from 'react';
 import { LayoutChangeEvent } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -178,4 +178,4 @@ const UButtonTabs = <T extends string = string>({
 
 const AnimatedView = Animated.createAnimatedComponent(View);
 
-export default UButtonTabs;
+export default memo(UButtonTabs) as typeof UButtonTabs;

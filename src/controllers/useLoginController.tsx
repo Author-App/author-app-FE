@@ -45,7 +45,8 @@ const useLoginController = () => {
                 resetForm();
             }
             if (res?.error) {
-                const message = res?.error?.data?.message || "Something went wrong";
+                const errorData = res?.error as { data?: { message?: string } };
+                const message = errorData?.data?.message || "Something went wrong";
                 showErrorToast(message);
                 return;
             }

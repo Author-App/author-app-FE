@@ -68,7 +68,7 @@ const Login = () => {
                                 variant="text-sm"
                                 color="$white"
                                 fontWeight={600}
-                                onPress={() => router.push('/(public)/forgotPassword')}>
+                                onPress={() => router.push('/(public)/forgotpassword')}>
                                 Forgot Password?
                             </UText>
                         </XStack>

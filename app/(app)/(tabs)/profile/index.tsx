@@ -9,6 +9,7 @@ import UHeaderWithBackground from "@/src/components/core/layout/uHeaderWithBackg
 import UText from "@/src/components/core/text/uText";
 import { logOut } from "@/src/redux2/Slice/AuthSlice";
 // import { logOut } from "@/src/redux/Slice/AuthSlice";
+import type { Href } from "expo-router";
 import { router } from "expo-router";
 import { Image, View } from "react-native";
 import { ScrollView } from "react-native";
@@ -69,7 +70,7 @@ const ProfileScreen = () => {
                 variant="quaternary-sm"
                 icon={IconSettings}
                 onPress={() => {
-                  router.push('/(app)/settings')
+                  router.push('/(app)/settings' as Href)
                 }}
                 style={{ marginLeft: 'auto' }}
               />

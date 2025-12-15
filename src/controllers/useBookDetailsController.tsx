@@ -51,7 +51,8 @@ const useBookDetailController = () => {
         } catch (error) {
             console.log("ORDER ERROR:", error);
             // alert("Error creating order.");
-            alert(error?.data?.message)
+            const errorData = error as { data?: { message?: string } };
+            alert(errorData?.data?.message || "Error creating order")
         }
     };
 
@@ -59,6 +60,10 @@ const useBookDetailController = () => {
     // STEP 2: Confirm payment after card input
     // ---------------------------------------------------------
     const confirmBookPayment = async () => {
+        if (!clientSecret) {
+            alert("No payment secret available");
+            return;
+        }
         try {
             const { paymentIntent, error } = await confirmPayment(clientSecret, {
                 paymentMethodType: "Card",

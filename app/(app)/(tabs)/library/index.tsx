@@ -5,11 +5,11 @@ import UDropdown from '@/src/components/core/dropdowns/uDropdown';
 import UHeaderWithBackground from '@/src/components/core/layout/uHeaderWithBackground';
 import UText from '@/src/components/core/text/uText';
 import useLibraryController from '@/src/controllers/useLibraryController';
-import { audiobooksData, booksData, libraryData } from '@/src/data/libraryData';
+import type { LibraryBook } from '@/src/types/library/libraryTypes';
 import { FlashList } from '@shopify/flash-list';
-import { useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
-import { Dimensions, Image, StyleSheet, View } from 'react-native';
+import type { Href } from 'expo-router';
+import { useCallback } from 'react';
+import { Image, StyleSheet, View } from 'react-native';
 import { Text, XStack, YStack } from 'tamagui';
 
 const LibraryScreen = () => {
@@ -18,13 +18,89 @@ const LibraryScreen = () => {
     router, currentData, categoryOptions, sortOptions, activeTab, setActiveTab,
     selectedValue, setSelectedValue, selectedSortValue, setSelectedSortValue, numColumns } = useLibraryController();
 
+  const renderBookItem = useCallback(({ item }: { item: LibraryBook }) => {
+    return (
+      <YStack
+        flex={1 / numColumns}
+        marginTop={15}
+        marginHorizontal={8}
+        paddingTop={4}
+        paddingBottom={10}
+        marginBottom={2}
+        onPress={() =>
+          router.push({
+            pathname: '/(app)/bookDetail/[id]',
+            params: { id: item.id },
+          } as unknown as Href)
+        }
+        pressStyle={{ opacity: 0.85 }}
+        backgroundColor={'$white'}
+        borderRadius={15}
+        ai={'center'}
+        borderWidth={1}
+        shadowColor={'#cfcfcfff'}
+        shadowOffset={{ width: 0, height: 2 }}
+        shadowOpacity={0.08}
+        shadowRadius={6}
+        elevation={4}
+        borderColor={'#efefefff'}>
+
+        <View style={{ width: '98%', height: 120, overflow: 'hidden', borderRadius: 15 }}>
+          <Image
+            source={{ uri: item.thumbnail }}
+            style={{
+              width: '98%',
+              height: 'auto',
+              aspectRatio: 0.5,
+              alignSelf: 'center',
+              resizeMode: 'cover',
+              top: 0,
+              position: 'absolute',
+            }}
+          />
+
+          {(!item.isFree && !item.hasAccess) && (
+            <View
+              style={{
+                ...StyleSheet.absoluteFillObject,
+                backgroundColor: 'rgba(0, 0, 0, 0.35)',
+                justifyContent: 'center',
+                alignItems: 'center',
+                flexDirection: 'row'
+              }}
+            >
+              <IconLock />
+              <UText variant='heading-h2' color={'$white'}>Unlock</UText>
+
+            </View>
+          )}
+        </View>
+
+
+
+        <UText numberOfLines={1} variant="text-sm" textAlign='center' width={'90%'} mt={4}>
+          {item.title}
+        </UText>
+
+        <XStack>
+          <UText numberOfLines={1} variant="text-xs" textAlign='center' width={'90%'} mt={4} color={'$neutral6'}>
+            {item.author}
+          </UText>
+          <Image source={assets.icons.bookmarkFilled} style={{ width: 12, height: 12, alignSelf: 'flex-end', marginRight: 5 }} />
+        </XStack>
+
+
+      </YStack>
+    );
+  }, [numColumns, router]);
+
 
   return (
 
     <YStack flex={1}
       backgroundColor={'$white'}>
 
-      <FlashList
+      <FlashList<LibraryBook>
         data={currentData}
         keyExtractor={(item) => String(item.id)}
         showsVerticalScrollIndicator={false}
@@ -37,83 +113,7 @@ const LibraryScreen = () => {
           paddingBottom: 10
         }}
 
-        renderItem={({ item }) => {
-          return (
-            <YStack
-              flex={1 / numColumns}
-              marginTop={15}
-              marginHorizontal={8}
-              paddingTop={4}
-              paddingBottom={10}
-              marginBottom={2}
-              onPress={() =>
-                router.push({
-                  pathname: '/(app)/bookDetail/[id]',
-                  params: { id: item.id },
-                })
-              }
-              pressStyle={{ opacity: 0.85 }}
-              backgroundColor={'$white'}
-              borderRadius={15}
-              ai={'center'}
-              borderWidth={1}
-              shadowColor={'#cfcfcfff'}
-              shadowOffset={{ width: 0, height: 2 }}
-              shadowOpacity={0.08}
-              shadowRadius={6}
-              elevation={4}
-              borderColor={'#efefefff'}>
-
-              <View style={{ width: '98%', height: 120, overflow: 'hidden', borderRadius: 15 }}>
-                <Image
-                  source={{ uri: item.thumbnail }}
-                  style={{
-                    width: '98%',
-                    height: 'auto',
-                    aspectRatio: 0.5,
-                    alignSelf: 'center',
-                    resizeMode: 'cover',
-                    top: 0,
-                    position: 'absolute',
-                  }}
-                />
-
-                {(!item.isFree && !item.hasAccess )&& (
-                  <View
-                    style={{
-                      ...StyleSheet.absoluteFillObject,
-                      backgroundColor: 'rgba(0, 0, 0, 0.35)',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      flexDirection: 'row'
-                    }}
-                  >
-                    <IconLock />
-                    <UText variant='heading-h2' color={'$white'}>Unlock</UText>
-
-                  </View>
-                )}
-              </View>
-
-
-
-              <UText numberOfLines={1} variant="text-sm" textAlign='center' width={'90%'} mt={4}>
-                {item.title}
-              </UText>
-
-              <XStack>
-                <UText numberOfLines={1} variant="text-xs" textAlign='center' width={'90%'} mt={4} color={'$neutral6'}>
-                  {item.author}
-                </UText>
-                <Image source={assets.icons.bookmarkFilled} style={{ width: 12, height: 12, alignSelf: 'flex-end', marginRight: 5 }} />
-              </XStack>
-
-
-            </YStack>
-          )
-        }
-
-        }
+        renderItem={renderBookItem}
         ListHeaderComponent={
           <>
             <YStack

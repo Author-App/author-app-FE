@@ -1,4 +1,4 @@
-import { forwardRef, useMemo } from 'react';
+import { forwardRef, memo, useMemo } from 'react';
 import { Button as TamaguiButton, TextProps } from 'tamagui';
 
 import UText from '@/src/components/core/text/uText';
@@ -287,4 +287,4 @@ const UTextButton = forwardRef<any, UTextButtonProps>((props, ref) => {
     </TamaguiButton>
   );
 });
-export default UTextButton;
+export default memo(UTextButton);

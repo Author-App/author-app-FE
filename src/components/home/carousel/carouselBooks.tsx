@@ -1,16 +1,20 @@
-import React from 'react';
+import React, { memo, useCallback } from 'react';
 import { Image, FlatList, ImageSourcePropType } from 'react-native';
 import { YStack } from 'tamagui';
 import UText from '../../core/text/uText';
 import { FlashList } from '@shopify/flash-list';
 
+interface BookItem {
+  id: number;
+  cover?: ImageSourcePropType;
+  thumbnail?: string;
+  image?: string;
+  title: string;
+}
+
 interface CarouselBooksProps {
-  data: {
-    id: number;
-    cover: ImageSourcePropType;
-    title: string;
-  }[];
-  onPressItem: (item: Object) => void;
+  data: BookItem[];
+  onPressItem: (item: BookItem) => void;
 }
 
 const CarouselBooks: React.FC<CarouselBooksProps> = ({ data, onPressItem }) => {
@@ -44,7 +48,7 @@ const CarouselBooks: React.FC<CarouselBooksProps> = ({ data, onPressItem }) => {
         >
           {/* {console.log("THIS IS ITEM THUMBNAIL")} */}
 
-          <Image source={{uri : item.image}} style={{ width: 100, height: 90, borderRadius: 15 }} />
+          <Image source={{ uri: item.thumbnail || item.image }} style={{ width: 100, height: 90, borderRadius: 15 }} />
 
 
           <UText numberOfLines={2} variant="text-sm" textAlign='center' width={'90%'} mt={4}>
@@ -56,4 +60,4 @@ const CarouselBooks: React.FC<CarouselBooksProps> = ({ data, onPressItem }) => {
   );
 };
 
-export default CarouselBooks;
+export default memo(CarouselBooks);

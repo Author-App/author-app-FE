@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import DropDownPicker from 'react-native-dropdown-picker';
+import DropDownPicker, { ItemType } from 'react-native-dropdown-picker';
 import { Text, View, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import { YStack } from 'tamagui';
 import { UInputVariant } from '@/src/components/core/types/input/inputVariants';
@@ -22,7 +22,7 @@ interface UDropdownProps {
   disabled?: boolean;
   zIndex?: number;
   zIndexInverse?: number;
-  onSelectItem?: (item: DropdownItem) => void;
+  onSelectItem?: (item: ItemType<string | number>) => void;
   style?: any;
 }
 
@@ -90,11 +90,12 @@ const UDropdown: React.FC<UDropdownProps> = ({
       // { width: '100%', zIndex, elevation: zIndex, overflow: 'visible' },
       { width: '100%' }, 
       style]}>
-      <DropDownPicker
+      <DropDownPicker<string | number>
         open={open}
         value={value}
         items={items}
         setOpen={setOpen}
+        setValue={() => {}} // setValue is required but we use onSelectItem instead
         // listMode="SCROLLVIEW" 
         listMode="SCROLLVIEW"  
         dropDownDirection="AUTO"

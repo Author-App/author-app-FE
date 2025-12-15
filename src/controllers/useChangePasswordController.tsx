@@ -1,9 +1,7 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { changePasswordFormValidator, editProfileValidationSchema, loginValidationSchema } from "../utils/validator";
+import { changePasswordFormValidator } from "../utils/validator";
 import { showSuccessToast } from "../utils/toast";
-import { useDispatch } from "react-redux";
-import { useLoginMutation } from "../redux/Apis/Auth";
 
 
 const initialValues = {

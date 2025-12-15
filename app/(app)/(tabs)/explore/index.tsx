@@ -14,6 +14,7 @@ import { useGetBlogsQuery, useGetCommunitiesQuery, useGetEventsQuery, useGetMedi
 import { formatDate, formatDuration, formatTime12h } from '@/src/utils/helper';
 
 
+import type { Href } from 'expo-router';
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { FlatList, Image, View } from 'react-native';
@@ -126,7 +127,7 @@ const ExploreScreen = () => {
               router.push({
                 pathname: "/(app)/article/[id]",
                 params: { id: item.id },
-              })
+              } as unknown as Href)
             }
             // onPress={() =>
             //   router.push({
@@ -195,7 +196,7 @@ const ExploreScreen = () => {
               router.push({
                 pathname: '/(app)/podcastDetail/[id]',
                 params: { id: item.id },
-              })
+              } as unknown as Href)
             }
             pressStyle={{ opacity: 0.85 }}
             key={item.id}
@@ -242,7 +243,7 @@ const ExploreScreen = () => {
               router.push({
                 pathname: '/(app)/videoDetails/[id]',
                 params: { id: item.id },
-              })
+              } as unknown as Href)
             }
             pressStyle={{ opacity: 0.85 }}
             backgroundColor={'#ffffffff'}
@@ -324,7 +325,7 @@ const ExploreScreen = () => {
               router.push({
                 pathname: '/(app)/eventDetails/[id]',
                 params: { id: item.id },
-              })
+              } as unknown as Href)
             }
             pressStyle={{ opacity: 0.85 }}
             marginHorizontal={20}
