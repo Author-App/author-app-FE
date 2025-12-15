@@ -124,10 +124,16 @@ const ExploreScreen = () => {
           <XStack
             onPress={() =>
               router.push({
-                pathname: '/(app)/blogDetails/[id]',
+                pathname: "/(app)/article/[id]",
                 params: { id: item.id },
               })
             }
+            // onPress={() =>
+            //   router.push({
+            //     pathname: '/(app)/blogDetails/[id]',
+            //     params: { id: item.id },
+            //   })
+            // }
             pressStyle={{ opacity: 0.85 }}
             key={item.id}
             width={'100%'}
@@ -389,86 +395,86 @@ const ExploreScreen = () => {
       //     </XStack>
       //   );
 
-            case "community":
-              return (
-                <YStack
-                  key={item.id}
-                  onPress={() =>
-                    router.push({
-                      pathname: '/(app)/communityDetail/[id]',
-                      params: { id: item.id },
-                    })
-                  }
-                  pressStyle={{ opacity: 0.9, scale: 0.98 }}
-                  marginHorizontal={20}
-                  marginBottom={15}
-                  borderRadius={16}
-                  overflow="hidden"
-                  backgroundColor={'#ffffff'}
-                  borderWidth={1}
-                  borderColor={'rgba(0,0,0,0.05)'}
-                  shadowColor={'#000'}
-                  shadowOffset={{ width: 0, height: 2 }}
-                  shadowOpacity={0.08}
-                  shadowRadius={6}
-                  elevation={4}
-                  px={18}
-                  py={16}
-                >
-                  <XStack ai="center" jc="space-between">
-                    <UText
-                      variant="heading-h1"
-                      numberOfLines={2}
-                      fontWeight="700"
+      case "community":
+        return (
+          <YStack
+            key={item.id}
+            onPress={() =>
+              router.push({
+                pathname: '/(app)/communityDetail/[id]',
+                params: { id: item.id },
+              })
+            }
+            pressStyle={{ opacity: 0.9, scale: 0.98 }}
+            marginHorizontal={20}
+            marginBottom={15}
+            borderRadius={16}
+            overflow="hidden"
+            backgroundColor={'#ffffff'}
+            borderWidth={1}
+            borderColor={'rgba(0,0,0,0.05)'}
+            shadowColor={'#000'}
+            shadowOffset={{ width: 0, height: 2 }}
+            shadowOpacity={0.08}
+            shadowRadius={6}
+            elevation={4}
+            px={18}
+            py={16}
+          >
+            <XStack ai="center" jc="space-between">
+              <UText
+                variant="heading-h1"
+                numberOfLines={2}
+                fontWeight="700"
 
-                      width="75%"
+                width="75%"
 
-                    >
-                      {item?.title}
-                    </UText>
-                    <YStack
-                      backgroundColor="rgba(227,233,255,0.8)"
-                      borderRadius={8}
-                      px={8}
-                      py={4}
-                    >
-                      <UText variant="text-xs" color="$primary" fontWeight="600">
-                        {item?.threadCount} threads
-                      </UText>
-                    </YStack>
-                  </XStack>
-                  <View
-                    style={{
-                      height: 1,
-                      backgroundColor: 'rgba(0,0,0,0.05)',
-                      marginVertical: 10,
-                      width: '100%',
-                    }}
-                  />
+              >
+                {item?.title}
+              </UText>
+              <YStack
+                backgroundColor="rgba(227,233,255,0.8)"
+                borderRadius={8}
+                px={8}
+                py={4}
+              >
+                <UText variant="text-xs" color="$primary" fontWeight="600">
+                  {item?.threadCount} threads
+                </UText>
+              </YStack>
+            </XStack>
+            <View
+              style={{
+                height: 1,
+                backgroundColor: 'rgba(0,0,0,0.05)',
+                marginVertical: 10,
+                width: '100%',
+              }}
+            />
 
 
-                  <UText
-                    numberOfLines={3}
-                    variant="text-sm"
-                    color="$neutral7"
-                    lineHeight={20}
-                  >
-                    {item?.description}
-                  </UText>
+            <UText
+              numberOfLines={3}
+              variant="text-sm"
+              color="$neutral7"
+              lineHeight={20}
+            >
+              {item?.description}
+            </UText>
 
-                  <XStack jc="flex-end" mt={10} ai={'center'}>
-                    <UText
-                      variant="text-sm"
-                      color="$primary"
-                      fontWeight="600"
-                      numberOfLines={1}
-                    >
-                      Join Discussion
-                    </UText>
-                    <IconArrowRight dimen={20} />
-                  </XStack>
-                </YStack>
-              );
+            <XStack jc="flex-end" mt={10} ai={'center'}>
+              <UText
+                variant="text-sm"
+                color="$primary"
+                fontWeight="600"
+                numberOfLines={1}
+              >
+                Join Discussion
+              </UText>
+              <IconArrowRight dimen={20} />
+            </XStack>
+          </YStack>
+        );
 
       // case 'community':
       //   return (

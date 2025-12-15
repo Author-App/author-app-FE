@@ -14,14 +14,15 @@ export const exploreApi = createApi({
                 params: { mediaType }, // 'video' | 'podcast'
             }),
         }),
-        // getPodcasts: builder.query({
-        //     query: () => '/podcasts',
-        // }),
-        // getVideos: builder.query({
-        //     query: () => '/videos',
-        // }),
+        getMediaDetail: builder.query({
+            query: (id) => `/media/${id}`,
+        }),
+
         getEvents: builder.query({
             query: () => '/events',
+        }),
+        getEventsDetail: builder.query({
+            query: (id) => `/events/${id}`,
         }),
         getCommunities: builder.query({
             query: () => '/communities',
@@ -32,6 +33,8 @@ export const exploreApi = createApi({
 export const {
     useGetBlogsQuery,
     useGetMediaQuery,
+    useGetMediaDetailQuery,
     useGetEventsQuery,
+    useGetEventsDetailQuery,
     useGetCommunitiesQuery,
 } = exploreApi;

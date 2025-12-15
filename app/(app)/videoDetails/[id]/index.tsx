@@ -5,17 +5,50 @@ import UText from '@/src/components/core/text/uText';
 import { exploreData } from '@/src/data/exploreData';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ScrollView } from 'react-native';
-import { YStack, XStack, View, Card, Separator , Image} from 'tamagui';
+import { YStack, XStack, View, Card, Separator, Image } from 'tamagui';
 import { Video } from 'expo-av';
+import { useGetMediaDetailQuery, useGetMediaQuery } from '@/src/redux2/Apis/Explore';
+import { formatDuration } from '@/src/utils/helper';
 
 const VideoDetail = () => {
-    const { id } = useLocalSearchParams();
+
+    const { id } = useLocalSearchParams<{ id: string }>();
     const router = useRouter();
 
-    const videosSection = exploreData.find((section) => section.subtype === 'videos');
-    const video = videosSection?.data.find((p) => p.id === Number(id));
+    /** API CALLS */
+    const { data, isLoading, isError } = useGetMediaDetailQuery(id!, {
+        skip: !id,
+    });
 
-    if (!video) {
+    const { data: mediaList } = useGetMediaQuery({
+        mediaType: 'video',
+    });
+
+    const video = data?.data;
+    // const relatedPodcasts =
+    //   mediaList?.data?.media?.filter((p) => p.id !== String(id)) || [];
+
+    const relatedVideos =
+        mediaList?.data?.media?.filter((p) => p.id !== id) || [];
+
+    console.log("THIS IS Media Id", mediaList?.data?.media[0]?.id, typeof mediaList?.data?.media[0]?.id);
+
+    console.log("THIS IS ID", id, typeof id);
+    // const { id } = useLocalSearchParams();
+    // const router = useRouter();
+
+    // const videosSection = exploreData.find((section) => section.subtype === 'videos');
+    // const video = videosSection?.data.find((p) => p.id === Number(id));
+
+    if (isLoading) {
+        return (
+            <YStack f={1} ai="center" jc="center">
+                <UText>Loading video</UText>
+            </YStack>
+        );
+    }
+
+    if (isError || !video) {
         return (
             <YStack f={1} ai="center" jc="center">
                 <UText variant="heading-h1">Video Not Found</UText>
@@ -44,7 +77,7 @@ const VideoDetail = () => {
                 {/* Video Player */}
                 <Card elevation="$3" borderRadius={0} overflow="hidden">
                     <Video
-                        source={video.video}
+                        source={{ uri: video.fileUrl }}
                         style={{ width: '100%', height: 230 }}
                         useNativeControls
                         resizeMode="cover"
@@ -54,14 +87,14 @@ const VideoDetail = () => {
 
                 <YStack p="$4" gap="$3">
                     <UText variant="heading-h1" fontWeight="700" color="$color.text">
-                        {video.title}
+                        {video.name}
                     </UText>
 
                     <XStack ai="center" gap="$2">
                         <UText color="$color.textSecondary" fontWeight="600">
                             Duration:
                         </UText>
-                        <UText color="$color.textSecondary">{video.duration}</UText>
+                        <UText color="$color.textSecondary">{Math.floor(video.durationSec / 60)} mins</UText>
                     </XStack>
 
                     <Separator borderColor="$color.border" my="$2" />
@@ -76,30 +109,36 @@ const VideoDetail = () => {
                         More Videos
                     </UText>
 
-                    {videosSection?.data
+                    {relatedVideos
                         .filter((v) => v.id !== Number(id))
                         .map((v) => (
                             <XStack
                                 key={v.id}
                                 gap="$3"
                                 ai="center"
-                                onPress={() => router.push(`/videoDetail/${v.id}`)}
+                                onPress={() =>
+                                    router.push({
+                                        pathname: '/(app)/videoDetails/[id]',
+                                        params: { id: v.id },
+                                    })
+                                }
+                            // onPress={() => router.push(`/videoDetail/${v.id}`)}
                             >
                                 {/* <Card w={100} h={60} br="$4" overflow="hidden">
                   <Card.Image source={v.cover} width="100%" height="100%" />
                 </Card> */}
 
                                 <Card w={100} h={60} br="$4" overflow="hidden">
-                                    <Image source={v.cover} width="100%" height="100%" />
+                                    <Image source={{ uri: v.thumbnail }} width="100%" height="100%" />
                                 </Card>
 
 
                                 <YStack flex={1}>
                                     <UText numberOfLines={1} fontWeight="600">
-                                        {v.title}
+                                        {v.name}
                                     </UText>
                                     <UText color="$color.textSecondary" fontSize={13}>
-                                        {v.duration}
+                                        {formatDuration(v.durationSec)}
                                     </UText>
                                 </YStack>
                             </XStack>

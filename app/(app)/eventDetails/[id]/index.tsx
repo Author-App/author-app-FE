@@ -12,23 +12,65 @@ import IconDuration from "@/assets/icons/iconDuration";
 import IconLocation from "@/assets/icons/iconLocation";
 import UTextButton from "@/src/components/core/buttons/uTextButton";
 import { logOut } from "@/src/redux2/Slice/AuthSlice";
+import { useGetArticleDetailQuery } from "@/src/redux2/Apis/Articles";
+import { formatDate, formatTime12h } from "@/src/utils/helper";
+import { useGetEventsDetailQuery } from "@/src/redux2/Apis/Explore";
 
 const EventDetailScreen = () => {
-  const { id } = useLocalSearchParams();
-  const router = useRouter();
+
+    const { id } = useLocalSearchParams<{ id: string }>();
+    const { width } = useWindowDimensions();
+
+      const router = useRouter();
   const dispatch = useDispatch();
-  const { width } = useWindowDimensions();
 
-  const eventsSection = exploreData.find((item) => item.id === "events");
-  const event = eventsSection?.data.find((item) => item.id === Number(id));
+  console.log("THIS IS ID", id);
+  
+  
+    const {
+      data,
+      isLoading,
+      isError,
+      refetch,
+    } = useGetEventsDetailQuery(id!, {
+      skip: !id,
+    });
+  
+    console.log("EVENT", data);
+  
+    const event = data?.data;
+  
+    if (isLoading) {
+      return (
+        <YStack f={1} ai="center" jc="center">
+          <UText>Loading event..</UText>
+        </YStack>
+      );
+    }
+  
+    if (isError || !event) {
+      return (
+        <YStack f={1} ai="center" jc="center">
+            <UText variant="heading-h1">Event Not Found</UText>
+        </YStack>
+      );
+    }
 
-  if (!event) {
-    return (
-      <YStack f={1} ai="center" jc="center">
-        <UText variant="heading-h1">Event Not Found</UText>
-      </YStack>
-    );
-  }
+  // const { id } = useLocalSearchParams();
+  // const router = useRouter();
+  // const dispatch = useDispatch();
+  // const { width } = useWindowDimensions();
+
+  // const eventsSection = exploreData.find((item) => item.id === "events");
+  // const event = eventsSection?.data.find((item) => item.id === Number(id));
+
+  // if (!event) {
+  //   return (
+  //     <YStack f={1} ai="center" jc="center">
+  //       <UText variant="heading-h1">Event Not Found</UText>
+  //     </YStack>
+  //   );
+  // }
 
   const handleLogout = () => {
     dispatch(logOut());
@@ -42,7 +84,7 @@ const EventDetailScreen = () => {
       showsVerticalScrollIndicator={false}
     >
       <YStack>
-        <UHeaderWithBackground bgImage={event.cover} showBackButton={true} />
+        <UHeaderWithBackground bgImage={{uri : event.thumbnail}} showBackButton={true} />
 
         <YStack
           mt={-40}
@@ -68,14 +110,14 @@ const EventDetailScreen = () => {
           <XStack ai="center" mt={6}>
             <IconCalender />
             <UText variant="text-sm" ml={6} color="$neutral6">
-              {event.date}
+              {formatDate(event.eventDate)}
             </UText>
           </XStack>
 
           <XStack ai="center" mt={10}>
             <IconDuration />
             <UText variant="text-sm" ml={6} color="$neutral6">
-              {event.time}
+              {formatTime12h(event.eventTime)}
             </UText>
           </XStack>
 
@@ -84,16 +126,20 @@ const EventDetailScreen = () => {
               variant="text-sm"
               style={{
                 fontWeight: "500",
-                color: event.type === "Offline" ? "#007B83" : "#007AFF",
+                color: event.eventType === "offline" ? "#007B83" : "#007AFF",
                 backgroundColor:
-                  event.type === "Offline" ? "#E6F6F7" : "#EAF2FF",
+                  event.eventType === "offline" ? "#E6F6F7" : "#EAF2FF",
                 paddingVertical: 6,
                 paddingHorizontal: 12,
                 borderRadius: 10,
-                alignSelf: "flex-start",
+                // alignSelf: "flex-start",
+                // justifyContent:'center',
+                textTransform:'capitalize',
+                width:'25%',
+                textAlign:'center'
               }}
             >
-              {event.type}
+            {event.eventType}
             </UText>
           </YStack>
 
@@ -118,10 +164,10 @@ const EventDetailScreen = () => {
             color="$neutral7"
             style={{ lineHeight: 24, fontSize: 15 }}
           >
-            {event.about}
+            {event.description}
           </UText>
 
-          {event?.type === "Offline" && (
+          {event?.eventType === "offline" && (
             <XStack ai="center" mt={24}>
               <IconLocation />
               <UText numberOfLines={2} variant="text-sm" ml={8} color="$neutral7">
@@ -132,7 +178,7 @@ const EventDetailScreen = () => {
 
           <UTextButton
             onPress={() =>
-              event.type === "Offline"
+              event.eventType === "offline"
                 ? console.log("Open in Maps")
                 : console.log("Join Meeting")
             }
@@ -140,7 +186,7 @@ const EventDetailScreen = () => {
             mt={28}
             width="100%"
           >
-            {event.type === "Offline" ? "📍 Open in Maps" : "💻 Join Meeting"}
+            {event.eventType === "offline" ? "📍 Open in Maps" : "💻 Join Meeting"}
           </UTextButton>
         </YStack>
       </YStack>
@@ -281,22 +327,22 @@ export default EventDetailScreen;
 //                             variant="text-sm"
 //                             style={{
 //                                 fontWeight: "500",
-//                                 color: event.type === "Offline" ? "#007B83" : "#007AFF",
+//                                 color: event.eventType === "Offline" ? "#007B83" : "#007AFF",
 //                                 backgroundColor:
-//                                     event.type === "Offline" ? "#E6F6F7" : "#EAF2FF",
+//                                     event.eventType === "Offline" ? "#E6F6F7" : "#EAF2FF",
 //                                 paddingVertical: 6,
 //                                 paddingHorizontal: 12,
 //                                 borderRadius: 10,
 //                                 alignSelf: "flex-start",
 //                             }}
 //                         >
-//                             {event.type}
+//                             {event.eventType}
 //                         </UText>
 //                     </YStack>
 
 //                     <UTextButton
 //                         onPress={() =>
-//                             event.type === "Offline"
+//                             event.eventType === "Offline"
 //                                 ? console.log("Open in Maps")
 //                                 : console.log("Join Meeting")
 //                         }
@@ -304,7 +350,7 @@ export default EventDetailScreen;
 //                         mt={28}
 //                         width="100%"
 //                     >
-//                         {event.type === "Offline" ? "📍 Open in Maps" : "💻 Join Meeting"}
+//                         {event.eventType === "Offline" ? "📍 Open in Maps" : "💻 Join Meeting"}
 //                     </UTextButton>
 //                 </YStack>
 //             </YStack>
