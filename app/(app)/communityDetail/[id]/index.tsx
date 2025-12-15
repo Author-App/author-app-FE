@@ -9,33 +9,79 @@ import { XStack, YStack } from "tamagui";
 import { useState } from "react";
 import UTextButton from "@/src/components/core/buttons/uTextButton";
 import { logOut } from "@/src/redux2/Slice/AuthSlice";
+import { useGetCommunitiesDetailQuery, useSendThreadMutation } from "@/src/redux2/Apis/Explore";
+import UImage from "@/src/components/core/image/uImage";
+import { formatDate } from "@/src/utils/helper";
 
 const CommunityDetailScreen = () => {
-    const { id } = useLocalSearchParams();
+    const { id } = useLocalSearchParams<{ id: string }>();
+
     const router = useRouter();
     const dispatch = useDispatch();
     const [reply, setReply] = useState("");
 
-    const community = communityData.find((item) => item.id === Number(id));
+    const {
+        data,
+        isLoading,
+        isError,
+        refetch,
+    } = useGetCommunitiesDetailQuery(id!, {
+        skip: !id,
+    });
 
-    if (!community) {
+    const [sendThread, { isLoading: isSending }] = useSendThreadMutation();
+
+
+    console.log("ARTICLE", data);
+
+    const community = data?.data;
+
+    if (isLoading) {
         return (
-            <YStack f={1} ai="center" jc="center">
-                <UText variant="heading-h1">Community Not Found</UText>
+            <YStack flex={1} backgroundColor="$bg2">
+                <UHeaderWithBackground title="Article" showBackButton />
+                <YStack flex={1} jc="center" ai="center">
+                    <UText>Loading community..</UText>
+                </YStack>
             </YStack>
         );
     }
 
-    const handleLogout = () => {
-        dispatch(logOut());
-        router.replace("/(public)/login");
+    if (isError || !community) {
+        return (
+            <YStack flex={1} backgroundColor="$bg2">
+                <UHeaderWithBackground title="Article" showBackButton />
+                <YStack flex={1} jc="center" ai="center" px={20}>
+                    <UText textAlign="center" color="$red10">
+                        Failed to load community.
+                    </UText>
+                    <UText onPress={refetch} color="$primary" mt={10}>
+                        Tap to retry
+                    </UText>
+                </YStack>
+            </YStack>
+        );
+    }
+
+    const handleSendReply = async () => {
+        if (!reply.trim()) return;
+
+        try {
+            await sendThread({
+                id,
+                body: {
+                    message: reply,
+                },
+            }).unwrap();
+
+            console.log("Reply sent:", reply);
+            setReply("");
+            refetch();
+        } catch (error) {
+            console.error("Failed to send reply:", error);
+        }
     };
 
-    const handleSendReply = () => {
-        if (!reply.trim()) return;
-        console.log("Reply sent:", reply);
-        setReply("");
-    };
 
     return (
         <KeyboardAvoidingView
@@ -49,7 +95,7 @@ const CommunityDetailScreen = () => {
             >
                 <YStack>
                     <UHeaderWithBackground
-                        bgImage={community.cover}
+                        bgImage={{ uri: community.thumbnail }}
                         showBackButton={true}
                     />
 
@@ -82,10 +128,10 @@ const CommunityDetailScreen = () => {
                         />
 
                         <UText variant="heading-h2" color="$black" mb={10}>
-                            Discussion Threads ({community.messages.length})
+                            Discussion Threads ({community.threads.length})
                         </UText>
 
-                        {community.messages.map((item) => (
+                        {community.threads.map((item) => (
                             <YStack
                                 key={item.id}
                                 bg="#F9F9F9"
@@ -96,8 +142,9 @@ const CommunityDetailScreen = () => {
                                 borderColor="#EEE"
                             >
                                 <XStack ai="center" mb={10}>
-                                    <Image
-                                        source={item.avatar}
+                                    <UImage
+                                        // imageSource={review.avatar} 
+                                        fallBackText={item.userName}       
                                         style={{
                                             width: 45,
                                             height: 45,
@@ -105,12 +152,13 @@ const CommunityDetailScreen = () => {
                                             marginRight: 10,
                                         }}
                                     />
+                                    
                                     <YStack>
                                         <UText variant="heading-h2" color="$black">
-                                            {item.user}
+                                            {item.userName}
                                         </UText>
                                         <UText variant="text-xs" color="$neutral5">
-                                            {item.time}
+                                            {formatDate(item.createdAt)}
                                         </UText>
                                     </YStack>
                                 </XStack>
@@ -124,7 +172,7 @@ const CommunityDetailScreen = () => {
                 </YStack>
             </ScrollView>
 
-            {/* Sticky Reply Box */}
+    
             <YStack
                 p={12}
                 bg="$white"
@@ -160,9 +208,11 @@ const CommunityDetailScreen = () => {
                             borderRadius: 10,
                             marginLeft: 10,
                         }}
+                        loading={isSending}
                     // textColor={'$black'}
                     >
                         Send
+                        {/* {isSending ? "Sending..." : "Send"} */}
                     </UTextButton>
 
                     {/* <TouchableOpacity

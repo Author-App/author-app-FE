@@ -27,6 +27,31 @@ export const exploreApi = createApi({
         getCommunities: builder.query({
             query: () => '/communities',
         }),
+        getCommunitiesDetail: builder.query({
+            query: (id) => `/communities/${id}`,
+        }),
+        joinCommunity: builder.mutation({
+            query: (id) => ({
+                url: `/communities/${id}/join`,
+                method: 'POST',
+            }),
+        }),
+        exitCommunity: builder.mutation({
+            query: (id) => ({
+                url: `/communities/${id}/exit`,
+                method: 'POST',
+            }),
+
+        }),
+        sendThread: builder.mutation({
+            query: ({id , body}) => ({
+                url: `/communities/${id}/threads`,
+                method: 'POST',
+                body
+            }),
+
+        })
+
     }),
 });
 
@@ -37,4 +62,8 @@ export const {
     useGetEventsQuery,
     useGetEventsDetailQuery,
     useGetCommunitiesQuery,
+    useGetCommunitiesDetailQuery,
+    useJoinCommunityMutation,
+    useExitCommunityMutation,
+    useSendThreadMutation,
 } = exploreApi;

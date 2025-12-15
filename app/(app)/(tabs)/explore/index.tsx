@@ -17,7 +17,7 @@ import { formatDate, formatDuration, formatTime12h } from '@/src/utils/helper';
 import type { Href } from 'expo-router';
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { FlatList, Image, View } from 'react-native';
+import { FlatList, Image, TouchableOpacity, View } from 'react-native';
 import { AnimatePresence, XStack, YStack } from 'tamagui';
 
 type TabType = 'Blog' | 'Podcasts' | 'Videos' | 'Events' | 'Community';
@@ -463,6 +463,7 @@ const ExploreScreen = () => {
               {item?.description}
             </UText>
 
+            <TouchableOpacity>
             <XStack jc="flex-end" mt={10} ai={'center'}>
               <UText
                 variant="text-sm"
@@ -474,6 +475,7 @@ const ExploreScreen = () => {
               </UText>
               <IconArrowRight dimen={20} />
             </XStack>
+            </TouchableOpacity>
           </YStack>
         );
 

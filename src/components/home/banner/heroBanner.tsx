@@ -5,7 +5,7 @@ import UText from '../../core/text/uText'
 import UProgressBar from '../../core/display/uProgressBar'
 import UIconButton from '../../core/buttons/uIconButtonVariants'
 import { IconProps } from '@/assets/icons/types/iconProps'
-import { BlurTint, BlurView } from 'expo-blur';
+// import { BlurTint, BlurView } from 'expo-blur';
 
 interface HeroBannerProps {
   type?: 'book' | 'audiobook' | 'event' | 'promo'
@@ -52,7 +52,7 @@ const HeroBanner: React.FC<HeroBannerProps> = ({
       shadowOffset={{ width: 0, height: 4 }}
       elevation={6}
     >
-      <BlurView
+      {/* <BlurView
         intensity={80}
         tint="dark"
         style={{ 
@@ -62,14 +62,14 @@ const HeroBanner: React.FC<HeroBannerProps> = ({
           paddingHorizontal: 24,
           borderRadius: 13,
         }}
-      >
+      > */}
         <UText variant="text-xs" color={'#F2EAD2'}>
           NEW RELEASE
         </UText>
         <UText variant="heading-h1" color={'#F2EAD2'} fontWeight={'700'}  marginLeft={'auto'} mt={-5}>
           “{title}”
         </UText>
-      </BlurView>
+      {/* </BlurView> */}
     </YStack>
   )
 }
