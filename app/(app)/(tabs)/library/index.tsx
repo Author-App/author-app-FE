@@ -9,14 +9,15 @@ import type { LibraryBook } from '@/src/types/library/libraryTypes';
 import { FlashList } from '@shopify/flash-list';
 import type { Href } from 'expo-router';
 import { useCallback } from 'react';
-import { Image, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Image, StyleSheet, View } from 'react-native';
 import { Text, XStack, YStack } from 'tamagui';
 
 const LibraryScreen = () => {
 
   const {
     router, currentData, categoryOptions, sortOptions, activeTab, setActiveTab,
-    selectedValue, setSelectedValue, selectedSortValue, setSelectedSortValue, numColumns } = useLibraryController();
+    selectedValue, setSelectedValue, selectedSortValue, setSelectedSortValue, numColumns 
+    , isError , isLoading} = useLibraryController();
 
   const renderBookItem = useCallback(({ item }: { item: LibraryBook }) => {
     return (
@@ -93,6 +94,23 @@ const LibraryScreen = () => {
       </YStack>
     );
   }, [numColumns, router]);
+
+  if (isLoading) {
+    return (
+      <YStack flex={1} jc="center" ai="center" backgroundColor={'$white'}>
+        <ActivityIndicator size="large" color="#007AFF" />
+      </YStack>
+    );
+  }
+
+  if (isError) {
+    return (
+      <YStack flex={1} jc="center" ai="center" backgroundColor={'$white'}>
+        <UText variant="text-md" color="$red10">Something went wrong.</UText>
+        <UTextButton onPress={() => setActiveTab(activeTab)}>Retry</UTextButton>
+      </YStack>
+    );
+  }
 
 
   return (

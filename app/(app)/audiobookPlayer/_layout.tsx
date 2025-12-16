@@ -3,7 +3,7 @@ import UIconButton from "@/src/components/core/buttons/uIconButtonVariants";
 import UHeader from "@/src/components/core/layout/uHeader";
 import { Stack, useRouter } from "expo-router";
 
-export default function EBookReaderLayout() {
+export default function AudiobookPlayerLayout() {
 
     const router = useRouter();
     return (
@@ -12,7 +12,7 @@ export default function EBookReaderLayout() {
                 options={{
                     header: () => (
                         <UHeader
-                            title="Book Reader"
+                            title="Audiobook Reader"
                             leftControl={
                                 <UIconButton
                                     icon={IconBack}

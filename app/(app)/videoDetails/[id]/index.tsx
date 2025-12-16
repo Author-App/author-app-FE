@@ -4,10 +4,10 @@ import UHeader from '@/src/components/core/layout/uHeader';
 import UText from '@/src/components/core/text/uText';
 import { exploreData } from '@/src/data/exploreData';
 import { Href, useLocalSearchParams, useRouter } from 'expo-router';
-import { ScrollView } from 'react-native';
+import { ActivityIndicator, ScrollView } from 'react-native';
 import { useGetMediaDetailQuery, useGetMediaQuery } from '@/src/redux2/Apis/Explore';
 import { formatDuration } from '@/src/utils/helper';
-import { YStack, XStack, View, Card, Separator , Image} from 'tamagui';
+import { YStack, XStack, View, Card, Separator, Image } from 'tamagui';
 import { Video, ResizeMode } from 'expo-av';
 import { VideoItem } from '@/src/types/content/contentTypes';
 
@@ -16,7 +16,6 @@ const VideoDetail = () => {
     const { id } = useLocalSearchParams<{ id: string }>();
     const router = useRouter();
 
-    /** API CALLS */
     const { data, isLoading, isError } = useGetMediaDetailQuery(id!, {
         skip: !id,
     });
@@ -26,8 +25,6 @@ const VideoDetail = () => {
     });
 
     const video = data?.data;
-    // const relatedPodcasts =
-    //   mediaList?.data?.media?.filter((p) => p.id !== String(id)) || [];
 
     const relatedVideos =
         mediaList?.data?.media?.filter((p) => p.id !== id) || [];
@@ -35,16 +32,11 @@ const VideoDetail = () => {
     console.log("THIS IS Media Id", mediaList?.data?.media[0]?.id, typeof mediaList?.data?.media[0]?.id);
 
     console.log("THIS IS ID", id, typeof id);
-    // const { id } = useLocalSearchParams();
-    // const router = useRouter();
-
-    // const videosSection = exploreData.find((section) => section.subtype === 'videos');
-    // const video = videosSection?.data.find((p) => p.id === Number(id));
 
     if (isLoading) {
         return (
-            <YStack f={1} ai="center" jc="center">
-                <UText>Loading video</UText>
+            <YStack flex={1} jc="center" ai="center">
+                <ActivityIndicator size="large" />
             </YStack>
         );
     }
@@ -63,7 +55,7 @@ const VideoDetail = () => {
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={{ paddingBottom: 60 }}
             >
-                {/* Header */}
+
                 <UHeader
                     title="Video Details"
                     leftControl={
@@ -75,7 +67,6 @@ const VideoDetail = () => {
                     }
                 />
 
-                {/* Video Player */}
                 <Card elevation="$3" borderRadius={0} overflow="hidden">
                     <Video
                         source={{ uri: video.fileUrl }}
@@ -92,23 +83,30 @@ const VideoDetail = () => {
                     </UText>
 
                     <XStack ai="center" gap="$2">
-                        <UText color="$neutral5" fontWeight="600">
+                        <UText color="$neutral5">
                             Duration:
                         </UText>
-                        <UText color="$color.textSecondary">{Math.floor(video.durationSec / 60)} mins</UText>
+                        <UText color="$neutral5">{Math.floor(video.durationSec / 60)} mins</UText>
                     </XStack>
 
                     <Separator borderColor="$color.border" my="$2" />
 
-                    <UText variant="text-md" color="$color.text" lineHeight={22}>
+                    <UText variant="text-md" lineHeight={22}>
                         {video.description}
                     </UText>
                 </YStack>
 
                 <YStack p="$4" gap="$3">
-                    <UText variant="heading-h2" fontWeight="700">
-                        More Videos
-                    </UText>
+                    {
+                        relatedVideos?.length > 0 ?
+                            <UText my={20} variant="heading-h2">
+                                Related Videos
+                            </UText> :
+                            <UText my={20} variant="heading-h2">
+                                No Related Videos
+                            </UText>
+                    }
+                   
 
                     {relatedVideos
                         .filter((v) => v.id !== Number(id))
@@ -123,12 +121,8 @@ const VideoDetail = () => {
                                         params: { id: v.id },
                                     })
                                 }
-                            // onPress={() => router.push(`/videoDetail/${v.id}`)}
                             >
-                                {/* <Card w={100} h={60} br="$4" overflow="hidden">
-                  <Card.Image source={v.cover} width="100%" height="100%" />
-                </Card> */}
-
+        
                                 <Card w={100} h={60} br="$4" overflow="hidden">
                                     <Image source={{ uri: v.thumbnail }} width="100%" height="100%" />
                                 </Card>
@@ -138,7 +132,7 @@ const VideoDetail = () => {
                                     <UText numberOfLines={1} fontWeight="600">
                                         {v.name}
                                     </UText>
-                                    <UText color="$color.textSecondary" fontSize={13}>
+                                    <UText variant='text-md'>
                                         {formatDuration(v.durationSec)}
                                     </UText>
                                 </YStack>
@@ -151,86 +145,3 @@ const VideoDetail = () => {
 };
 
 export default VideoDetail;
-
-
-
-
-// import IconArrowDownRight from '@/assets/icons/iconArrowDownRight';
-// import IconArrowLeft from '@/assets/icons/iconArrowLeft';
-// import IconArrowRight from '@/assets/icons/iconArrowRight';
-// import IconBack from '@/assets/icons/iconBack';
-// import IconForward from '@/assets/icons/iconForward';
-// import IconPlay2 from '@/assets/icons/iconPlay2';
-// import IconRewind from '@/assets/icons/iconRewind';
-// import UIconButton from '@/src/components/core/buttons/uIconButtonVariants';
-// import UProgressBar from '@/src/components/core/display/uProgressBar';
-// import UHeader from '@/src/components/core/layout/uHeader';
-// import UText from '@/src/components/core/text/uText';
-// import { exploreData } from '@/src/data/exploreData';
-// import { useLocalSearchParams, useRouter } from 'expo-router';
-// import { Image, ScrollView } from 'react-native';
-// import { FlatList } from 'react-native';
-// import { View, XStack, YStack, Card } from 'tamagui';
-// import { Video } from 'expo-av';
-
-// // import { Video } from 'expo-av';
-
-// // import Video from 'react-native-video';
-
-// const VideoDetail = () => {
-//     const { id } = useLocalSearchParams();
-//     const router = useRouter();
-
-//     const videosSection = exploreData.find((section) => section.subtype === 'videos');
-//     const video = videosSection?.data.find((p) => p.id === Number(id));
-
-//     if (!video) {
-//         return (
-//             <YStack f={1} ai="center" jc="center">
-//                 <UText variant="heading-h1">Podcast Not Found</UText>
-//             </YStack>
-//         );
-//     }
-
-//     console.log("THIS IS VIDEO", video);
-
-
-//     return (
-//         <YStack flex={1}>
-//             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
-//                 <UHeader
-//                     title="Video Details"
-//                     leftControl={
-//                         <UIconButton
-//                             icon={IconBack}
-//                             variant="quinary-md"
-//                             onPress={() => router.back()}
-//                         />
-//                     }
-//                 />
-//                 <YStack p={20}>
-
-//                     <Video
-//                         source={video?.video}
-//                         style={{ width: '100%', height: 200 }}
-//                         useNativeControls
-//                         resizeMode="cover"
-//                         shouldPlay={false}
-//                     />
-
-//                     <UText numberOfLines={1} variant="heading-h1">
-//                         {video?.title}
-//                     </UText>
-
-//                     <UText numberOfLines={1} variant="text-md">
-//                         {video?.description}
-//                     </UText>
-
-//                 </YStack>
-
-//             </ScrollView>
-//         </YStack>
-//     )
-// }
-
-// export default VideoDetail;

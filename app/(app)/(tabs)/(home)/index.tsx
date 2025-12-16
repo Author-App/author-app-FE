@@ -5,10 +5,19 @@ import useHomeController from '@/src/controllers/useHomeController'
 import { homeData } from '@/src/data/homeData'
 import { FlashList } from '@shopify/flash-list'
 import { YStack } from 'tamagui'
+import { ActivityIndicator } from 'react-native'
 
 const HomeScreen = () => {
 
-  const { functions, components , styles , states } = useHomeController()
+  const { functions, components, styles, states } = useHomeController()
+
+  if (states.loading) {
+    return (
+      <YStack flex={1} jc="center" ai="center">
+        <ActivityIndicator size="large" />
+      </YStack>
+    );
+  }
 
   return (
     <YStack flex={1}>
@@ -17,7 +26,7 @@ const HomeScreen = () => {
         renderItem={functions.renderItem}
         keyExtractor={functions.keyExtractor}
         contentContainerStyle={styles.contentContainerStyle}
-        ListHeaderComponent={ 
+        ListHeaderComponent={
           components.listHeaderComponent
         }
         showsVerticalScrollIndicator={false}

@@ -16,8 +16,16 @@ export const booksApi = createApi({
                 params: { type }, // <-- send ?type=ebook OR ?type=audiobook
             }),
         }),
+        rateBook: builder.mutation({
+            query: ({ id, body }) => ({
+                url: `/books/${id}/reviews`,
+                method: 'POST',
+                body
+            }),
+
+        })
     }),
 });
 
-export const { useGetBookDetailQuery , useGetAllBooksQuery} = booksApi;
+export const { useGetBookDetailQuery, useGetAllBooksQuery , useRateBookMutation } = booksApi;
 

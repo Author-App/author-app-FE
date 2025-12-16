@@ -5,6 +5,7 @@ import UText from '../../core/text/uText'
 import UProgressBar from '../../core/display/uProgressBar'
 import UIconButton from '../../core/buttons/uIconButtonVariants'
 import { IconProps } from '@/assets/icons/types/iconProps'
+import LinearGradient from 'react-native-linear-gradient';
 // import { BlurTint, BlurView } from 'expo-blur';
 
 interface HeroBannerProps {
@@ -35,7 +36,7 @@ const HeroBanner: React.FC<HeroBannerProps> = ({
   const shouldShowIcon = type === 'audiobook'
 
   console.log("This is title,", title);
-  
+
 
   return (
     <YStack
@@ -44,7 +45,7 @@ const HeroBanner: React.FC<HeroBannerProps> = ({
       borderRadius={13}
       overflow="hidden"
       position="absolute"
-      bottom={-30} 
+      bottom={-30}
       zIndex={999}
       shadowColor="#000"
       shadowOpacity={0.3}
@@ -63,14 +64,32 @@ const HeroBanner: React.FC<HeroBannerProps> = ({
           borderRadius: 13,
         }}
       > */}
+
+      {/* <BlurView
+        style={{ padding: 20, borderRadius: 13 }}
+        blurType="dark"
+        blurAmount={20}
+      > */}
+      <YStack
+        style={{
+
+          backgroundColor: 'rgba(50, 50, 50, 0.75)', // darker greyish overlay
+          paddingTop: 20,
+          paddingBottom: 12,
+          paddingHorizontal: 24,
+          borderRadius: 13,
+        }}
+      >
         <UText variant="text-xs" color={'#F2EAD2'}>
           NEW RELEASE
         </UText>
-        <UText variant="heading-h1" color={'#F2EAD2'} fontWeight={'700'}  marginLeft={'auto'} mt={-5}>
+        <UText variant="heading-h1" color={'#F2EAD2'} fontWeight={'700'} marginLeft={'auto'} mt={-5}>
           “{title}”
         </UText>
+      </YStack>
       {/* </BlurView> */}
-    </YStack>
+      {/* </BlurView> */}
+    </YStack >
   )
 }
 

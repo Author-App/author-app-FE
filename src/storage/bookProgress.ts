@@ -24,3 +24,8 @@ export const savePdfProgress = async (
     })
   );
 };
+
+
+export const removePdfProgress = async (bookId: string) => {
+  await AsyncStorage.removeItem(`pdf-progress-${bookId}`);
+};
