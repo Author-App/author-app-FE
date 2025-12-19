@@ -2,6 +2,12 @@
   "expo": {
     "name": "stanley-paden",
     "slug": "stanley-paden",
+    "notification": {
+      "icon": "./assets/images/icons/notificationsIcon.png",
+      "color": "#ffffff",
+      "androidMode": "default",
+      "androidCollapsedTitle": "New notification"
+    },
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./public/brand/icon.png",
@@ -22,6 +28,7 @@
         "foregroundImage": "./public/brand/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
+      "useNextNotificationsApi": true,
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "permissions": [
@@ -38,8 +45,7 @@
     "plugins": [
       "expo-router",
       "expo-audio",
-      "expo-font",
-      "expo-web-browser"
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true

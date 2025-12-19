@@ -30,7 +30,7 @@ const useForgotPasswordController = () => {
             if (res) {
                 console.log("THIS IS RES", res);
                 router.push({
-                    pathname: '/(public)/verificationcode',
+                    pathname: '/(public)/verificationCode',
                     params: {
                         token: res?.data?.token,  // or the correct token field
                     }
@@ -41,21 +41,6 @@ const useForgotPasswordController = () => {
         } catch (err: any) {
             showErrorToast(err?.data?.message)
         }
-        // try {
-        //     setLoading(true);
-
-        //     await new Promise((resolve) => setTimeout(resolve, 2000));
-
-        //     console.log("THIS IS VALUESS", values);
-
-        //     router.push('/(public)/verificationCode');
-
-        //     resetForm();
-        // } catch (error) {
-        //     console.log("THIS IS ERROR", error);
-        // } finally {
-        //     setLoading(false);
-        // }
     }
 
     return {

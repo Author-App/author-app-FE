@@ -5,6 +5,7 @@ import { useLocalSearchParams } from "expo-router";
 import * as FileSystem from "expo-file-system/legacy";
 import { getPdfProgress, savePdfProgress } from "@/src/storage/bookProgress";
 import { useGetBookDetailQuery } from "@/src/redux2/Apis/Books";
+import UText from "@/src/components/core/text/uText";
 
 const EbookReader = () => {
   const { bookId } = useLocalSearchParams<{
@@ -19,6 +20,8 @@ const EbookReader = () => {
   const [localPdfUri, setLocalPdfUri] = useState<string | null>(null);
   const [initialPage, setInitialPage] = useState(1);
   const lastSavedPage = useRef(1);
+
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!bookId) return;
@@ -40,7 +43,11 @@ const EbookReader = () => {
     if (!bookId) return;
 
     const masterUrl = data?.data?.book?.master;
-    if (!masterUrl) return;
+    if (!masterUrl) {
+      setError("Book not available"); // <-- handle missing URL
+      return;
+    }
+    // if (!masterUrl) return;
 
     (async () => {
       try {
@@ -63,13 +70,33 @@ const EbookReader = () => {
   }, [bookId, data?.data?.book?.master]);
 
 
-  if (isLoading || !bookId || !localPdfUri) {
+  if (isLoading || !bookId) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" />
       </View>
     );
   }
+
+  if (error) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 16 }}>
+        <UText style={{ fontSize: 16, color: "gray", textAlign: "center" }}>
+          {error}
+        </UText>
+      </View>
+    );
+  }
+
+  if (!localPdfUri) {
+    // optional: small loader while downloading
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size="small" />
+      </View>
+    );
+  }
+
 
 
 
@@ -89,7 +116,7 @@ const EbookReader = () => {
           }
         }}
         style={{ flex: 1 }}
-        androidHardwareAccelerationDisabled
+        // androidHardwareAccelerationDisabled
         trustAllCerts={false}
       />
     </View>

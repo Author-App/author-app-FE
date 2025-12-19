@@ -70,4 +70,48 @@ export const formatTime12h = (time24: string) => {
   return `${hour}${minute > 0 ? `:${minute.toString().padStart(2, '0')}` : ''} ${ampm}`;
 };
 
+export const isWithinJoinWindow = (
+  eventDate: string,
+  eventTime: string
+) => {
+  // Combine date + time
+  const eventStart = new Date(eventDate);
+
+  const [hours, minutes, seconds] = eventTime.split(":").map(Number);
+  eventStart.setHours(hours, minutes, seconds || 0, 0);
+
+  const now = new Date();
+
+  const eventEnd = new Date(eventStart);
+  eventEnd.setHours(eventEnd.getHours() + 24);
+
+  return now >= eventStart && now <= eventEnd;
+};
+
+export const getJoinStatus = (
+  eventDate: string,
+  eventTime: string
+): "upcoming" | "live" | "ended" => {
+  const eventStart = new Date(eventDate);
+
+  const [hours, minutes, seconds] = eventTime.split(":").map(Number);
+  eventStart.setHours(hours, minutes, seconds || 0, 0);
+
+  const now = new Date();
+
+  // Allow joining 10 minutes before
+  const joinWindowStart = new Date(eventStart);
+  joinWindowStart.setMinutes(joinWindowStart.getMinutes() - 10);
+
+  // Assume meeting ends after 2 hours (adjust if needed)
+  const eventEnd = new Date(eventStart);
+  eventEnd.setHours(eventEnd.getHours() + 2);
+
+  if (now < joinWindowStart) return "upcoming";
+  if (now >= joinWindowStart && now <= eventEnd) return "live";
+  return "ended";
+};
+
+
+
 

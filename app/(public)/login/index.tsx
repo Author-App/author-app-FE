@@ -68,7 +68,7 @@ const Login = () => {
                                 variant="text-sm"
                                 color="$white"
                                 fontWeight={600}
-                                onPress={() => router.push('/(public)/forgotpassword')}>
+                                onPress={() => router.push('/(public)/forgotPassword')}>
                                 Forgot Password?
                             </UText>
                         </XStack>
@@ -95,7 +95,7 @@ const Login = () => {
                     >
                         Sign In
                     </NeonButton>
-                    <XStack ai="center" jc="center" gap={8} mt={10} mb={10}>
+                    {/* <XStack ai="center" jc="center" gap={8} mt={10} mb={10}>
                         <YStack flex={1} h={1} bg="$white" />
                         <UText variant="text-sm" color="$white">
                             or Sign In with
@@ -122,7 +122,7 @@ const Login = () => {
                             icon={IconApple}
                             onPress={() => console.log('Apple login')}
                         />
-                    </XStack>
+                    </XStack> */}
 
                     <XStack jc="center" mt={16}>
                         <UText variant="text-sm" color="$white">Don’t have an account? </UText>

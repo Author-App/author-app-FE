@@ -253,7 +253,7 @@ const BookDetail = () => {
                             {
                                 (book.isFree || !book.isFree && book.hasAccess) &&
 
-                                <UTextButton variant='primary-md' mt={30} mb={20} onPress={() => functions.setModalVisible(true)}>
+                                <UTextButton width={'100%'} variant='primary-md' mt={30} mb={20} onPress={() => functions.setModalVisible(true)}>
                                     Write a Review
 
                                 </UTextButton>

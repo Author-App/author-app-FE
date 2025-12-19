@@ -17,7 +17,7 @@ const LibraryScreen = () => {
   const {
     router, currentData, categoryOptions, sortOptions, activeTab, setActiveTab,
     selectedValue, setSelectedValue, selectedSortValue, setSelectedSortValue, numColumns 
-    , isError , isLoading} = useLibraryController();
+    , isError , isLoading , listRef} = useLibraryController();
 
   const renderBookItem = useCallback(({ item }: { item: LibraryBook }) => {
     return (
@@ -119,6 +119,8 @@ const LibraryScreen = () => {
       backgroundColor={'$white'}>
 
       <FlashList<LibraryBook>
+        key={selectedSortValue ?? 'default'} 
+        ref={listRef}
         data={currentData}
         keyExtractor={(item) => String(item.id)}
         showsVerticalScrollIndicator={false}
@@ -160,10 +162,8 @@ const LibraryScreen = () => {
                     required
                     label="State"
                     placeholder="All Categories"
+                    // zIndex={9999}
                     onSelectItem={e => {
-                      // console.log('Selected item:', e);
-                      // setSelectedValue(e?.value?.toString() ?? null);
-
                       const newType = e?.value?.toString() ?? '';
                       setSelectedValue(newType);
                       setActiveTab(newType);
@@ -183,7 +183,6 @@ const LibraryScreen = () => {
                     onSelectItem={e => {
                       console.log('Selected item:', e);
                       setSelectedSortValue(e?.value?.toString() ?? null);
-                      // setSelectedSortValue(e?.value)
                     }}
                     style={{ width: '48%' }}
 
@@ -214,7 +213,7 @@ const LibraryScreen = () => {
               </UTextButton>
               <Image source={assets.icons.bookmarkFilled} style={{ width: 18, height: 18, marginRight: 10 }} />
             </XStack>
-            <UText variant="heading-h2" ml={15} mt={15}>
+            <UText variant="heading-h2" ml={15} mt={20}>
               Discover More Books
             </UText>
           </>

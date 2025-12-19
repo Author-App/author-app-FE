@@ -1,7 +1,8 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { changePasswordFormValidator } from "../utils/validator";
-import { showSuccessToast } from "../utils/toast";
+import { showErrorToast, showSuccessToast } from "../utils/toast";
+import { useChangePasswordMutation } from "../redux2/Apis/User";
 
 
 const initialValues = {
@@ -11,31 +12,29 @@ const initialValues = {
 
 const useChangePasswordController = () => {
 
-    const [loading, setLoading] = useState<boolean>(false);
     const [submitted, setSubmitted] = useState<boolean>(false);
-    const [activeTab, setActiveTab] = useState<'General' | 'Account'>('General');
-    const [isPremium, setIsPremium] = useState(true);
-    const [notificationsEnabled, setNotificationsEnabled] = useState(true);
 
-    const [isEditingName, setIsEditingName] = useState<boolean>(false);
+    const [changePassword, { isLoading }] =
+        useChangePasswordMutation();
+
 
     const router = useRouter();
 
     const handleSubmit = async (values: any, { resetForm, setSubmitting }: { resetForm: () => void; setSubmitting: (isSubmitting: boolean) => void }) => {
         try {
-            setLoading(true);
+            await changePassword({
+                oldPassword: values.currentPassword,
+                newPassword: values.newPassword,
+            }).unwrap();
 
-            await new Promise((resolve) => setTimeout(resolve, 2000));
+            showSuccessToast("Password changed successfully");
 
-            console.log("THIS IS VALUESS", values);
-
-            router.replace('/(app)/(tabs)/profile');
-
-            // resetForm();
+            router.back();
         } catch (error) {
             console.log("THIS IS ERROR", error);
+            showErrorToast(error?.data?.message)
         } finally {
-            setLoading(false);
+            setSubmitting(false);
         }
     }
 
@@ -47,20 +46,11 @@ const useChangePasswordController = () => {
         },
         functions: {
             handleSubmit,
-            setLoading,
             setSubmitted,
-            setActiveTab,
-            setIsEditingName,
-            setIsPremium,
-            setNotificationsEnabled,
         },
         states: {
-            loading,
+            loading:isLoading,
             submitted,
-            activeTab,
-            isEditingName,
-            isPremium,
-            notificationsEnabled,
         },
         router,
     }

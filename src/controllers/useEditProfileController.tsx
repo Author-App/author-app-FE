@@ -2,108 +2,117 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import { editProfileValidationSchema } from "../utils/validator";
 import { showSuccessToast } from "../utils/toast";
+import { useGetMeQuery, useUpdateProfileMutation, useUploadProfileImageMutation } from "../redux2/Apis/User";
+import { RootState } from "../redux2/Store";
+import { useSelector } from "react-redux";
+import { launchImageLibrary } from "react-native-image-picker";
+import { useEffect } from "react";
 
 
-const initialValues = {
-    fullName: 'Stanley Padden',
-    email: 'stanley@gmail.com',
-};
 
 const useEditProfileController = () => {
 
+    const token = useSelector((state: RootState) => state.auth.token);
+
+    const { data, isLoading } = useGetMeQuery(undefined, {
+        skip: !token,
+    });
+    const [updateProfile] = useUpdateProfileMutation();
+    const [uploadProfileImage, { isLoading: uploading }] =
+        useUploadProfileImageMutation();
+
     const [loading, setLoading] = useState<boolean>(false);
     const [submitted, setSubmitted] = useState<boolean>(false);
-    const [activeTab, setActiveTab] = useState<'General' | 'Account'>('General');
-    const [isPremium, setIsPremium] = useState(true);
-    const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+    const [profileImage, setProfileImage] = useState<string | null>(null);
 
     const [isEditingName, setIsEditingName] = useState<boolean>(false);
 
+    console.log("THIS IS ME", data);
+    const user = data?.data?.user ?? {};
+
     const router = useRouter();
+
+    const initialValues = {
+        fullName: `${user?.firstName ?? ""} ${user?.lastName ?? ""}`,
+        email: user?.email ?? "",
+    };
+
+    useEffect(() => {
+        if (user?.profileImage) {
+            setProfileImage(user.profileImageUrl);
+        }
+    }, [user?.profileImage]);
 
     const handleSubmit = async (values: any, { resetForm, setSubmitting }: { resetForm: () => void; setSubmitting: (isSubmitting: boolean) => void }) => {
         try {
             setLoading(true);
 
-            await new Promise((resolve) => setTimeout(resolve, 2000));
+            const [firstName, ...rest] = values.fullName.trim().split(" ");
+            const lastName = rest.join(" ");
 
-            console.log("THIS IS VALUESS", values);
-
-            router.replace('/(app)/(tabs)/profile');
+            await updateProfile({
+                firstName,
+                lastName,
+            }).unwrap();
 
             // resetForm();
-        } catch (error) {
-            console.log("THIS IS ERROR", error);
+
+            showSuccessToast("Profile updated successfully");
+
+            // Go back to Settings
+            router.back();
+        } catch (err) {
+            console.log("Update profile error", err);
         } finally {
             setLoading(false);
-        }
-    }
-
-    const handleLogout = async () => {
-        try {
-            // clear storage / tokens
-            showSuccessToast("Logged out successfully");
-            router.replace("/login");
-        } catch (error) {
-            console.log("Logout error:", error);
+            setSubmitting(false);
         }
     };
 
-    // ✅ Handle delete account
-    const handleDeleteAccount = async () => {
-        try {
-            showSuccessToast("Account deleted successfully");
-            router.replace("/login");
-        } catch (error) {
-            console.log("Delete account error:", error);
+    const pickImage = async () => {
+        // const result = await ImagePicker.launchImageLibraryAsync({
+        //     mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        //     quality: 0.8,
+        // });
+
+        const result = await launchImageLibrary({
+            mediaType: "photo",
+            quality: 0.8,
+            selectionLimit: 1,
+        });
+
+
+        if (!result.canceled) {
+            const asset = result.assets[0];
+
+            const formData = new FormData();
+            formData.append("image", {
+                uri: asset.uri,
+                name: "profile.jpg",
+                type: "image/jpeg",
+            } as any);
+
+            await uploadProfileImage(formData).unwrap();
+            setProfileImage(asset.uri);
         }
     };
 
-    // ✅ Navigation for account options
-    const navigateTo = (screen: string) => {
-        switch (screen) {
-            case "Notifications":
-                router.push("/notifications");
-                break;
-            case "ChangePassword":
-                // router.push("/change-password");
-                console.log("/change-password");
-                
-                break;
-            case "Upgrade":
-                console.log("/subscription");
-                break;
-            case "BugReport":
-                console.log("/report-bug");
-                break;
-            default:
-                console.warn("Unknown route:", screen);
-        }
-    };
+
 
     return {
         validator: editProfileValidationSchema,
-        values: {
-            initialValues,
-        },
+        router,
+        values: { initialValues },
         functions: {
             handleSubmit,
-            setLoading,
+            pickImage,
             setSubmitted,
-            setActiveTab,
-            setIsEditingName,
-            setIsPremium,
-            setNotificationsEnabled,
         },
         states: {
-            loading,
             submitted,
-            activeTab,
-            isEditingName,
-            isPremium,
-            notificationsEnabled,
+            loading: loading || uploading,
+            profileImage,
         },
-        router,
     }
 
 }

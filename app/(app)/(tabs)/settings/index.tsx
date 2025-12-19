@@ -8,26 +8,75 @@ import IconNotifications from "@/assets/icons/iconNotifications";
 import IconReport from "@/assets/icons/iconReport";
 import IconSubscription from "@/assets/icons/iconSubscription";
 import assets from "@/assets/images";
-
 import UIconButton from "@/src/components/core/buttons/uIconButtonVariants";
 import UImage from "@/src/components/core/image/uImage";
 import UHeader from "@/src/components/core/layout/uHeader";
 import UText from "@/src/components/core/text/uText";
 import useSettingsController from "@/src/controllers/useSettingsController";
+import { useDeleteAccountMutation, useGetMeQuery } from "@/src/redux2/Apis/User";
 import { logOut } from "@/src/redux2/Slice/AuthSlice";
 import { persistor } from "@/src/redux2/Store";
 import { getInitials } from "@/src/utils/helper";
 import type { Href } from "expo-router";
 import { useRouter } from "expo-router";
+import { ActivityIndicator, Alert } from "react-native";
+import Toast from "react-native-toast-message";
 import { useDispatch } from "react-redux";
 import { YStack, XStack, Switch, Card, ScrollView } from "tamagui";
 
 const SettingsScreen = () => {
   const { functions, states } = useSettingsController();
 
+
+  const { data, isLoading, isError, refetch } = useGetMeQuery(undefined);
+
+  console.log("THIS IS DATA", data?.data?.user)
+  const user = data?.data?.user ?? {};
+
+  const [deleteAccount, { isLoading: isDeleting }] =
+    useDeleteAccountMutation();
+
+
   const router = useRouter();
 
   const dispatch = useDispatch();
+
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      'Delete Account',
+      'This action is permanent and cannot be undone. Are you sure?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await deleteAccount().unwrap();
+
+              Toast.show({
+                type: 'success',
+                text2: 'Account deleted successfully',
+              });
+
+              dispatch(logOut());
+              await persistor.purge();
+              router.replace('/(public)/login');
+
+            } catch (error: any) {
+              Toast.show({
+                type: 'error',
+                text2:
+                  error?.data?.message ||
+                  'Failed to delete account',
+              });
+            }
+          },
+        },
+      ],
+    );
+  };
+
 
   const accountOptions = [
     {
@@ -81,7 +130,7 @@ const SettingsScreen = () => {
     {
       label: "Delete Account",
       icon: <IconDelete />,
-      onPress: () => console.log("fdfffd"),
+      onPress: handleDeleteAccount,
     },
   ];
 
@@ -115,34 +164,54 @@ const SettingsScreen = () => {
     </Card>
   );
 
+  if (isLoading) {
+    return (
+      <YStack flex={1} jc="center" ai="center" backgroundColor={'$white'}>
+        <ActivityIndicator size="large" color="#007AFF" />
+      </YStack>
+    );
+  }
+
+  if (isError) {
+    return (
+      <YStack flex={1} jc="center" ai="center" backgroundColor={'$white'}>
+        <UText variant="text-md" color="$red10">Something went wrong.</UText>
+      </YStack>
+    )
+  }
+
   return (
     <YStack flex={1} backgroundColor="$bg2">
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
         <UHeader
           title="Settings"
           headerColor="$bg2"
-          leftControl={
-            <UIconButton
-              icon={IconBack}
-              variant="quinary-md"
-              onPress={() => router.back()}
-            />
-          }
         />
 
         <YStack p={20}>
           <UImage
-            imageSource={assets.images.padden}
-            fallBackText={getInitials("Stanley Padden")}
+            imageSource={user?.profileImageUrl}
+            fallBackText={`${user?.firstName} ${user?.lastName}`}
             w={150}
+            h={150}
             borderRadius={75}
             overflow="hidden"
             mt={10}
             alignSelf="center"
           />
+          {/* <UImage
+            imageSource={{ uri: user?.profileImageUrl }}
+            fallBackText={getInitials(`${user?.firstName} ${user?.lastName}`)}
+            w={150}
+            height={150}
+            borderRadius={75}
+            overflow="hidden"
+            mt={10}
+            alignSelf="center"
+          /> */}
           <YStack ai="center">
-            <UText variant="heading-h1" mt={10}>Stanley Padden</UText>
-            <UText variant="text-md" mt={10}>stanleypadden@gmail.com</UText>
+            <UText textAlign="center" width={'50%'} variant="heading-h1" mt={10}>{`${user?.firstName} ${user?.lastName}`}</UText>
+            <UText textAlign="center" width={'50%'} variant="text-md" mt={10}>{user?.email}</UText>
           </YStack>
           <YStack mt={30} gap={20}>
             {accountOptions.map(renderCard)}

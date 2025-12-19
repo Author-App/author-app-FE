@@ -12,7 +12,7 @@ import IconLocation from "@/assets/icons/iconLocation";
 import UTextButton from "@/src/components/core/buttons/uTextButton";
 import { logOut } from "@/src/redux2/Slice/AuthSlice";
 import { useGetArticleDetailQuery } from "@/src/redux2/Apis/Articles";
-import { formatDate, formatTime12h } from "@/src/utils/helper";
+import { formatDate, formatTime12h, getJoinStatus, isWithinJoinWindow } from "@/src/utils/helper";
 import { useGetEventsDetailQuery } from "@/src/redux2/Apis/Explore";
 
 const EventDetailScreen = () => {
@@ -38,6 +38,13 @@ const EventDetailScreen = () => {
   console.log("EVENT", data);
 
   const event = data?.data;
+
+  const joinStatus =
+    event?.eventType === "online"
+      ? getJoinStatus(event.eventDate, event.eventTime)
+      : null;
+
+
 
   if (isLoading) {
     return (
@@ -131,8 +138,6 @@ const EventDetailScreen = () => {
                 paddingVertical: 6,
                 paddingHorizontal: 12,
                 borderRadius: 10,
-                // alignSelf: "flex-start",
-                // justifyContent:'center',
                 textTransform: 'capitalize',
                 width: '25%',
                 textAlign: 'center'
@@ -175,18 +180,30 @@ const EventDetailScreen = () => {
             </XStack>
           )}
 
-          <UTextButton
-            onPress={() =>
-              event.eventType === "offline"
-                ? openMap(event.locationGoogleMapLink)
-                : console.log("Join Meeting")
-            }
-            variant="primary-md"
-            mt={28}
-            width="100%"
-          >
-            {event.eventType === "offline" ? "📍 Open in Maps" : "💻 Join Meeting"}
-          </UTextButton>
+          {event.eventType === "offline" ? (
+            <UTextButton
+              onPress={() => openMap(event.locationGoogleMapLink)}
+              variant="primary-md"
+              mt={28}
+              width="100%"
+            >
+              📍 Open in Maps
+            </UTextButton>
+          ) : (
+            <UTextButton
+              disabled={joinStatus !== "live"}
+              // variant={joinStatus === "live" ? "primary-md" : "secondary-md"}
+              variant="primary-md"
+              mt={28}
+              width="100%"
+              onPress={() => Linking.openURL(event.googleMeetLink)}
+            >
+              💻
+              {joinStatus === "upcoming" && " Join available 10 mins before"}
+              {joinStatus === "live" && " Join Meeting"}
+              {joinStatus === "ended" && " Event has ended"}
+            </UTextButton>
+          )}
         </YStack>
       </YStack>
     </ScrollView>
