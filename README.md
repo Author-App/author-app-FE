@@ -38,6 +38,9 @@ For mobile development:
 - iOS: [Xcode](https://developer.apple.com/xcode/) (Mac only)
 - Android: [Android Studio](https://developer.android.com/studio)
 
+For cloud builds (recommended):
+- [EAS CLI](https://docs.expo.dev/build/setup/): `npm install -g eas-cli`
+
 Or use [Expo Go](https://expo.dev/client) app on your mobile device for quick testing.
 
 ## 🚀 Getting Started
@@ -168,10 +171,88 @@ The app uses:
 
 ## 📝 Available Scripts
 
-- `pnpm start` - Start the development server
-- `pnpm android` - Run on Android device/emulator
-- `pnpm ios` - Run on iOS simulator (Mac only)
+### Development
+- `pnpm start` - Start the Expo development server
+- `pnpm android` - Run on Android device/emulator (local build)
+- `pnpm ios` - Run on iOS simulator/device (Mac only, local build)
 - `pnpm web` - Run in web browser
+
+### Building
+
+#### Local Native Builds (Development)
+These commands generate native projects and build locally on your machine:
+
+```bash
+# iOS (Mac only - requires Xcode)
+npx expo run:ios
+
+# Android (requires Android Studio/SDK)
+npx expo run:android
+```
+
+#### EAS Cloud Builds (Production)
+```bash
+# Build Android app with EAS Build
+eas build --platform android
+
+# Build iOS app with EAS Build
+eas build --platform ios
+
+# Build for both platforms
+eas build --platform all
+```
+
+#### Clean Rebuild
+If you encounter build issues, try a clean prebuild:
+
+```bash
+# Remove existing native folders and regenerate
+rm -rf ios android
+npx expo prebuild --clean
+
+# Then build
+npx expo run:ios
+# or
+npx expo run:android
+```
+
+## ⚠️ New Architecture (Bridgeless Mode) Fix
+
+This app uses React Native's **New Architecture** with bridgeless mode enabled (`"newArchEnabled": true` in app.json). After running `npx expo prebuild`, you may need to fix the AppDelegate.swift file.
+
+### The Issue
+The generated `AppDelegate.swift` may include a `sourceURL(for bridge:)` method that references `RCTBridge`, which doesn't exist in bridgeless mode.
+
+### The Fix
+Edit `ios/stanleypaden/AppDelegate.swift` and **remove** the `sourceURL` method from the `ReactNativeDelegate` class:
+
+**Before (problematic):**
+```swift
+class ReactNativeDelegate: ExpoReactNativeFactoryDelegate {
+  override func sourceURL(for bridge: RCTBridge) -> URL? {
+    bridge.bundleURL ?? bundleURL()
+  }
+
+  override func bundleURL() -> URL? {
+    // ...
+  }
+}
+```
+
+**After (fixed):**
+```swift
+class ReactNativeDelegate: ExpoReactNativeFactoryDelegate {
+  override func bundleURL() -> URL? {
+#if DEBUG
+    return RCTBundleURLProvider.sharedSettings().jsBundleURL(forBundleRoot: ".expo/.virtual-metro-entry")
+#else
+    return Bundle.main.url(forResource: "main", withExtension: "jsbundle")
+#endif
+  }
+}
+```
+
+The `bundleURL()` method handles everything needed in bridgeless mode. The `sourceURL(for bridge:)` method is only needed for the legacy bridge architecture.
 
 ## 🐛 Troubleshooting
 

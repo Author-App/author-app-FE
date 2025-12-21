@@ -6,12 +6,13 @@ import { Redirect, useRouter } from "expo-router";
 import { useGetMeQuery } from "@/src/redux2/Apis/User";
 import { logOut } from "@/src/redux2/Slice/AuthSlice";
 import Toast from "react-native-toast-message";
+import { selectAuthToken, selectRefreshToken } from "@/src/redux2/Selectors";
 
 export default function Index() {
   const router = useRouter();
   const dispatch = useDispatch();
-  const token = useSelector((state: RootState) => state.auth.token);
-  const refreshToken = useSelector((state: RootState) => state.auth.refreshToken);
+  const token = useSelector(selectAuthToken);
+  const refreshToken = useSelector(selectRefreshToken);
 
   const [checkedAuth, setCheckedAuth] = useState(false);
 

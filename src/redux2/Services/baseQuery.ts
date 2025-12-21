@@ -3,6 +3,8 @@ import { RootState } from "../Store";
 import { logOut, updateTokens } from "../Slice/AuthSlice";
 import Toast from "react-native-toast-message";
 
+// Note: Direct state access via getState() is correct for middleware/RTK Query.
+// For components, use memoized selectors from ../Selectors instead.
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: "https://api-dev.stanleypaden.com/api/v1",
   prepareHeaders: (headers, { getState }) => {

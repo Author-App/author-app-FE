@@ -1,10 +1,10 @@
-import { memo, useCallback, useMemo, useState } from 'react';
-import { LayoutChangeEvent, PixelRatio } from 'react-native';
+import { memo, useCallback, useEffect, useState } from 'react';
+import { LayoutChangeEvent } from 'react-native';
 import { XStack, XStackProps } from 'tamagui';
 
-import UIcon from '@/src/components/core/icons/uIcon';
 import UText from '@/src/components/core/text/uText';
-import ULocalImage, { ULocalImageProps,} from '@/src/components/core/image/uLocalImage';
+import ULocalImage, { ULocalImageProps } from '@/src/components/core/image/uLocalImage';
+import USkeleton from '../display/uSkeleton';
 
 export interface UImageProps extends XStackProps {
   imageSource?: string;
@@ -23,9 +23,23 @@ const UImage = ({
     height: number;
   } | null>(null);
   const [isError, setIsError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Reset loading state when image source changes
+  useEffect(() => {
+    if (imageSource) {
+      setIsLoading(true);
+      setIsError(false);
+    }
+  }, [imageSource]);
 
   const handleError = useCallback(() => {
     setIsError(true);
+    setIsLoading(false);
+  }, []);
+
+  const handleLoad = useCallback(() => {
+    setIsLoading(false);
   }, []);
 
   const handleLayout = (event: LayoutChangeEvent) => {
@@ -48,32 +62,46 @@ const UImage = ({
           jc="center"
           flexGrow={1}
         >
-          <UText
-            color="$white"
-            variant="text-sm"
-          >
+          <UText color="$white" variant="text-sm">
             {fallBackText.slice(0, 3)}
           </UText>
         </XStack>
       );
     }
-  }, [fallBackText, dimen?.height]);
+    return null;
+  }, [fallBackText]);
 
   return (
     <XStack
       onLayout={handleLayout}
       h={dimen?.height}
       overflow="hidden"
+      position="relative"
       {...props}
     >
       {imageSource && !isError ? (
-        <ULocalImage
-          source={imageSource}
-          contentFit="cover"
-          contentPosition={contentPosition}
-          flexGrow={1}
-          onError={handleError}
-        />
+        <>
+          {isLoading && dimen && (
+            <USkeleton
+              width={dimen.width}
+              height={dimen.height}
+              radius={props.borderRadius ? Number(props.borderRadius) : 0}
+              position="absolute"
+              zIndex={1}
+            />
+          )}
+          <ULocalImage
+            source={imageSource}
+            contentFit="cover"
+            contentPosition={contentPosition}
+            flexGrow={1}
+            onError={handleError}
+            onLoad={handleLoad}
+            style={{
+              opacity: isLoading ? 0 : 1,
+            }}
+          />
+        </>
       ) : (
         renderFallback()
       )}
