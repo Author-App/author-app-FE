@@ -1,6 +1,6 @@
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { useGetBookDetailQuery } from "../redux2/Apis/Books";
+import { useGetBookDetailQuery, useRateBookMutation } from "../redux2/Apis/Books";
 import { useCreateOrderMutation, usePollPaymentStatusQuery } from "../redux2/Apis/Orders";
 import { useStripe } from "@stripe/stripe-react-native";
 
@@ -10,6 +10,8 @@ const useBookDetailController = () => {
     const { confirmPayment } = useStripe();
 
     const { data, isLoading, isFetching, error, refetch } = useGetBookDetailQuery(id);
+
+    const [rateBook, { isLoading : rateLoading }] = useRateBookMutation();
 
     const [modalVisible, setModalVisible] = useState(false);   // review modal
     const [paymentModal, setPaymentModal] = useState(false);   // card modal
@@ -127,9 +129,37 @@ const useBookDetailController = () => {
         };
     }, [reviews]);
 
-    const handleSubmit = (rating?: number, review?: string) => {
-        console.log("Rating:", rating, "Review:", review);
-    };
+    // const handleSubmit = (rating?: number, review?: string) => {
+    //     console.log("Rating:", rating, "Review:", review);
+    // };
+
+    const handleSubmit = async (rating?: number, review?: string) => {
+    try {
+        const payload: any = {};
+
+        if (rating !== undefined && rating > 0) {
+            payload.rating = rating;
+        }
+
+        if (review && review.trim().length > 0) {
+            payload.comment = review.trim();
+        }
+
+        await rateBook({
+            id,
+            body: payload,
+        }).unwrap();
+
+        alert("Review submitted successfully");
+        setModalVisible(false);
+        refetch();
+
+    } catch (error: any) {
+        console.log("RATE BOOK ERROR:", error);
+        alert(error?.data?.message || "Failed to submit review");
+    }
+};
+
 
     return {
         states: {
@@ -139,6 +169,7 @@ const useBookDetailController = () => {
             ratingStats,
             modalVisible,
             paymentModal,
+            rateLoading,
         },
         functions: {
             setModalVisible,

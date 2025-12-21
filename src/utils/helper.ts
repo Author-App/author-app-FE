@@ -1,11 +1,11 @@
 export const roundPercentage = (value: number): number => {
-    return Math.round(value);
+  return Math.round(value);
 };
 
 export const percentageToDecimal = (percentage: number): number => {
-    if (isNaN(percentage)) return 0;
-    const value = percentage / 100;
-    return Math.min(Math.max(value, 0), 1); // clamps between 0 and 1
+  if (isNaN(percentage)) return 0;
+  const value = percentage / 100;
+  return Math.min(Math.max(value, 0), 1); // clamps between 0 and 1
 };
 
 export const getInitials = (name: string | null | undefined): string => {
@@ -40,6 +40,22 @@ export const formatDuration = (durationSec: number): string => {
   return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 };
 
+export const formatDuration2 = (seconds: number) => {
+  if (!seconds || seconds <= 0) return '0 sec';
+
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+
+  if (mins > 0 && secs > 0) {
+    return `${mins} min ${secs} sec`;
+  } else if (mins > 0) {
+    return `${mins} min`;
+  } else {
+    return `${secs} sec`;
+  }
+};
+
+
 export const formatTime12h = (time24: string) => {
   if (!time24) return '';
 
@@ -53,5 +69,49 @@ export const formatTime12h = (time24: string) => {
 
   return `${hour}${minute > 0 ? `:${minute.toString().padStart(2, '0')}` : ''} ${ampm}`;
 };
+
+export const isWithinJoinWindow = (
+  eventDate: string,
+  eventTime: string
+) => {
+  // Combine date + time
+  const eventStart = new Date(eventDate);
+
+  const [hours, minutes, seconds] = eventTime.split(":").map(Number);
+  eventStart.setHours(hours, minutes, seconds || 0, 0);
+
+  const now = new Date();
+
+  const eventEnd = new Date(eventStart);
+  eventEnd.setHours(eventEnd.getHours() + 24);
+
+  return now >= eventStart && now <= eventEnd;
+};
+
+export const getJoinStatus = (
+  eventDate: string,
+  eventTime: string
+): "upcoming" | "live" | "ended" => {
+  const eventStart = new Date(eventDate);
+
+  const [hours, minutes, seconds] = eventTime.split(":").map(Number);
+  eventStart.setHours(hours, minutes, seconds || 0, 0);
+
+  const now = new Date();
+
+  // Allow joining 10 minutes before
+  const joinWindowStart = new Date(eventStart);
+  joinWindowStart.setMinutes(joinWindowStart.getMinutes() - 10);
+
+  // Assume meeting ends after 2 hours (adjust if needed)
+  const eventEnd = new Date(eventStart);
+  eventEnd.setHours(eventEnd.getHours() + 2);
+
+  if (now < joinWindowStart) return "upcoming";
+  if (now >= joinWindowStart && now <= eventEnd) return "live";
+  return "ended";
+};
+
+
 
 

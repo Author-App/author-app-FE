@@ -4,25 +4,20 @@ import IconDuration from '@/assets/icons/iconDuration';
 import IconLocation from '@/assets/icons/iconLocation';
 import IconMagnifyingGlass from '@/assets/icons/iconMagnifyingGlass';
 import IconPlay from '@/assets/icons/iconPlay';
-
 import UButtonTabs from '@/src/components/core/buttons/uButtonTabs';
 import UIconButton from '@/src/components/core/buttons/uIconButtonVariants';
 import UTextButton from '@/src/components/core/buttons/uTextButton';
 import USearchbar from '@/src/components/core/inputs/uSearchbar';
 import UText from '@/src/components/core/text/uText';
-import {
-  ContentCardSkeleton,
-  EventCardSkeleton,
-  ListSkeleton,
-} from '@/src/components/core/skeletons';
-import { useGetBlogsQuery, useGetCommunitiesQuery, useGetEventsQuery, useGetMediaQuery } from '@/src/redux2/Apis/Explore';
-import { formatDate, formatDuration, formatTime12h } from '@/src/utils/helper';
+import { useExitCommunityMutation, useGetBlogsQuery, useGetCommunitiesQuery, useGetEventsQuery, useGetMediaQuery, useJoinCommunityMutation } from '@/src/redux2/Apis/Explore';
+import { formatDate, formatDuration, formatDuration2, formatTime12h } from '@/src/utils/helper';
 
 
 import type { Href } from 'expo-router';
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { FlatList, Image, View } from 'react-native';
+import { ActivityIndicator, FlatList, Image, TouchableOpacity, View } from 'react-native';
+import { Text } from 'tamagui';
 import { AnimatePresence, XStack, YStack } from 'tamagui';
 
 type TabType = 'Blog' | 'Podcasts' | 'Videos' | 'Events' | 'Community';
@@ -36,7 +31,6 @@ const ExploreScreen = () => {
   const [searchVisible, setSearchVisible] = useState(false);
   const [search, setSearch] = useState('');
 
-  /* ---------------- API CALLS ---------------- */
 
   const blogsQuery = useGetBlogsQuery(undefined, {
     skip: activeTab !== 'Blog',
@@ -63,8 +57,6 @@ const ExploreScreen = () => {
   const communitiesQuery = useGetCommunitiesQuery(undefined, {
     skip: activeTab !== 'Community',
   });
-
-  /* ---------------- DATA SELECTOR ---------------- */
 
   const { data = [], isLoading } = useMemo(() => {
     switch (activeTab) {
@@ -105,7 +97,9 @@ const ExploreScreen = () => {
     communitiesQuery,
   ]);
 
-  /* ---------------- SEARCH FILTER ---------------- */
+  const [joinCommunity, { isLoading: joining }] = useJoinCommunityMutation();
+  const [exitCommunity, { isLoading: exiting }] = useExitCommunityMutation();
+
 
   const filteredData = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -120,7 +114,39 @@ const ExploreScreen = () => {
     );
   }, [search, data]);
 
-  /* ---------------- CARD RENDER ---------------- */
+  const getEmptyMessage = () => {
+    switch (activeTab) {
+      case 'Blog':
+        return 'No blogs found';
+      case 'Podcasts':
+        return 'No podcasts found';
+      case 'Videos':
+        return 'No videos found';
+      case 'Events':
+        return 'No events found';
+      case 'Community':
+        return 'No communities found';
+      default:
+        return 'No data found';
+    }
+  };
+
+
+
+  const handleCommunityToggle = async (item: any) => {
+    try {
+      if (item.isJoined) {
+        await exitCommunity(item.id).unwrap();
+      } else {
+        await joinCommunity(item.id).unwrap();
+      }
+      communitiesQuery.refetch();
+    } catch (error) {
+      console.error('Community action failed', error);
+    }
+  };
+
+
 
   const renderItem = useMemo(() => (item: any) => {
     switch (activeTab.toLowerCase()) {
@@ -129,7 +155,7 @@ const ExploreScreen = () => {
           <XStack
             onPress={() =>
               router.push({
-                pathname: '/(app)/blogDetails/[id]',
+                pathname: "/(app)/article/[id]",
                 params: { id: item.id },
               } as unknown as Href)
             }
@@ -162,9 +188,7 @@ const ExploreScreen = () => {
                 <UText numberOfLines={1} variant="text-sm" color={'$neutral8'}>
                   {formatDate(item.publishedAt)}
                 </UText>
-                {/* <UText numberOfLines={1} variant="text-sm" color={'$neutral8'} marginLeft={'auto'} >
-                        {item.readTime}
-                      </UText> */}
+
               </XStack>
             </YStack>
 
@@ -184,7 +208,7 @@ const ExploreScreen = () => {
             pressStyle={{ opacity: 0.85 }}
             key={item.id}
             jc={'center'}
-            marginHorizontal={20}
+            marginHorizontal={10}
             mb={10}>
             <XStack ai={'center'} >
               <UText numberOfLines={2} variant="heading-h1" width={'90%'} >
@@ -196,7 +220,7 @@ const ExploreScreen = () => {
             <XStack mt={10} ai={'center'}>
               <IconDuration />
               <UText numberOfLines={2} variant="text-sm" width={'100%'} ml={3}>
-                {item?.durationSec}
+                {Math.floor(item.durationSec / 60)} mins
               </UText>
             </XStack>
 
@@ -268,6 +292,8 @@ const ExploreScreen = () => {
 
           </YStack>
         );
+
+
       case "events":
         return (
           <XStack
@@ -279,7 +305,7 @@ const ExploreScreen = () => {
               } as unknown as Href)
             }
             pressStyle={{ opacity: 0.85 }}
-            marginHorizontal={20}
+            marginHorizontal={8}
             marginBottom={15}
             borderRadius={16}
             overflow="hidden"
@@ -292,8 +318,10 @@ const ExploreScreen = () => {
             elevation={4}
             px={15}
             py={15}
-            ai={'center'} >
-            <YStack width={'70%'}
+            ai={'center'}
+            jc={'space-between'}
+          >
+            <YStack width={'65%'}
             >
               <UText numberOfLines={2} variant="heading-h1">
                 {item?.title}
@@ -325,7 +353,7 @@ const ExploreScreen = () => {
               onPress={() => console.log('fsddfs')}
               variant='secondary-md'
               height={40}
-              width={'28%'}
+              width={'30%'}
               textColor={'$black'}
             >
               DETAILS
@@ -333,115 +361,93 @@ const ExploreScreen = () => {
           </XStack >
         );
 
-      // case 'events':
-      //   return (
-      //     <XStack mb={15} px={15} py={15} backgroundColor="#fff" borderRadius={16}>
-      //       <YStack width="70%">
-      //         <UText variant="heading-h1">{item.title}</UText>
-      //         <XStack mt={8}>
-      //           <IconCalender />
-      //           <UText ml={5}>{item.date}</UText>
-      //         </XStack>
-      //       </YStack>
-      //       <UTextButton variant="secondary-md">DETAILS</UTextButton>
-      //     </XStack>
-      //   );
+      case "community":
+        return (
+          <YStack
+            key={item.id}
+            onPress={() =>
+              router.push({
+                pathname: '/(app)/communityDetail/[id]',
+                params: { id: item.id },
+              })
+            }
+            pressStyle={{ opacity: 0.9, scale: 0.98 }}
+            marginHorizontal={8}
+            marginBottom={15}
+            borderRadius={16}
+            overflow="hidden"
+            backgroundColor={'#ffffff'}
+            borderWidth={1}
+            borderColor={'rgba(0,0,0,0.05)'}
+            shadowColor={'#000'}
+            shadowOffset={{ width: 0, height: 2 }}
+            shadowOpacity={0.08}
+            shadowRadius={6}
+            elevation={4}
+            px={18}
+            py={16}
+          >
+            <XStack ai="center" jc="space-between">
+              <UText
+                variant="heading-h1"
+                numberOfLines={2}
+                fontWeight="700"
 
-            case "community":
-              return (
-                <YStack
-                  key={item.id}
-                  onPress={() =>
-                    router.push({
-                      pathname: '/(app)/communityDetail/[id]',
-                      params: { id: item.id },
-                    } as unknown as Href)
-                  }
-                  pressStyle={{ opacity: 0.9, scale: 0.98 }}
-                  marginHorizontal={20}
-                  marginBottom={15}
-                  borderRadius={16}
-                  overflow="hidden"
-                  backgroundColor={'#ffffff'}
-                  borderWidth={1}
-                  borderColor={'rgba(0,0,0,0.05)'}
-                  shadowColor={'#000'}
-                  shadowOffset={{ width: 0, height: 2 }}
-                  shadowOpacity={0.08}
-                  shadowRadius={6}
-                  elevation={4}
-                  px={18}
-                  py={16}
+                width="75%"
+
+              >
+                {item?.title}
+              </UText>
+              <YStack
+                backgroundColor="rgba(227,233,255,0.8)"
+                borderRadius={8}
+                px={8}
+                py={4}
+              >
+                <UText variant="text-xs" color="$primary" fontWeight="600">
+                  {item?.threadCount} threads
+                </UText>
+              </YStack>
+            </XStack>
+            <View
+              style={{
+                height: 1,
+                backgroundColor: 'rgba(0,0,0,0.05)',
+                marginVertical: 10,
+                width: '100%',
+              }}
+            />
+
+
+            <UText
+              numberOfLines={3}
+              variant="text-sm"
+              color="$neutral7"
+              lineHeight={20}
+            >
+              {item?.description}
+            </UText>
+
+            <TouchableOpacity onPress={() => handleCommunityToggle(item)}>
+              <XStack jc="flex-end" mt={10} ai={'center'}>
+                <UText
+                  variant="text-sm"
+                  color="$primary"
+                  fontWeight="600"
+                  numberOfLines={1}
                 >
-                  <XStack ai="center" jc="space-between">
-                    <UText
-                      variant="heading-h1"
-                      numberOfLines={2}
-                      fontWeight="700"
-
-                      width="75%"
-
-                    >
-                      {item?.title}
-                    </UText>
-                    <YStack
-                      backgroundColor="rgba(227,233,255,0.8)"
-                      borderRadius={8}
-                      px={8}
-                      py={4}
-                    >
-                      <UText variant="text-xs" color="$primary" fontWeight="600">
-                        {item?.threadCount} threads
-                      </UText>
-                    </YStack>
-                  </XStack>
-                  <View
-                    style={{
-                      height: 1,
-                      backgroundColor: 'rgba(0,0,0,0.05)',
-                      marginVertical: 10,
-                      width: '100%',
-                    }}
-                  />
-
-
-                  <UText
-                    numberOfLines={3}
-                    variant="text-sm"
-                    color="$neutral7"
-                    lineHeight={20}
-                  >
-                    {item?.description}
-                  </UText>
-
-                  <XStack jc="flex-end" mt={10} ai={'center'}>
-                    <UText
-                      variant="text-sm"
-                      color="$primary"
-                      fontWeight="600"
-                      numberOfLines={1}
-                    >
-                      Join Discussion
-                    </UText>
-                    <IconArrowRight dimen={20} />
-                  </XStack>
-                </YStack>
-              );
-
-      // case 'community':
-      //   return (
-      //     <YStack mb={15} px={18} py={16} backgroundColor="#fff" borderRadius={16}>
-      //       <UText variant="heading-h1">{item.title}</UText>
-      //       <UText mt={8}>{item.description}</UText>
-      //     </YStack>
-      //   );
+                  {item.isJoined ? 'Exit Discussion' : 'Join Discussion'}
+                </UText>
+                <IconArrowRight dimen={20} />
+              </XStack>
+            </TouchableOpacity>
+          </YStack>
+        );
 
       default:
         return null;
     }
   }, [activeTab, router]);
-
-  /* ---------------- UI ---------------- */
 
   return (
     <YStack f={1} backgroundColor="$bg2">
@@ -481,12 +487,14 @@ const ExploreScreen = () => {
       />
 
       {isLoading ? (
-        <YStack paddingHorizontal="$4" paddingTop="$2">
-          {activeTab === 'Events' ? (
-            <ListSkeleton count={5} SkeletonComponent={EventCardSkeleton} />
-          ) : (
-            <ListSkeleton count={5} SkeletonComponent={ContentCardSkeleton} />
-          )}
+        <YStack flex={1} jc="center" ai="center" mt={50}>
+          <ActivityIndicator size="large" color="#007AFF" />
+        </YStack>
+      ) : filteredData.length === 0 ? (
+        <YStack flex={1} jc="center" ai="center" mt={80}>
+          <UText variant="text-md" color="$neutral7">
+            {getEmptyMessage()}
+          </UText>
         </YStack>
       ) : (
         <FlatList
@@ -503,6 +511,7 @@ const ExploreScreen = () => {
           contentContainerStyle={{ paddingHorizontal: 20 }}
         />
       )}
+
     </YStack>
   );
 };

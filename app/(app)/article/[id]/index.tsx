@@ -1,7 +1,7 @@
 import UHeaderWithBackground from '@/src/components/core/layout/uHeaderWithBackground';
 import UText from '@/src/components/core/text/uText';
 import { useLocalSearchParams } from 'expo-router';
-import { Linking, ScrollView, useWindowDimensions } from 'react-native';
+import { ActivityIndicator, Linking, ScrollView, useWindowDimensions } from 'react-native';
 import { YStack } from 'tamagui';
 import Markdown from 'react-native-markdown-display';
 import { useGetArticleDetailQuery } from '@/src/redux2/Apis/Articles';
@@ -25,11 +25,8 @@ const ArticleScreen = () => {
 
   if (isLoading) {
     return (
-      <YStack flex={1} backgroundColor="$bg2">
-        <UHeaderWithBackground title="Article" showBackButton />
-        <YStack flex={1} jc="center" ai="center">
-          <UText>Loading article…</UText>
-        </YStack>
+      <YStack flex={1} jc="center" ai="center">
+        <ActivityIndicator size="large" />
       </YStack>
     );
   }
@@ -64,20 +61,8 @@ const ArticleScreen = () => {
           px={16}
           py={16}
         >
-          {/* <UText
-            variant='heading-h1'
-            mb={8}
-          >
-            {article.title}
-          </UText>
-
-          <UText 
-          color="$neutral8" mb={12}>
-            By {article.author?.name}
-          </UText> */}
 
           <Markdown
-            // style={markdownStyles}
             onLinkPress={(url) => {
               Linking.openURL(url);
               return false;

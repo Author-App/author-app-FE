@@ -7,7 +7,7 @@ import ULocalImage, { ULocalImageProps } from '@/src/components/core/image/uLoca
 import USkeleton from '../display/uSkeleton';
 
 export interface UImageProps extends XStackProps {
-  imageSource?: string;
+  imageSource?: string | null;
   fallBackText?: string;
   contentPosition?: ULocalImageProps['contentPosition'];
 }
@@ -108,5 +108,6 @@ const UImage = ({
     </XStack>
   );
 };
+
 
 export default memo(UImage);

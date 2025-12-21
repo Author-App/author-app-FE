@@ -5,6 +5,7 @@ import { persistReducer, persistStore } from 'redux-persist';
 import { authApi } from '../Apis/Auth';
 import { userApi } from '../Apis/User';
 import AuthSlice from '../Slice/AuthSlice';
+import PushTokenSlice from '../Slice/PushTokenSlice';
 import { bookingApi } from '../Apis/Booking';
 import { coachesApi } from '../Apis/Coaches';
 import { chatApi } from '../Apis/Chat';
@@ -41,10 +42,19 @@ const authConfig = {
 
 const authReducer = persistReducer(authConfig, AuthSlice);
 
+const pushTokenConfig = {
+    key: 'pushToken',
+    storage: AsyncStorage,
+    whitelist: ['token'], // only persist the token
+};
+
+const pushTokenReducer = persistReducer(pushTokenConfig, PushTokenSlice);
+
 const rootReducer = combineReducers({
     // auth: persistReducer(authConfig, AuthSlice),
     // [authApi.reducerPath]: authApi.reducer,
     auth: authReducer,
+    pushToken: pushTokenReducer,
     [authApi.reducerPath]: authApi.reducer,
     [homeApi.reducerPath]: homeApi.reducer,
     [articlesApi.reducerPath]: articlesApi.reducer,

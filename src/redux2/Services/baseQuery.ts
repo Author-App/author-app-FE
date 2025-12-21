@@ -21,7 +21,9 @@ const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
   if (args.url === "/auth/login") return result;
 
   if (result?.error?.status === 401) {
+    console.log("⚠️ Access token expired. Trying refresh...");
     const refreshToken = (api.getState() as RootState).auth.refreshToken;
+    console.log("🔑 Refresh token:", refreshToken);
 
     if (!refreshToken) {
       api.dispatch(logOut());
@@ -43,21 +45,44 @@ const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
       api,
       extraOptions
     );
+    console.log("🔄 Refresh response:", refresh);
 
-    const refreshData = refresh?.data as { access?: string; refresh?: string } | undefined;
+    const refreshData = refresh?.data as any;
 
-    if (refreshData?.access) {
+    const session = refreshData?.data?.session;
+
+    const newAccessToken = session?.accessToken;
+    const newRefreshToken = session?.refreshToken;
+
+    if (newAccessToken) {
       api.dispatch(
         updateTokens({
-          access: refreshData.access,
-          refresh: refreshData.refresh ?? refreshToken,
+          access: newAccessToken,
+          refresh: newRefreshToken ?? refreshToken,
         })
       );
 
+      // retry original request
       result = await rawBaseQuery(args, api, extraOptions);
     } else {
       api.dispatch(logOut());
     }
+
+
+    // const refreshData = refresh?.data as { access?: string; refresh?: string } | undefined;
+
+    // if (refreshData?.access) {
+    //   api.dispatch(
+    //     updateTokens({
+    //       access: refreshData.access,
+    //       refresh: refreshData.refresh ?? refreshToken,
+    //     })
+    //   );
+
+    //   result = await rawBaseQuery(args, api, extraOptions);
+    // } else {
+    //   api.dispatch(logOut());
+    // }
   }
 
   return result;

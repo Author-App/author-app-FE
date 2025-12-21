@@ -6,19 +6,23 @@ import UImage from "@/src/components/core/image/uImage";
 import UInput from "@/src/components/core/inputs/uInput";
 import UHeader from "@/src/components/core/layout/uHeader";
 import UKeyboardAvoidingView from "@/src/components/core/layout/uKeyboardAvoidingView";
+import useEditProfileController from "@/src/controllers/useEditProfileController";
 import useSettingsController from "@/src/controllers/useSettingsController";
 import { getInitials } from "@/src/utils/helper";
 import { useFormik } from "formik";
-import { Image, View } from "react-native";
+import { Image, TouchableOpacity, View } from "react-native";
 import { ScrollView, YStack } from "tamagui";
 
 const EditProfile = () => {
-    const { values, functions, states, router } = useSettingsController();
+    const { values, functions, states, router, validator } = useEditProfileController();
 
     const formik = useFormik({
         initialValues: values.initialValues,
         onSubmit: (values, { resetForm, setSubmitting }) => functions.handleSubmit(values, { resetForm, setSubmitting })
     });
+
+    console.log("THIS IS VALUES", formik.values.fullName);
+
 
 
 
@@ -39,40 +43,54 @@ const EditProfile = () => {
 
                     <View style={{ alignItems: 'center', marginTop: 40 }}>
                         <View style={{ position: 'relative' }}>
-                            <UImage
-                                imageSource={assets.images.padden}
-                                fallBackText={getInitials('Stanley Padden')}
+                            {/* <UImage
+                                imageSource={states.profileImage ? { uri: states.profileImage } : undefined}
+                                fallBackText={getInitials(formik.values.fullName)}
                                 w={150}
                                 h={150}
                                 borderRadius={75}
                                 overflow="hidden"
+                                onPress={functions.pickImage}
+                            /> */}
+
+                            <UImage
+                                imageSource={states.profileImage ?? undefined}
+                                fallBackText={getInitials(formik.values.fullName)}
+                                w={150}
+                                h={150}
+                                borderRadius={75}
+                                overflow="hidden"
+                                onPress={functions.pickImage}
                             />
 
-                            <View
-                                style={{
-                                    position: 'absolute',
-                                    bottom: 10,
-                                    right: -10,
-                                    width: 44,
-                                    height: 44,
-                                    borderRadius: 22,
-                                    backgroundColor: '#fff',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    shadowColor: '#000',
-                                    shadowOffset: { width: 0, height: 2 },
-                                    shadowOpacity: 0.25,
-                                    shadowRadius: 3.84,
-                                    elevation: 5,
-                                    borderColor: '#ddd',
-                                    borderWidth: 1,
-                                }}
-                            >
-                                <Image
-                                    source={assets.icons.gallery}
-                                    style={{ width: 20, height: 20, tintColor: '#000' }}
-                                />
-                            </View>
+
+                            <TouchableOpacity onPress={functions.pickImage}>
+                                <View
+                                    style={{
+                                        position: 'absolute',
+                                        bottom: 10,
+                                        right: -10,
+                                        width: 44,
+                                        height: 44,
+                                        borderRadius: 22,
+                                        backgroundColor: '#fff',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        shadowColor: '#000',
+                                        shadowOffset: { width: 0, height: 2 },
+                                        shadowOpacity: 0.25,
+                                        shadowRadius: 3.84,
+                                        elevation: 5,
+                                        borderColor: '#ddd',
+                                        borderWidth: 1,
+                                    }}
+                                >
+                                    <Image
+                                        source={assets.icons.gallery}
+                                        style={{ width: 20, height: 20, tintColor: '#000' }}
+                                    />
+                                </View>
+                            </TouchableOpacity>
                         </View>
                     </View>
 

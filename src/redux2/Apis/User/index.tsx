@@ -4,15 +4,64 @@ import baseQueryWithReauth from "../../Services/baseQuery";
 export const userApi = createApi({
   reducerPath: "userApi",
   baseQuery: baseQueryWithReauth,
+  tagTypes: ["User"],
   endpoints: builder => ({
     getMe: builder.query({
       query: () => `/auth/me`,
+      providesTags: ["User"],
+    }),
+
+    // Update profile (name)
+    updateProfile: builder.mutation({
+      query: (body) => ({
+        url: "/profile",
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["User"],
+    }),
+
+    // Upload profile image
+    uploadProfileImage: builder.mutation({
+      query: (formData) => ({
+        url: "/profile/upload-image",
+        method: "POST",
+        body: formData,
+      }),
+      invalidatesTags: ["User"],
+    }),
+
+    // Get profile image
+    getProfileImage: builder.query({
+      query: () => `/profile/image`,
+    }),
+
+    changePassword: builder.mutation({
+      query: (formData) => ({
+        url: '/password/change',
+        method: 'POST',
+        body: formData,
+        // formData: true,
+      }),
+    }),
+
+    deleteAccount: builder.mutation<void, void>({
+      query: () => ({
+        url: '/account',
+        method: 'DELETE',
+      }),
     }),
   }),
 });
 
-// Export the auto-generated hook
-export const { useGetMeQuery } = userApi;
+export const {
+  useGetMeQuery,
+  useUpdateProfileMutation,
+  useUploadProfileImageMutation,
+  useGetProfileImageQuery,
+  useChangePasswordMutation,
+  useDeleteAccountMutation,
+} = userApi;
 
 
 // import { createApi } from "@reduxjs/toolkit/query/react";

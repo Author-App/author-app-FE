@@ -21,17 +21,8 @@ const useHomeController = () => {
 
     const { data, isLoading, error, refetch } = useGetHomeQuery(null);
 
-    // console.log("THIS IS DATA", data);
-
-    // const handleRetry = useCallback(() => setError(false), []);
 
     const handleRetry = useCallback(() => refetch(), [refetch]);
-
-    // const placeholderSections = [
-    //     { id: "skeleton-1", type: "hero" },
-    //     { id: "skeleton-2", type: "carousel" },
-    //     { id: "skeleton-3", type: "carousel" },
-    // ];
 
     const placeholderSections: HomeItem[] = [
         { id: "skeleton-hero", type: "hero" },
@@ -47,13 +38,6 @@ const useHomeController = () => {
         const api = data.data;
 
         return [
-            // {
-            //     id: "hero-banner",
-            //     type: "hero",
-            //     subtype: "banner",
-            //     title: api.banner.title,
-            //     // data: api.banner,
-            // },
             {
                 id: "trending-books-section",
                 type: "carousel",
@@ -78,10 +62,6 @@ const useHomeController = () => {
         ];
     }, [data, isLoading]);
 
-    // console.log("THIS IS HOME SECTIONSS", JSON.stringify(homeSections, null, 2));
-
-
-
     const errorView = useMemo(
         () => (
             <YStack ai="center" p="$4">
@@ -105,12 +85,6 @@ const useHomeController = () => {
 
         return null;
     }, []);
-
-    // const loadingSkeleton = useCallback((type: string) => {
-    //     if (type === "hero") return <SkeletonHero />;
-    //     if (type === "carousel") return <SkeletonCarousel />;
-    //     return null;
-    // }, []);
 
     const renderItem: ListRenderItem<HomeItem> = useCallback(
         ({ item }) => {
