@@ -1,19 +1,13 @@
-import { Tabs, useRouter } from 'expo-router';
+import { Tabs } from 'expo-router';
 import BottomNavbar from './bottomNavbar';
 
 const BottomNavTabLayout = () => {
-
-  const router = useRouter();
-
   return (
     <Tabs
       initialRouteName="(home)"
       screenOptions={{
-        // headerShown: false,
-        headerShown: true,
-        // animation: 'shift',
-
-        // unmountOnBlur: false
+        headerShown: false,
+        animation: 'shift',
       }}
       tabBar={(props) => <BottomNavbar {...props} />}
     >

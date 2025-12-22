@@ -1,62 +1,65 @@
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { loginValidationSchema } from "../utils/validator";
 import { showErrorToast, showSuccessToast } from "../utils/toast";
-import { useDispatch } from "react-redux";
 import { useLoginMutation } from "../redux2/Apis/Auth";
-// import { useLoginMutation } from "../redux/Apis/Auth";
+import * as Application from 'expo-application';
+import { Platform } from 'react-native';
 
+const getDeviceInfo = async () => ({
+    deviceId: Platform.OS === 'android' ? Application.getAndroidId() : Application.applicationId ?? 'unknown',
+    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+});
 
 const initialValues = {
-    email: '',
-    password: '',
+    email: "",
+    password: "",
 };
 
 const useLoginController = () => {
-
     const [submitted, setSubmitted] = useState<boolean>(false);
-
-    const [login, { data, isLoading, error }] = useLoginMutation();
-    const dispatch = useDispatch();
-
-
+    const [login, { isLoading, error }] = useLoginMutation();
     const router = useRouter();
 
-    const handleSubmit = async (values: any, { resetForm, setSubmitting }: { resetForm: () => void; setSubmitting: (isSubmitting: boolean) => void }) => {
+    const handleSubmit = useCallback(
+        async (
+            values: { email: string; password: string },
+            { resetForm }: { resetForm: () => void }
+        ) => {
+            try {
+                const { deviceId, timeZone } = await getDeviceInfo();
+                const payload = {
+                    email: values.email,
+                    password: values.password,
+                    deviceId: deviceId,    
+                    timeZone: timeZone,
+                };
 
-        try {
-            const payload = {
-                email: values.email,
-                password: values.password,
-                deviceId: "abcd1234-ab",
-                timeZone: "GMT",
-            }
+                const res = await login(payload);
 
-            // const res = await login(payload).unwrap();
+                if (res?.data) {
+                    showSuccessToast("You've logged in successfully");
+                    router.replace("/(app)/(tabs)/(home)");
+                    resetForm();
+                }
 
-            const res = await login(payload);   // REMOVE unwrap()
-
-            console.log("THIS IS RES", res);
-
-
-            if (res?.data) {
-                showSuccessToast("You’ve logged in successfully");
-                router.replace("/(app)/(tabs)/(home)");
-                resetForm();
-            }
-            if (res?.error) {
-                const errorData = res?.error as { data?: { message?: string } };
-                const message = errorData?.data?.message || "Something went wrong";
+                if (res?.error) {
+                    const errorData = res?.error as { data?: { message?: string } };
+                    const message = errorData?.data?.message || "Something went wrong";
+                    showErrorToast(message);
+                }
+            } catch (err: unknown) {
+                const error = err as { data?: { message?: string } };
+                const message = error?.data?.message || "Something went wrong";
                 showErrorToast(message);
-                return;
             }
+        },
+        [login, router]
+    );
 
-        } catch (err: any) {
-            showErrorToast(err?.data?.message)
-            console.log("ERROR", error);
-
-        }
-    }
+    const handleSetSubmitted = useCallback((value: boolean) => {
+        setSubmitted(value);
+    }, []);
 
     return {
         validator: loginValidationSchema,
@@ -65,16 +68,15 @@ const useLoginController = () => {
         },
         functions: {
             handleSubmit,
-            setSubmitted
+            setSubmitted: handleSetSubmitted,
         },
         states: {
             loading: isLoading,
-            error: error,
+            error,
             submitted,
         },
         router,
-    }
+    };
+};
 
-}
-
-export default useLoginController
+export default useLoginController;

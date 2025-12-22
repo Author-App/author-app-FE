@@ -1,357 +1,240 @@
-import { Ionicons } from '@expo/vector-icons';
+import React, { useCallback, useMemo } from 'react';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { Platform } from 'react-native';
-import { Text, XStack, YStack, useTheme } from 'tamagui';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Text, XStack, YStack, getTokenValue } from 'tamagui';
+import { Ionicons } from '@expo/vector-icons';
+
+type IoniconsName = keyof typeof Ionicons.glyphMap;
+
+type TabConfig = {
+  icon: IoniconsName;
+  iconFocused: IoniconsName;
+  label: string;
+};
+
+const TAB_CONFIG: Record<string, TabConfig> = {
+  '(home)': { icon: 'home-outline', iconFocused: 'home', label: 'Home' },
+  library: { icon: 'book-outline', iconFocused: 'book', label: 'Library' },
+  explore: { icon: 'compass-outline', iconFocused: 'compass', label: 'Explore' },
+  profile: { icon: 'person-outline', iconFocused: 'person', label: 'Profile' },
+  settings: { icon: 'settings-outline', iconFocused: 'settings', label: 'Settings' },
+};
+
+const DEFAULT_TAB: TabConfig = {
+  icon: 'ellipse-outline',
+  iconFocused: 'ellipse',
+  label: 'Tab',
+};
+
+const TAB_ICON_SIZE = 24;
+const CENTER_ICON_SIZE = 28;
+const CENTER_BUTTON_SIZE = 60;
+const CENTER_LIFT = 28;
+const NAVBAR_HEIGHT = 70;
+
+// Extracted constant objects to prevent recreation on each render
+const TAB_PRESS_STYLE = { opacity: 0.7, scale: 0.96 } as const;
+const CENTER_PRESS_STYLE = { scale: 0.95, opacity: 0.9 } as const;
+const CENTER_SHADOW_OFFSET = { width: 0, height: 4 } as const;
+const NAVBAR_SHADOW_OFFSET = { width: 0, height: 4 } as const;
+const POINTER_EVENTS_BOX_NONE = { pointerEvents: 'box-none' } as const;
 
 interface TabItemProps {
-  icon: keyof typeof Ionicons.glyphMap;
-  label: string;
+  routeName: string;
   focused: boolean;
   onPress: () => void;
-  isCenter?: boolean;
+  onLongPress: () => void;
+  accessibilityLabel?: string;
 }
 
-const TabItem = ({
-  icon,
-  label,
-  focused,
-  onPress,
-  isCenter = false,
-}: TabItemProps) => {
-  const theme = useTheme();
+const TabItem = React.memo(({ routeName, focused, onPress, onLongPress, accessibilityLabel }: TabItemProps) => {
+  const config = TAB_CONFIG[routeName] ?? DEFAULT_TAB;
+  const iconName = focused ? config.iconFocused : config.icon;
+  const color = getTokenValue(focused ? '$accent' : '$neutral6');
 
   return (
     <YStack
       flex={1}
       ai="center"
       jc="center"
-      gap={6}
+      gap="$1"
       onPress={onPress}
-      pressStyle={{ opacity: 0.7, scale: 0.96 }}
-      animation="bouncy"
-      mt={isCenter ? -70 : 0} // 🔥 lift center tab
+      onLongPress={onLongPress}
+      pressStyle={TAB_PRESS_STYLE}
+      animation="quick"
       cursor="pointer"
+      accessibilityRole="button"
+      accessibilityState={{ selected: focused }}
+      accessibilityLabel={accessibilityLabel ?? config.label}
     >
-      {/* Icon container */}
-      <YStack
-        width={isCenter ? 68 : 56}
-        height={isCenter ? 68 : 36}
-        ai="center"
-        jc="center"
-        borderRadius={isCenter ? 34 : 12}
-        backgroundColor={
-          isCenter
-            ? focused
-              ? '#385d83ff'
-              : '$bg2'
-            : focused
-              ? '$bg2'
-              : 'transparent'
-        }
-        shadowColor={isCenter ? '#000' : undefined}
-        shadowOffset={{ width: 0, height: 8 }}
-        shadowOpacity={isCenter ? 0.25 : 0}
-        shadowRadius={14}
-        elevation={isCenter ? 14 : 0}
-        scale={focused && isCenter ? 1.1 : 1}
-        animation="bouncy"
-      >
-        <Ionicons
-          name={icon}
-          size={isCenter ? 32 : 26}
-          color={
-            isCenter
-              ? focused
-                ? '#fff'
-                : theme.neutral7.val
-              : focused
-                ? '#385d83ff'
-                : theme.neutral6.val
-          }
-        />
-      </YStack>
-
-      {/* Hide label for center tab */}
-      {!isCenter && (
-        <Text
-          fontSize={12}
-          fontWeight={focused ? '700' : '500'}
-          color={focused ? '#385d83ff' : '$neutral6'}
-          mt={6}
-        >
-          {label}
-        </Text>
-      )}
+      <Ionicons name={iconName} size={TAB_ICON_SIZE} color={color} />
+      <Text fontSize={11} fontWeight={focused ? '600' : '400'} color={focused ? '$accent' : '$neutral6'}>
+        {config.label}
+      </Text>
     </YStack>
   );
-};
+});
 
-const BottomNavbar = ({
-  state,
-  descriptors,
-  navigation,
-}: BottomTabBarProps) => {
-  const getIconName = (
-    routeName: string,
-    focused: boolean
-  ): keyof typeof Ionicons.glyphMap => {
-    switch (routeName) {
-      case '(home)':
-        return focused ? 'home' : 'home-outline';
-      case 'library':
-        return focused ? 'library' : 'library-outline';
-      case 'explore':
-        return focused ? 'play-circle' : 'play-circle-outline';
-      case 'profile':
-        return focused ? 'person' : 'person-outline';
-      case 'settings':
-        return focused ? 'settings' : 'settings-outline';
-      default:
-        return 'help-circle-outline';
-    }
-  };
+TabItem.displayName = 'TabItem';
+interface CenterTabProps {
+  routeName: string;
+  focused: boolean;
+  onPress: () => void;
+  onLongPress: () => void;
+}
 
-  const getLabel = (routeName: string) => {
-    switch (routeName) {
-      case '(home)':
-        return 'Home';
-      case 'library':
-        return 'Library';
-      case 'explore':
-        return 'Explore';
-      case 'profile':
-        return 'Profile';
-      case 'settings':
-        return 'Settings';
-      default:
-        return routeName;
-    }
-  };
+const CenterTab = React.memo(({ routeName, focused, onPress, onLongPress }: CenterTabProps) => {
+  const config = TAB_CONFIG[routeName] ?? DEFAULT_TAB;
+  const iconName = focused ? config.iconFocused : config.icon;
+  const iconColor = getTokenValue(focused ? '$white' : '$neutral7');
 
   return (
-    <XStack
-      backgroundColor="$neutral0"
-      borderTopWidth={0.5}
-      borderTopColor="$neutral2"
-      paddingBottom={Platform.OS === 'ios' ? 28 : 16}
-      paddingTop={18}
-      // paddingTop={26}
-      paddingHorizontal={12}
-      height={Platform.OS === 'ios' ? 100 : 80}
-      shadowColor="$neutral8"
-      shadowOffset={{ width: 0, height: -6 }}
-      shadowOpacity={0.15}
-      shadowRadius={14}
-      elevation={18}
+    <YStack
+      w={CENTER_BUTTON_SIZE}
+      h={CENTER_BUTTON_SIZE}
+      ai="center"
+      jc="center"
+      bg={focused ? '$accent' : '$bg2'}
+      borderRadius={CENTER_BUTTON_SIZE / 2}
+      shadowColor="$shadow"
+      shadowOffset={CENTER_SHADOW_OFFSET}
+      shadowOpacity={0.25}
+      shadowRadius={8}
+      elevation={8}
+      onPress={onPress}
+      onLongPress={onLongPress}
+      pressStyle={CENTER_PRESS_STYLE}
+      animation="quick"
+      cursor="pointer"
+      accessibilityRole="button"
+      accessibilityState={{ selected: focused }}
+      accessibilityLabel={config.label}
     >
-      {state.routes.map((route, index) => {
-        const isFocused = state.index === index;
-        const isCenter = route.name === 'library'; // ⭐ center tab
-
-        const onPress = () => {
-          const event = navigation.emit({
-            type: 'tabPress',
-            target: route.key,
-            canPreventDefault: true,
-          });
-
-          if (!isFocused && !event.defaultPrevented) {
-            navigation.navigate(route.name);
-          }
-        };
-
-        return (
-          <TabItem
-            key={route.key}
-            icon={getIconName(route.name, isFocused)}
-            label={getLabel(route.name)}
-            focused={isFocused}
-            onPress={onPress}
-            isCenter={isCenter} // ✅ important
-          />
-        );
-      })}
-    </XStack>
+      <Ionicons name={iconName} size={CENTER_ICON_SIZE} color={iconColor} />
+    </YStack>
   );
-};
+});
+
+CenterTab.displayName = 'CenterTab';
+
+const BottomNavbar = React.memo(({ state, navigation }: BottomTabBarProps) => {
+  const { bottom } = useSafeAreaInsets();
+
+  // Split routes into left (first 2), center (middle), right (last 2)
+  const { leftRoutes, centerRoute, rightRoutes } = useMemo(() => {
+    const routes = state.routes;
+    if (routes.length < 3) {
+      return { leftRoutes: routes, centerRoute: null, rightRoutes: [] };
+    }
+
+    const centerIndex = Math.floor(routes.length / 2);
+    return {
+      leftRoutes: routes.slice(0, centerIndex),
+      centerRoute: routes[centerIndex],
+      rightRoutes: routes.slice(centerIndex + 1),
+    };
+  }, [state.routes]);
+
+  const handleTabPress = useCallback(
+    (route: (typeof state.routes)[number], isFocused: boolean) => {
+      const event = navigation.emit({
+        type: 'tabPress',
+        target: route.key,
+        canPreventDefault: true,
+      });
+
+      if (!isFocused && !event.defaultPrevented) {
+        navigation.navigate(route.name, route.params);
+      } else if (isFocused) {
+        // Scroll to top or reset stack on double tap
+        navigation.reset({ index: 0, routes: [{ name: route.name }] });
+      }
+    },
+    [navigation]
+  );
+
+  const handleTabLongPress = useCallback(
+    (route: (typeof state.routes)[number]) => {
+      navigation.emit({ type: 'tabLongPress', target: route.key });
+    },
+    [navigation]
+  );
+
+  const renderTabItem = useCallback(
+    (route: (typeof state.routes)[number]) => {
+      const globalIndex = state.routes.findIndex((r) => r.key === route.key);
+      const isFocused = state.index === globalIndex;
+
+      return (
+        <TabItem
+          key={route.key}
+          routeName={route.name}
+          focused={isFocused}
+          onPress={() => handleTabPress(route, isFocused)}
+          onLongPress={() => handleTabLongPress(route)}
+        />
+      );
+    },
+    [handleTabLongPress, handleTabPress, state.index, state.routes]
+  );
+
+  const renderCenterTab = useCallback(() => {
+    if (!centerRoute) return null;
+
+    const globalIndex = state.routes.findIndex((r) => r.key === centerRoute.key);
+    const isFocused = state.index === globalIndex;
+
+    return (
+      <CenterTab
+        routeName={centerRoute.name}
+        focused={isFocused}
+        onPress={() => handleTabPress(centerRoute, isFocused)}
+        onLongPress={() => handleTabLongPress(centerRoute)}
+      />
+    );
+  }, [centerRoute, handleTabLongPress, handleTabPress, state.index, state.routes]);
+
+  return (
+    <YStack w="100%" ai="center" jc="center" bottom={0} h={90}>
+      {/* Main Navbar */}
+      <YStack
+        w="100%"
+        bottom={0}
+        jc="center"
+        ai="center"
+        style={POINTER_EVENTS_BOX_NONE}
+        bg="$neutral0"
+        shadowColor="$black"
+        shadowOffset={NAVBAR_SHADOW_OFFSET}
+        shadowOpacity={0.25}
+        shadowRadius={33}
+        elevationAndroid={11}
+        h={NAVBAR_HEIGHT + bottom}
+      >
+        <XStack w="100%" mb={bottom + 4} mt={16} px={16}>
+          {/* Left Tabs */}
+          <XStack flex={1} ai="center" jc="space-around" gap={12}>
+            {leftRoutes.map(renderTabItem)}
+          </XStack>
+
+          {/* Center Spacer */}
+          <XStack w={CENTER_BUTTON_SIZE + 24} />
+
+          {/* Right Tabs */}
+          <XStack flex={1} ai="center" jc="space-around" gap={12}>
+            {rightRoutes.map(renderTabItem)}
+          </XStack>
+        </XStack>
+      </YStack>
+
+      {/* Floating Center Button */}
+      <XStack jc="center" pos="absolute" bottom={55} zIndex={10} bg="$neutral0" borderRadius={40} p={5}>
+        {renderCenterTab()}
+      </XStack>
+    </YStack>
+  );
+});
+
+BottomNavbar.displayName = 'BottomNavbar';
 
 export default BottomNavbar;
-
-
-// import { Ionicons } from '@expo/vector-icons';
-// import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-// import { Platform } from 'react-native';
-// import { Text, XStack, YStack, useTheme } from 'tamagui';
-
-// interface TabItemProps {
-//   icon: keyof typeof Ionicons.glyphMap;
-//   label: string;
-//   focused: boolean;
-//   onPress: () => void;
-//   isCenter?: boolean;
-// }
-
-// const TabItem = ({ icon, label, focused, onPress, isCenter = false }: TabItemProps) => {
-//   const theme = useTheme();
-
-//   return (
-//     <YStack
-//       flex={1}
-//       ai="center"
-//       jc="center"
-//       gap={8}
-//       onPress={onPress}
-//       pressStyle={{ opacity: 0.6, scale: 0.97 }}
-//       animation="bouncy"
-//       cursor="pointer"
-//       mt={isCenter ? -24 : 0}   // 👈 raise it
-//     >
-//       <YStack
-//         width={isCenter ? 64 : 56}
-//         height={isCenter ? 64 : 36}
-//         // width={56}
-//         // height={36}
-//         ai="center"
-//         jc="center"
-//         // borderRadius={12}
-//         borderRadius={isCenter ? 32 : 12}
-//         backgroundColor={
-//           isCenter
-//             ? focused
-//               ? '#385d83ff'
-//               : '$bg2'
-//             : focused
-//               ? '$bg2'
-//               : 'transparent'
-//         }
-//         // backgroundColor={focused ? '$bg2' : 'transparent'}
-//         // animation="quick"
-//         // scale={focused ? 1 : 0.95}
-//         shadowColor={isCenter ? '#000' : undefined}
-//         shadowOffset={{ width: 0, height: 6 }}
-//         shadowOpacity={isCenter ? 0.25 : 0}
-//         shadowRadius={10}
-//         elevation={isCenter ? 10 : 0}
-//         scale={focused && isCenter ? 1.08 : focused ? 1 : 0.95}
-//         animation="bouncy"
-//       >
-//         <Ionicons
-//           name={icon}
-//           // size={26}
-//           size={isCenter ? 30 : 26}
-//           // color={focused ? '#385d83ff' : theme.neutral6.val}
-//           color={
-//             isCenter
-//               ? focused
-//                 ? '#fff'
-//                 : theme.neutral7.val
-//               : focused
-//                 ? '#385d83ff'
-//                 : theme.neutral6.val
-//           }
-//         />
-//       </YStack>
-//       {!isCenter && (
-//         <Text
-//           fontSize={12}
-//           fontWeight={focused ? '700' : '500'}
-//           color={focused ? '#385d83ff' : '$neutral6'}
-//           mt={8}
-//         >
-//           {label}
-//         </Text>
-//       )}
-//       {/* <Text
-//         fontSize={12}
-//         fontWeight={focused ? '700' : '500'}
-//         color={focused ? '#385d83ff' : '$neutral6'}
-//         animation="quick"
-//         opacity={focused ? 1 : 0.7}
-//       >
-//         {label}
-//       </Text> */}
-//     </YStack>
-//   );
-// };
-
-// const BottomNavbar = ({ state, descriptors, navigation }: BottomTabBarProps) => {
-//   const getIconName = (routeName: string, focused: boolean): keyof typeof Ionicons.glyphMap => {
-//     switch (routeName) {
-//       case '(home)':
-//         return focused ? 'home' : 'home-outline';
-//       case 'library':
-//         return focused ? 'library' : 'library-outline';
-//       case 'explore':
-//         return focused ? 'play-circle' : 'play-circle-outline';
-//       case 'profile':
-//         return focused ? 'person' : 'person-outline';
-//       case 'settings':
-//         return focused ? 'settings' : 'settings-outline';
-//       default:
-//         return 'help-circle-outline';
-//     }
-//   };
-
-//   const getLabel = (routeName: string) => {
-//     switch (routeName) {
-//       case '(home)':
-//         return 'Home';
-//       case 'library':
-//         return 'Library';
-//       case 'explore':
-//         return 'Explore';
-//       case 'profile':
-//         return 'Profile';
-//       case 'settings':
-//         return 'Settings';
-//       default:
-//         return routeName;
-//     }
-//   };
-
-//   return (
-//     <XStack
-//       backgroundColor="$neutral0"
-//       borderTopWidth={0.5}
-//       borderTopColor="$neutral2"
-//       paddingBottom={Platform.OS === 'ios' ? 28 : 16}
-//       paddingTop={16}
-//       paddingHorizontal={12}
-//       height={Platform.OS === 'ios' ? 95 : 75}
-//       shadowColor="$neutral8"
-//       shadowOffset={{ width: 0, height: -4 }}
-//       shadowOpacity={0.15}
-//       shadowRadius={12}
-//       elevation={16}
-//     >
-//       {state.routes.map((route, index) => {
-//         const isFocused = state.index === index;
-//         const isCenter = route.name === 'library';
-
-//         const onPress = () => {
-//           const event = navigation.emit({
-//             type: 'tabPress',
-//             target: route.key,
-//             canPreventDefault: true,
-//           });
-
-//           if (!isFocused && !event.defaultPrevented) {
-//             navigation.navigate(route.name);
-//           }
-//         };
-
-//         return (
-//           <TabItem
-//             key={route.key}
-//             icon={getIconName(route.name, isFocused)}
-//             label={getLabel(route.name)}
-//             focused={isFocused}
-//             onPress={onPress}
-//           />
-//         );
-//       })}
-//     </XStack>
-//   );
-// };
-
-// export default BottomNavbar;
