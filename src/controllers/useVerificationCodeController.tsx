@@ -1,84 +1,66 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { codeValidationSchema } from "@/src/utils/validator";
 import { showErrorToast } from "../utils/toast";
 import { useVerifycodeMutation } from "../redux2/Apis/Auth";
 
-
 const initialValues = {
-    code: '',
+    code: "",
 };
 
 const useVerificationCodeController = () => {
-
-    const { token } = useLocalSearchParams();
-
-    const [verifycode, { data, isLoading, error }] = useVerifycodeMutation();
-
-
-    // const [loading, setLoading] = useState<boolean>(false);
+    const { token } = useLocalSearchParams<{ token: string }>();
+    const [verifycode, { isLoading, error }] = useVerifycodeMutation();
     const [submitted, setSubmitted] = useState<boolean>(false);
-
-
     const router = useRouter();
 
-    const handleOTPChange = (
-        text: string,
-        setFieldValue: (field: string, value: any) => void,
-        handleSubmit: () => void
-    ) => {
-        setFieldValue("code", text);
+    const handleOTPChange = useCallback(
+        (
+            text: string,
+            setFieldValue: (field: string, value: string) => void,
+            handleSubmit: () => void
+        ) => {
+            setFieldValue("code", text);
 
-        if (text.length === 6) {
-            handleSubmit();
-        }
-    };
-
-
-    const handleSubmit = async (values: any, { resetForm, setSubmitting }: { resetForm: () => void; setSubmitting: (isSubmitting: boolean) => void }) => {
-        try {
-
-            const payload = {
-                code: values.code,
-            };
-
-            // const res = await verifycode(payload).unwrap();
-            const res = await verifycode({
-                token,          // ← sent in header later
-                code: values.code,
-            }).unwrap();
-            if (res) {
-                console.log("THIS IS RES", res);
-                router.push({
-                    pathname: '/(public)/resetPassword',
-                    params: {
-                        token: res?.data?.token,  // or the correct token field
-                    }
-                });
-                resetForm();
-
+            if (text.length === 6) {
+                handleSubmit();
             }
-        } catch (err: any) {
-            showErrorToast(err?.data?.message)
-        }
+        },
+        []
+    );
 
+    const handleSubmit = useCallback(
+        async (
+            values: { code: string },
+            { resetForm }: { resetForm: () => void }
+        ) => {
+            try {
+                const res = await verifycode({
+                    token,
+                    code: values.code,
+                }).unwrap();
 
-        // try {
-        //     setLoading(true);
+                if (res) {
+                    router.push({
+                        pathname: "/(public)/resetpassword",
+                        params: {
+                            token: res?.data?.token,
+                        },
+                    });
+                    resetForm();
+                }
+            } catch (err: unknown) {
+                const error = err as { data?: { message?: string } };
+                const message = error?.data?.message || "Something went wrong";
+                showErrorToast(message);
+            }
+        },
+        [verifycode, token, router]
+    );
 
-        //     await new Promise((resolve) => setTimeout(resolve, 2000));
-
-        //     console.log("THIS IS VALUESS", values);
-
-        //     router.push('/(public)/resetPassword');
-
-        //     resetForm();
-        // } catch (error) {
-        //     console.log("THIS IS ERROR", error);
-        // } finally {
-        //     setLoading(false);
-        // }
-    }
+    const handleSetSubmitted = useCallback((value: boolean) => {
+        setSubmitted(value);
+    }, []);
 
     return {
         validator: codeValidationSchema,
@@ -87,17 +69,16 @@ const useVerificationCodeController = () => {
         },
         functions: {
             handleSubmit,
-            setSubmitted,
+            setSubmitted: handleSetSubmitted,
             handleOTPChange,
         },
         states: {
             loading: isLoading,
-            error: error,
+            error,
             submitted,
         },
         router,
-    }
+    };
+};
 
-}
-
-export default useVerificationCodeController
+export default useVerificationCodeController;

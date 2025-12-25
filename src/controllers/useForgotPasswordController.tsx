@@ -1,47 +1,51 @@
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { forgotPasswordFormValidator } from "@/src/utils/validator";
 import { useForgotPasswordMutation } from "../redux2/Apis/Auth";
-import { showErrorToast, showSuccessToast } from "../utils/toast";
-
+import { showErrorToast } from "../utils/toast";
 
 const initialValues = {
-    email: '',
+    email: "",
 };
 
 const useForgotPasswordController = () => {
-
-    // const [loading, setLoading] = useState(false);
     const [submitted, setSubmitted] = useState(false);
-
-    const [forgotPassword, { data, isLoading, error }] = useForgotPasswordMutation();
-
-
+    const [forgotPassword, { isLoading, error }] = useForgotPasswordMutation();
     const router = useRouter();
 
-    const handleSubmit = async (values: any, { resetForm, setSubmitting }: { resetForm: () => void; setSubmitting: (isSubmitting: boolean) => void }) => {
-        try {
+    const handleSubmit = useCallback(
+        async (
+            values: { email: string },
+            { resetForm }: { resetForm: () => void }
+        ) => {
+            try {
+                const payload = {
+                    email: values.email,
+                };
 
-            const payload = {
-                email: values.email,
-            };
+                const res = await forgotPassword(payload).unwrap();
 
-            const res = await forgotPassword(payload).unwrap();
-            if (res) {
-                console.log("THIS IS RES", res);
-                router.push({
-                    pathname: '/(public)/verificationCode',
-                    params: {
-                        token: res?.data?.token,  // or the correct token field
-                    }
-                });
-                resetForm();
-
+                if (res) {
+                    router.push({
+                        pathname: "/(public)/verificationcode",
+                        params: {
+                            token: res?.data?.token,
+                        },
+                    });
+                    resetForm();
+                }
+            } catch (err: unknown) {
+                const error = err as { data?: { message?: string } };
+                const message = error?.data?.message || "Something went wrong";
+                showErrorToast(message);
             }
-        } catch (err: any) {
-            showErrorToast(err?.data?.message)
-        }
-    }
+        },
+        [forgotPassword, router]
+    );
+
+    const handleSetSubmitted = useCallback((value: boolean) => {
+        setSubmitted(value);
+    }, []);
 
     return {
         validator: forgotPasswordFormValidator,
@@ -50,17 +54,15 @@ const useForgotPasswordController = () => {
         },
         functions: {
             handleSubmit,
-            // setLoading,
-            setSubmitted
+            setSubmitted: handleSetSubmitted,
         },
         states: {
             loading: isLoading,
-            error: error,
+            error,
             submitted,
         },
         router,
-    }
+    };
+};
 
-}
-
-export default useForgotPasswordController
+export default useForgotPasswordController;

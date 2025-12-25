@@ -1,63 +1,59 @@
 import assets from '@/assets/images';
 import { NeonButton } from '@/src/components/core/buttons/neonButton';
-import UTextButton from '@/src/components/core/buttons/uTextButton';
+import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
 import { useRouter } from 'expo-router';
-import { Image, ImageBackground, View } from 'react-native';
-import { YStack, Text } from 'tamagui';
+import React, { useCallback, memo } from 'react';
+import { Image, ImageBackground, StyleSheet } from 'react-native';
+import { YStack } from 'tamagui';
 
-export default function OnboardingScreen() {
+const styles = StyleSheet.create({
+  background: { flex: 1 },
+  logoContainer: { flex: 0.45, width: '100%', alignItems: 'center' },
+  logo: { width: 200, height: '100%' },
+});
+
+const OnboardingScreen = memo(() => {
   const router = useRouter();
+
+  const navigateToLogin = useCallback(() => {
+    router.push('/(public)/login');
+  }, [router]);
+
+  const navigateToSignup = useCallback(() => {
+    router.push('/(public)/signup');
+  }, [router]);
+
   return (
     <ImageBackground
       source={assets.images.authBackgroundImage2}
       resizeMode="cover"
-      style={{ flex: 1 }}
+      style={styles.background}
     >
-      <View style={{
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingHorizontal: 10,
+      <YStack f={1} jc="center" ai="center" px={10}>
+        <UAnimatedView animation="fadeInScale" duration={600} style={styles.logoContainer}>
+          <Image
+            source={assets.images.mainLogo}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        </UAnimatedView>
 
-      }}>
-        <Image
-          source={assets.images.mainLogo}
-          style={{
-            // width: '100%',
-            // height: '40%',
-            // flex:0.01,
-            flex: 0.45
-          }}
-          resizeMode='contain'
-        />
-        <NeonButton
-          onPress={() => router.push('/(public)/login')}
-          width={'80%'}
-        >
-          Log In
-        </NeonButton>
-        <NeonButton
-          onPress={() => router.push('/(public)/signup')}
-          mt={15} width={'80%'}
-        >
-          Sign Up
-        </NeonButton>
-        {/* <UTextButton
-          onPress={() => router.push('/(public)/login')}
-          variant='secondary-md'
-          width={'80%'}
-        >
-          Log In
-        </UTextButton>
-        <UTextButton
-          onPress={() => router.push('/(public)/signup')}
-          variant='secondary-md'
-          mt={15} width={'80%'}
-        >
-          Sign Up
-        </UTextButton> */}
-      </View>
+        <UAnimatedView animation="fadeInUp" delay={300}>
+          <NeonButton onPress={navigateToLogin} width={280}>
+            Log In
+          </NeonButton>
+        </UAnimatedView>
 
+        <UAnimatedView animation="fadeInUp" delay={450}>
+          <NeonButton onPress={navigateToSignup} mt={15} width={280}>
+            Sign Up
+          </NeonButton>
+        </UAnimatedView>
+      </YStack>
     </ImageBackground>
   );
-}
+});
+
+OnboardingScreen.displayName = 'OnboardingScreen';
+
+export default OnboardingScreen;

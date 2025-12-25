@@ -1,10 +1,8 @@
 import { LinearGradient } from 'expo-linear-gradient'
-import { ActivityIndicator } from 'react-native'
+import { ActivityIndicator,StyleProp, ViewStyle } from 'react-native'
 import { Button } from 'tamagui'
-import UText from '../text/uText'
-import { ButtonProps } from './uButton'
-import { StyleProp } from 'react-native'
-import { ViewStyle } from 'react-native'
+import UText from '@/src/components/core/text/uText'
+import { ButtonProps } from '@/src/components/core/buttons/uButton'
 
 type NeonButtonProps = ButtonProps & {
     loading?: boolean
@@ -19,7 +17,6 @@ export function NeonButton({
     ...props }: NeonButtonProps) {
     return (
         <Button
-            {...props}
             h={56}
             px={24}
             br={9999}
@@ -34,6 +31,7 @@ export function NeonButton({
             shadowRadius={10}
             pressStyle={{ opacity: 0.9 }}
             style={style}
+            {...props}
         >
             <LinearGradient
                 colors={['#1A4D7A', '#092038']}

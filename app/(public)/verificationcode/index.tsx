@@ -1,34 +1,66 @@
 import IconArrowRight from '@/assets/icons/iconArrowRight';
+import assets from '@/assets/images';
 import UIconButton from '@/src/components/core/buttons/uIconButtonVariants';
+import UKeyboardAvoidingView from '@/src/components/core/layout/uKeyboardAvoidingView';
 import UText from '@/src/components/core/text/uText';
 import useVerificationCodeController from '@/src/controllers/useVerificationCodeController';
 import { useFormik } from 'formik';
-import React from 'react';
+import React, { useCallback, useMemo, memo } from 'react';
+import { Image, ImageBackground, StyleSheet } from 'react-native';
+import OTPTextView from 'react-native-otp-textinput';
 import { XStack, YStack } from 'tamagui';
-import OTPTextView from "react-native-otp-textinput";
-import UKeyboardAvoidingView from '@/src/components/core/layout/uKeyboardAvoidingView';
-import { Image, ImageBackground } from 'react-native';
-import assets from '@/assets/images';
 
+const styles = StyleSheet.create({
+    background: { flex: 1 },
+    logo: { width: 130, height: 70, marginTop: 38 },
+});
 
-const VerificationCode = () => {
+const otpTextInputStyle = {
+    color: '#ffffff',
+} as object;
 
+const VerificationCode = memo(() => {
     const { validator, values, functions, states, router } = useVerificationCodeController();
 
-    const formik = useFormik({
-        initialValues: values.initialValues,
-        validationSchema: validator,
-        onSubmit: (values, { resetForm, setSubmitting }) => functions.handleSubmit(values, { resetForm, setSubmitting })
-    });
+    const formikConfig = useMemo(
+        () => ({
+            initialValues: values.initialValues,
+            validationSchema: validator,
+            onSubmit: functions.handleSubmit,
+        }),
+        [values.initialValues, validator, functions.handleSubmit]
+    );
 
+    const formik = useFormik(formikConfig);
+
+    const handleSubmit = useCallback(() => {
+        functions.setSubmitted(true);
+        formik.handleSubmit();
+    }, [functions.setSubmitted, formik.handleSubmit]);
+
+    const handleOTPChange = useCallback(
+        (text: string) => {
+            functions.handleOTPChange(text, formik.setFieldValue, formik.handleSubmit);
+        },
+        [functions.handleOTPChange, formik.setFieldValue, formik.handleSubmit]
+    );
+
+    const navigateToLogin = useCallback(() => {
+        router.push('/(public)/login');
+    }, [router]);
+
+    const codeError = useMemo(
+        () => (states.submitted && formik.errors.code ? formik.errors.code : null),
+        [states.submitted, formik.errors.code]
+    );
 
     return (
         <ImageBackground
             source={assets.images.authBackgroundImage2}
             resizeMode="cover"
-            style={{ flex: 1 }}
+            style={styles.background}
         >
-            <Image source={assets.images.mainLogo} style={{ width: 130, height: 70, marginTop: 38 }} />
+            <Image source={assets.images.mainLogo} style={styles.logo} />
             <YStack flex={1} px={24} pb={24} jc="space-between">
                 <YStack gap={10} flex={1}>
                     <UText variant="heading-h1" color="$white">
@@ -37,28 +69,19 @@ const VerificationCode = () => {
                     <UText variant="text-sm" color="$white">
                         Enter verification code sent to your email address.
                     </UText>
+
                     <UKeyboardAvoidingView gap={16} mt={25}>
                         <OTPTextView
                             inputCount={6}
                             keyboardType="number-pad"
-                            handleTextChange={(text) =>
-                                functions.handleOTPChange(text, formik.setFieldValue, formik.handleSubmit)
-                            }
-                            // tintColor={'#465A54'}
-                            tintColor={'$white'}
-                            textInputStyle={{
-                                color:'#ffffff'
-                                // textShadowColor: '$white',
-                                // textShadowOffset: { width: 0, height: 0 },
-                                // textShadowRadius: 0,
-                                // includeFontPadding: false,
-                            } as object}
-
-
+                            handleTextChange={handleOTPChange}
+                            tintColor="$white"
+                            textInputStyle={otpTextInputStyle}
                         />
-                        {states.submitted && formik.errors.code && (
+
+                        {codeError && (
                             <UText variant="text-xs" color="$red10" ml={16} mt={5}>
-                                {formik.errors.code}
+                                {codeError}
                             </UText>
                         )}
 
@@ -66,36 +89,30 @@ const VerificationCode = () => {
                             <UIconButton
                                 variant="primary-md"
                                 icon={IconArrowRight}
-                                onPress={() => {
-                                    functions.setSubmitted(true)
-                                    formik.handleSubmit()
-                                }}
-                                // iconProps={{ color: '$neutral0' }}
+                                onPress={handleSubmit}
                                 loading={states.loading}
                             />
                         </XStack>
-
                     </UKeyboardAvoidingView>
                 </YStack>
 
                 <YStack gap={16} mb={25}>
-
                     <XStack jc="center" mt={16}>
                         <UText
                             variant="text-md"
                             color="$white"
-                            // fontWeight={700}
-                            textDecorationLine='underline'
-                            onPress={() => router.push('/(public)/login')}>
+                            textDecorationLine="underline"
+                            onPress={navigateToLogin}
+                        >
                             Back to Login
                         </UText>
                     </XStack>
                 </YStack>
-
             </YStack>
         </ImageBackground>
+    );
+});
 
-    )
-}
+VerificationCode.displayName = 'VerificationCode';
 
 export default VerificationCode;
