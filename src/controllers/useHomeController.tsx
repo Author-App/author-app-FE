@@ -90,26 +90,6 @@ const useHomeController = () => {
         ({ item }) => {
             if (isLoading) return loadingSkeleton(item);
             if (error) return errorView;
-
-            // console.log("THIS IS ITEM", item);
-
-
-            // if (item.type === "hero") {
-
-            //     // console.log("THIS IS ITEM OF HERO", item);
-
-
-            //     // const config = bannerConfig[item.subtype || "audiobook"];
-            //     return (
-            //         <HeroBanner
-            //             // {...config}
-            //             title={item.title}
-            //             type={item.subtype}
-            //             onPressCTA={() => console.log("Navigating to details")}
-            //         />
-            //     );
-            // }
-
             if (item.type === "carousel") {
                 const carouselContent = (() => {
                     switch (item.subtype) {

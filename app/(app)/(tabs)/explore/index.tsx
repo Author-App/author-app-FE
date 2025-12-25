@@ -17,7 +17,6 @@ import type { Href } from 'expo-router';
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { ActivityIndicator, FlatList, Image, TouchableOpacity, View } from 'react-native';
-import { Text } from 'tamagui';
 import { AnimatePresence, XStack, YStack } from 'tamagui';
 
 type TabType = 'Blog' | 'Podcasts' | 'Videos' | 'Events' | 'Community';

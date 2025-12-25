@@ -1,82 +1,104 @@
-import { useRouter } from "expo-router";
-import { useState, useCallback } from "react";
-import { loginValidationSchema } from "../utils/validator";
-import { showErrorToast, showSuccessToast } from "../utils/toast";
-import { useLoginMutation } from "../redux2/Apis/Auth";
-import * as Application from 'expo-application';
-import { Platform } from 'react-native';
+/**
+ * Login Form Controller
+ *
+ * Complete form management for the login screen.
+ * Returns everything the UI needs - screen becomes pure presentation.
+ */
 
-const getDeviceInfo = async () => ({
-    deviceId: Platform.OS === 'android' ? Application.getAndroidId() : Application.applicationId ?? 'unknown',
-    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-});
+import { useRef, useCallback } from 'react';
+import { TextInput } from 'react-native';
+import { useRouter } from 'expo-router';
+import { useFormik } from 'formik';
+import { useLogin } from '@/src/hooks/api/useAuth';
+import { loginValidationSchema } from '@/src/utils/validator';
+import type { LoginFormValues } from '@/src/types';
 
-const initialValues = {
-    email: "",
-    password: "",
+const initialValues: LoginFormValues = {
+  email: '',
+  password: '',
 };
 
-const useLoginController = () => {
-    const [submitted, setSubmitted] = useState<boolean>(false);
-    const [login, { isLoading, error }] = useLoginMutation();
-    const router = useRouter();
+const useLoginForm = () => {
+  const router = useRouter();
+  const { login, isLoading } = useLogin();
+  const passwordRef = useRef<TextInput>(null);
 
-    const handleSubmit = useCallback(
-        async (
-            values: { email: string; password: string },
-            { resetForm }: { resetForm: () => void }
-        ) => {
-            try {
-                const { deviceId, timeZone } = await getDeviceInfo();
-                const payload = {
-                    email: values.email,
-                    password: values.password,
-                    deviceId: deviceId,    
-                    timeZone: timeZone,
-                };
+  const formik = useFormik({
+    initialValues,
+    validationSchema: loginValidationSchema,
+    validateOnChange: true,
+    validateOnBlur: true,
+    onSubmit: async (values, { resetForm }) => {
+      const success = await login(values.email, values.password);
+      if (success) {
+        resetForm();
+      }
+    },
+  });
 
-                const res = await login(payload);
+  // Input handlers
+  const handleEmailChange = useCallback(
+    (text: string) => {
+      formik.setFieldValue('email', text);
+    },
+    [formik.setFieldValue]
+  );
 
-                if (res?.data) {
-                    showSuccessToast("You've logged in successfully");
-                    router.replace("/(app)/(tabs)/(home)");
-                    resetForm();
-                }
+  const handlePasswordChange = useCallback(
+    (text: string) => {
+      formik.setFieldValue('password', text);
+    },
+    [formik.setFieldValue]
+  );
 
-                if (res?.error) {
-                    const errorData = res?.error as { data?: { message?: string } };
-                    const message = errorData?.data?.message || "Something went wrong";
-                    showErrorToast(message);
-                }
-            } catch (err: unknown) {
-                const error = err as { data?: { message?: string } };
-                const message = error?.data?.message || "Something went wrong";
-                showErrorToast(message);
-            }
-        },
-        [login, router]
-    );
+  // Submit handler
+  const handleSubmit = useCallback(() => {
+    formik.handleSubmit();
+  }, [formik.handleSubmit]);
 
-    const handleSetSubmitted = useCallback((value: boolean) => {
-        setSubmitted(value);
-    }, []);
+  // Focus handlers
+  const focusPassword = useCallback(() => {
+    passwordRef.current?.focus();
+  }, []);
 
-    return {
-        validator: loginValidationSchema,
-        values: {
-            initialValues,
-        },
-        functions: {
-            handleSubmit,
-            setSubmitted: handleSetSubmitted,
-        },
-        states: {
-            loading: isLoading,
-            error,
-            submitted,
-        },
-        router,
-    };
+  // Navigation handlers
+  const navigateToForgotPassword = useCallback(() => {
+    router.push('/(public)/forgotpassword');
+  }, [router]);
+
+  const navigateToSignup = useCallback(() => {
+    router.push('/(public)/signup');
+  }, [router]);
+
+  // Computed errors (only show after field is touched)
+  const emailError = formik.touched.email ? formik.errors.email : undefined;
+  const passwordError = formik.touched.password ? formik.errors.password : undefined;
+
+  return {
+    // Form values
+    email: formik.values.email,
+    password: formik.values.password,
+
+    // Errors
+    emailError,
+    passwordError,
+
+    // State
+    isLoading,
+
+    // Handlers
+    handleEmailChange,
+    handlePasswordChange,
+    handleSubmit,
+    focusPassword,
+
+    // Navigation
+    navigateToForgotPassword,
+    navigateToSignup,
+
+    // Refs
+    passwordRef,
+  };
 };
 
-export default useLoginController;
+export default useLoginForm;

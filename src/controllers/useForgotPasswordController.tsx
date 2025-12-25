@@ -1,68 +1,57 @@
-import { useRouter } from "expo-router";
-import { useState, useCallback } from "react";
-import { forgotPasswordFormValidator } from "@/src/utils/validator";
-import { useForgotPasswordMutation } from "../redux2/Apis/Auth";
-import { showErrorToast } from "../utils/toast";
+/**
+ * Forgot Password Controller
+ * 
+ * Manages forgot password form state and submission.
+ * Uses useForgotPassword facade hook for API interaction.
+ */
 
-const initialValues = {
-    email: "",
+import { useState, useCallback } from 'react';
+import { useRouter } from 'expo-router';
+import { useForgotPassword } from '@/src/hooks/api/useAuth';
+import { forgotPasswordFormValidator } from '@/src/utils/validator';
+import type { ForgotPasswordFormValues } from '@/src/types';
+
+const initialValues: ForgotPasswordFormValues = {
+  email: '',
 };
 
 const useForgotPasswordController = () => {
-    const [submitted, setSubmitted] = useState(false);
-    const [forgotPassword, { isLoading, error }] = useForgotPasswordMutation();
-    const router = useRouter();
+  const [submitted, setSubmitted] = useState(false);
+  const { forgotPassword, isLoading } = useForgotPassword();
+  const router = useRouter();
 
-    const handleSubmit = useCallback(
-        async (
-            values: { email: string },
-            { resetForm }: { resetForm: () => void }
-        ) => {
-            try {
-                const payload = {
-                    email: values.email,
-                };
+  const handleSubmit = useCallback(
+    async (
+      values: ForgotPasswordFormValues,
+      { resetForm }: { resetForm: () => void }
+    ) => {
+      const success = await forgotPassword(values.email);
+      if (success) {
+        resetForm();
+      }
+    },
+    [forgotPassword]
+  );
 
-                const res = await forgotPassword(payload).unwrap();
+  const handleSetSubmitted = useCallback((value: boolean) => {
+    setSubmitted(value);
+  }, []);
 
-                if (res) {
-                    router.push({
-                        pathname: "/(public)/verificationcode",
-                        params: {
-                            token: res?.data?.token,
-                        },
-                    });
-                    resetForm();
-                }
-            } catch (err: unknown) {
-                const error = err as { data?: { message?: string } };
-                const message = error?.data?.message || "Something went wrong";
-                showErrorToast(message);
-            }
-        },
-        [forgotPassword, router]
-    );
-
-    const handleSetSubmitted = useCallback((value: boolean) => {
-        setSubmitted(value);
-    }, []);
-
-    return {
-        validator: forgotPasswordFormValidator,
-        values: {
-            initialValues,
-        },
-        functions: {
-            handleSubmit,
-            setSubmitted: handleSetSubmitted,
-        },
-        states: {
-            loading: isLoading,
-            error,
-            submitted,
-        },
-        router,
-    };
+  return {
+    validator: forgotPasswordFormValidator,
+    values: {
+      initialValues,
+    },
+    functions: {
+      handleSubmit,
+      setSubmitted: handleSetSubmitted,
+    },
+    states: {
+      loading: isLoading,
+      submitted,
+    },
+    router,
+  };
 };
 
 export default useForgotPasswordController;

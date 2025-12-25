@@ -1,7 +1,6 @@
 import React from "react";
 import UHeaderWithBackground from "@/src/components/core/layout/uHeaderWithBackground";
 import UText from "@/src/components/core/text/uText";
-import { exploreData } from "@/src/data/exploreData";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ActivityIndicator, Alert, Linking, ScrollView, useWindowDimensions, View } from "react-native";
 import { useDispatch } from "react-redux";
@@ -11,8 +10,7 @@ import IconDuration from "@/assets/icons/iconDuration";
 import IconLocation from "@/assets/icons/iconLocation";
 import UTextButton from "@/src/components/core/buttons/uTextButton";
 import { logOut } from "@/src/redux2/Slice/AuthSlice";
-import { useGetArticleDetailQuery } from "@/src/redux2/Apis/Articles";
-import { formatDate, formatTime12h, getJoinStatus, isWithinJoinWindow } from "@/src/utils/helper";
+import { formatDate, formatTime12h, getJoinStatus } from "@/src/utils/helper";
 import { useGetEventsDetailQuery } from "@/src/redux2/Apis/Explore";
 
 const EventDetailScreen = () => {

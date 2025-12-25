@@ -1,14 +1,11 @@
 import IconBack from "@/assets/icons/iconBack";
 import IconTick from "@/assets/icons/iconTick";
-import assets from "@/assets/images";
 import UIconButton from "@/src/components/core/buttons/uIconButtonVariants";
 import UTextButton from "@/src/components/core/buttons/uTextButton";
-import UImage from "@/src/components/core/image/uImage";
 import UHeader from "@/src/components/core/layout/uHeader";
 import UText from "@/src/components/core/text/uText";
 import useSettingsController from "@/src/controllers/useSettingsController";
 import { benefits, premiumBnefits, premiumSubscriptionDetails } from "@/src/data/subscriptionData";
-import { getInitials } from "@/src/utils/helper";
 import { useLocalSearchParams } from "expo-router";
 import { useRouter } from "expo-router";
 import { Card, ScrollView, XStack, YStack } from "tamagui";

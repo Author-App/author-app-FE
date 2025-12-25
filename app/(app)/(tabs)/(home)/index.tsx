@@ -1,8 +1,5 @@
 import React from 'react'
-import UHeaderWithBackground from '@/src/components/core/layout/uHeaderWithBackground'
-import HeroBanner from '@/src/components/home/banner/heroBanner'
 import useHomeController from '@/src/controllers/useHomeController'
-import { homeData } from '@/src/data/homeData'
 import { FlashList } from '@shopify/flash-list'
 import { YStack } from 'tamagui'
 import { ActivityIndicator } from 'react-native'

@@ -1,5 +1,4 @@
 import assets from "@/assets/images";
-import { HomeItem } from "../types/home/homeTypes";
 
 export const exploreData = [
     {
@@ -95,42 +94,6 @@ export const exploreData = [
       </p>
     `,
             }
-
-            // {
-            //     id: 1,
-            //     cover: assets.images.articleImage1,
-            //     title: "The Lost Temples of the East",
-            //     date: "April 7, 2023",
-            //     time: "6 min",
-            // },
-            // {
-            //     id: 2,
-            //     cover: assets.images.articleImage2,
-            //     title: "Symbols of the Empire",
-            //     date: "May 12, 2023",
-            //     time: "5 min",
-            // },
-            // {
-            //     id: 3,
-            //     cover: assets.images.articleImage3,
-            //     title: "Journey through the Silk Frontier",
-            //     date: "June 20, 2023",
-            //     time: "7 min",
-            // },
-            // {
-            //     id: 4,
-            //     cover: assets.images.articleImage4,
-            //     title: "Exploring the World of NFTs",
-            //     date: "August 3, 2023",
-            //     time: "4 min",
-            // },
-            // {
-            //     id: 5,
-            //     cover: assets.images.articleImage5,
-            //     title: "Sustainable Tech Innovations",
-            //     date: "September 15, 2023",
-            //     time: "8 min",
-            // },
         ],
     },
     {
@@ -206,7 +169,7 @@ export const exploreData = [
                 cover: assets.images.blogImage1,
                 title: "Building a Smart City",
                 duration: "00:07",
-                video: assets.videos.video1,
+                video: null,
                 description:
                     "Discover how technology, data, and sustainable planning come together to shape the cities of tomorrow. Explore the innovations driving smart urban development."
             },
@@ -215,7 +178,7 @@ export const exploreData = [
                 cover: assets.images.blogImage2,
                 title: "Behind the Scenes: AI Robotics",
                 duration: "00:15",
-                video: assets.videos.video2,
+                video: null,
                 description:
                     "Take a closer look at how artificial intelligence powers modern robotics. From automation to emotion recognition, see what’s next in robotics innovation."
             },
@@ -224,7 +187,7 @@ export const exploreData = [
                 cover: assets.images.blogImage3,
                 title: "The Future of Mobility",
                 duration: "10:10",
-                video: assets.videos.video3,
+                video: null,
                 description:
                     "A deep dive into the technologies transforming how we move — electric vehicles, hyperloops, and autonomous transport systems redefining global mobility."
             },
@@ -234,7 +197,7 @@ export const exploreData = [
                 cover: assets.images.blogImage1,
                 title: "Behind the Scenes: AI Robotics",
                 duration: "09:22",
-                video: assets.videos.video1,
+                video: null,
                 description:
                     "Learn about the latest breakthroughs in AI-driven robotics and how they’re revolutionizing industries from healthcare to manufacturing."
 

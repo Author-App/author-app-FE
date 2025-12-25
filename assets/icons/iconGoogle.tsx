@@ -1,6 +1,5 @@
 import React from 'react';
 import Svg, { Path } from 'react-native-svg';
-import { getTokenValue } from 'tamagui';
 import { IconProps } from '@/assets/icons/types/iconProps';
 
 const IconGoogle = ({

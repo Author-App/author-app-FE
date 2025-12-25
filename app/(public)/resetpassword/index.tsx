@@ -1,4 +1,3 @@
-import assets from '@/assets/images';
 import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
 import { NeonButton } from '@/src/components/core/buttons/neonButton';
 import ULocalImage from '@/src/components/core/image/uLocalImage';
@@ -11,6 +10,9 @@ import React, { useCallback, useMemo, memo } from 'react';
 import { ImageBackground, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { XStack, YStack } from 'tamagui';
+
+const authScreenBg = require('@/assets/images/authScreenBg.png');
+const mainLogo = require('@/assets/images/mainLogo.png');
 
 const styles = StyleSheet.create({
     background: { flex: 1 },
@@ -54,12 +56,12 @@ const ResetPassword = memo(() => {
 
     return (
         <ImageBackground
-            source={assets.images.authBackgroundImage2}
+            source={authScreenBg}
             resizeMode="cover"
             style={styles.background}
         >
             <UAnimatedView animation="fadeIn" duration={400}>
-                <ULocalImage source={assets.images.mainLogo} width={130} height={70} mt={top + 8} />
+                <ULocalImage source={mainLogo} width={130} height={70} mt={top + 8} />
             </UAnimatedView>
             <YStack flex={1} px={24} pb={bottom + 8} jc="space-between">
                 <YStack gap={10} flex={1}>

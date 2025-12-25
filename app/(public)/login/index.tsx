@@ -1,16 +1,17 @@
-import assets from '@/assets/images';
 import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
 import { NeonButton } from '@/src/components/core/buttons/neonButton';
 import ULocalImage from '@/src/components/core/image/uLocalImage';
 import UInput from '@/src/components/core/inputs/uInput';
 import UKeyboardAvoidingView from '@/src/components/core/layout/uKeyboardAvoidingView';
 import UText from '@/src/components/core/text/uText';
-import useLoginController from '@/src/controllers/useLoginController';
-import { useFormik } from 'formik';
-import React, { useRef, useCallback, useMemo, memo } from 'react';
-import { ImageBackground, TextInput, StyleSheet } from 'react-native';
+import useLoginForm from '@/src/controllers/useLoginController';
+import React, { memo } from 'react';
+import { ImageBackground, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { XStack, YStack } from 'tamagui';
+
+const authScreenBg = require('@/assets/images/authScreenBg.png');
+const mainLogo = require('@/assets/images/mainLogo.png');
 
 const styles = StyleSheet.create({
     background: { flex: 1 },
@@ -19,61 +20,29 @@ const styles = StyleSheet.create({
 const Login = memo(() => {
     const { top, bottom } = useSafeAreaInsets();
 
-    const passwordRef = useRef<TextInput>(null);
-
-    const { validator, values, functions, states, router } = useLoginController();
-
-    const formikConfig = useMemo(() => ({
-        initialValues: values.initialValues,
-        validationSchema: validator,
-        onSubmit: functions.handleSubmit,
-    }), [values.initialValues, validator, functions.handleSubmit]);
-
-    const formik = useFormik(formikConfig);
-
-    const handleSubmit = useCallback(() => {
-        functions.setSubmitted(true);
-        formik.handleSubmit();
-    }, [functions.setSubmitted, formik.handleSubmit]);
-
-    const handleEmailChange = useCallback((text: string) => {
-        formik.setFieldValue('email', text);
-    }, [formik.setFieldValue]);
-
-    const handlePasswordChange = useCallback((text: string) => {
-        formik.setFieldValue('password', text);
-    }, [formik.setFieldValue]);
-
-    const focusPassword = useCallback(() => {
-        passwordRef.current?.focus();
-    }, []);
-
-    const navigateToForgotPassword = useCallback(() => {
-        router.push('/(public)/forgotpassword');
-    }, [router]);
-
-    const navigateToSignup = useCallback(() => {
-        router.push('/(public)/signup');
-    }, [router]);
-
-    const emailError = useMemo(
-        () => (states.submitted ? formik.errors.email : undefined),
-        [states.submitted, formik.errors.email]
-    );
-
-    const passwordError = useMemo(
-        () => (states.submitted ? formik.errors.password : undefined),
-        [states.submitted, formik.errors.password]
-    );
+    const {
+        email,
+        password,
+        emailError,
+        passwordError,
+        isLoading,
+        handleEmailChange,
+        handlePasswordChange,
+        handleSubmit,
+        focusPassword,
+        navigateToForgotPassword,
+        navigateToSignup,
+        passwordRef,
+    } = useLoginForm();
 
     return (
         <ImageBackground
-            source={assets.images.authBackgroundImage2}
+            source={authScreenBg}
             resizeMode="cover"
             style={styles.background}
         >
             <UAnimatedView animation="fadeIn" duration={400}>
-                <ULocalImage source={assets.images.mainLogo} width={130} height={70} mt={top + 8} />
+                <ULocalImage source={mainLogo} width={130} height={70} mt={top + 8} />
             </UAnimatedView>
             <YStack flex={1} px={24} pb={bottom + 8} jc="space-between">
                 <YStack gap={10} flex={1}>
@@ -93,7 +62,7 @@ const Login = memo(() => {
                             <UInput
                                 variant="primary"
                                 placeholder="Enter your email"
-                                value={formik.values.email}
+                                value={email}
                                 onChangeText={handleEmailChange}
                                 error={emailError}
                                 keyboardType="email-address"
@@ -111,7 +80,7 @@ const Login = memo(() => {
                                 ref={passwordRef}
                                 variant="primary"
                                 placeholder="Enter your password"
-                                value={formik.values.password}
+                                value={password}
                                 onChangeText={handlePasswordChange}
                                 error={passwordError}
                                 secureTextEntry
@@ -141,7 +110,7 @@ const Login = memo(() => {
                     <YStack gap={16}>
                         <NeonButton
                             onPress={handleSubmit}
-                            loading={states.loading}
+                            loading={isLoading}
                         >
                             Sign In
                         </NeonButton>

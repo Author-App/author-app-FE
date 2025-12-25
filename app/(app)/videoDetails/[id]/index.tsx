@@ -2,14 +2,12 @@ import IconBack from '@/assets/icons/iconBack';
 import UIconButton from '@/src/components/core/buttons/uIconButtonVariants';
 import UHeader from '@/src/components/core/layout/uHeader';
 import UText from '@/src/components/core/text/uText';
-import { exploreData } from '@/src/data/exploreData';
-import { Href, useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ActivityIndicator, ScrollView } from 'react-native';
 import { useGetMediaDetailQuery, useGetMediaQuery } from '@/src/redux2/Apis/Explore';
 import { formatDuration } from '@/src/utils/helper';
-import { YStack, XStack, View, Card, Separator, Image } from 'tamagui';
+import { YStack, XStack, Card, Separator, Image } from 'tamagui';
 import { Video, ResizeMode } from 'expo-av';
-import { VideoItem } from '@/src/types/content/contentTypes';
 
 const VideoDetail = () => {
 

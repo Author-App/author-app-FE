@@ -1,4 +1,3 @@
-import assets from '@/assets/images';
 import { NeonButton } from '@/src/components/core/buttons/neonButton';
 import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
 import { useRouter } from 'expo-router';
@@ -15,6 +14,9 @@ import Animated, {
   interpolate,
 } from 'react-native-reanimated';
 import ULocalImage from '@/src/components/core/image/uLocalImage';
+
+const authScreenBg = require('@/assets/images/authScreenBg.png');
+const mainLogo = require('@/assets/images/mainLogo.png');
 
 const LOGO_WIDTH = 240;
 const LOGO_HEIGHT = 336;
@@ -82,7 +84,7 @@ const OnboardingScreen = memo(() => {
 
   return (
     <ImageBackground
-      source={assets.images.authBackgroundImage2}
+      source={authScreenBg}
       resizeMode="cover"
       style={styles.background}
     >
@@ -90,7 +92,7 @@ const OnboardingScreen = memo(() => {
       <UAnimatedView animation="fadeInScale" duration={600}>
         <Animated.View style={animatedLogoStyle}>
           <ULocalImage
-            source={assets.images.mainLogo}
+            source={mainLogo}
             width="100%"
             height="100%"
           />

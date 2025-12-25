@@ -1,26 +1,16 @@
-import IconCalender from "@/assets/icons/iconCalender";
 import IconFacebookSilver from "@/assets/icons/iconFacebookSilver";
 import IconInsta from "@/assets/icons/iconInsta";
 import IconLinkedin from "@/assets/icons/iconLinkedin";
-import IconSettings from "@/assets/icons/iconSettings";
-import iconTwitter from "@/assets/icons/iconTwitter";
 import assets from "@/assets/images";
 import UIconButton from "@/src/components/core/buttons/uIconButtonVariants";
-import UTextButton from "@/src/components/core/buttons/uTextButton";
 import UHeaderWithBackground from "@/src/components/core/layout/uHeaderWithBackground";
 import UText from "@/src/components/core/text/uText";
-import { useGetMeQuery } from "@/src/redux2/Apis/User";
-import { logOut } from "@/src/redux2/Slice/AuthSlice";
-import type { Href } from "expo-router";
-import { router } from "expo-router";
-import { ActivityIndicator, Alert, Image, Linking, View } from "react-native";
+import { Alert, Image, Linking, View } from "react-native";
 import { ScrollView } from "react-native";
-import { useDispatch } from "react-redux";
 import { XStack, YStack } from "tamagui";
 
 const ProfileScreen = () => {
 
-  const dispatch = useDispatch();
 
   const openLink = async (url: string) => {
     try {

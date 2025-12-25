@@ -1,6 +1,5 @@
 import UHeaderWithBackground from "@/src/components/core/layout/uHeaderWithBackground";
 import UText from "@/src/components/core/text/uText";
-import { communityData } from "@/src/data/communityData";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Image, ScrollView, View, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, ActivityIndicator } from "react-native";
 import { useDispatch } from "react-redux";

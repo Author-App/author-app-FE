@@ -1,64 +1,58 @@
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useState, useCallback } from "react";
-import { resetPasswordFormValidator } from "../utils/validator";
-import { showErrorToast, showSuccessToast } from "../utils/toast";
-import { useResetPasswordMutation } from "../redux2/Apis/Auth";
+/**
+ * Reset Password Controller
+ * 
+ * Manages reset password form state and submission.
+ * Uses useResetPassword facade hook for API interaction.
+ */
 
-const initialValues = {
-    password: "",
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useState, useCallback } from 'react';
+import { useResetPassword } from '@/src/hooks/api/useAuth';
+import { resetPasswordFormValidator } from '@/src/utils/validator';
+import type { ResetPasswordFormValues } from '@/src/types';
+
+const initialValues: ResetPasswordFormValues = {
+  password: '',
 };
 
 const useResetPasswordController = () => {
-    const { token } = useLocalSearchParams<{ token: string }>();
-    const [resetPassword, { isLoading, error }] = useResetPasswordMutation();
-    const [submitted, setSubmitted] = useState<boolean>(false);
-    const router = useRouter();
+  const { token } = useLocalSearchParams<{ token: string }>();
+  const [submitted, setSubmitted] = useState(false);
+  const { resetPassword, isLoading } = useResetPassword(token ?? '');
+  const router = useRouter();
 
-    const handleSubmit = useCallback(
-        async (
-            values: { password: string },
-            { resetForm }: { resetForm: () => void }
-        ) => {
-            try {
-                const res = await resetPassword({
-                    token,
-                    password: values.password,
-                }).unwrap();
+  const handleSubmit = useCallback(
+    async (
+      values: ResetPasswordFormValues,
+      { resetForm }: { resetForm: () => void }
+    ) => {
+      const success = await resetPassword(values.password);
+      if (success) {
+        resetForm();
+      }
+    },
+    [resetPassword]
+  );
 
-                if (res) {
-                    showSuccessToast("Password updated successfully");
-                    router.replace("/(public)/login");
-                    resetForm();
-                }
-            } catch (err: unknown) {
-                const error = err as { data?: { message?: string } };
-                const message = error?.data?.message || "Something went wrong";
-                showErrorToast(message);
-            }
-        },
-        [resetPassword, token, router]
-    );
+  const handleSetSubmitted = useCallback((value: boolean) => {
+    setSubmitted(value);
+  }, []);
 
-    const handleSetSubmitted = useCallback((value: boolean) => {
-        setSubmitted(value);
-    }, []);
-
-    return {
-        validator: resetPasswordFormValidator,
-        values: {
-            initialValues,
-        },
-        functions: {
-            handleSubmit,
-            setSubmitted: handleSetSubmitted,
-        },
-        states: {
-            loading: isLoading,
-            error,
-            submitted,
-        },
-        router,
-    };
+  return {
+    validator: resetPasswordFormValidator,
+    values: {
+      initialValues,
+    },
+    functions: {
+      handleSubmit,
+      setSubmitted: handleSetSubmitted,
+    },
+    states: {
+      loading: isLoading,
+      submitted,
+    },
+    router,
+  };
 };
 
 export default useResetPasswordController;

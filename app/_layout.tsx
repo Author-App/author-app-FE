@@ -11,9 +11,8 @@ import toastConfig from '@/src/components/core/toast/toastConfig';
 import { getTokenValue } from 'tamagui';
 
 import { PortalProvider } from '@tamagui/portal';
-import { Provider, useDispatch } from 'react-redux';
+import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
-// import { persistor, store } from '@/src/redux/Store';
 import Toast from 'react-native-toast-message';
 import { persistor, store } from '@/src/redux2/Store';
 import { StripeProvider } from '@stripe/stripe-react-native';
