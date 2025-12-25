@@ -8,25 +8,26 @@ import Animated, {
     Easing,
     interpolate,
 } from 'react-native-reanimated';
-import { ViewStyle } from 'react-native';
+import { View, ViewProps } from 'tamagui';
 
 type AnimationType = 'fadeIn' | 'fadeInUp' | 'fadeInDown' | 'fadeInLeft' | 'fadeInRight' | 'scaleIn' | 'fadeInScale';
 
-interface AnimatedViewProps {
+interface UAnimatedViewProps extends Omit<ViewProps, 'animation'> {
     children: React.ReactNode;
     animation?: AnimationType;
     delay?: number;
     duration?: number;
-    style?: ViewStyle;
 }
+
+const TamaguiAnimatedView = Animated.createAnimatedComponent(View);
 
 const UAnimatedView = memo(({
     children,
     animation = 'fadeIn',
     delay = 0,
     duration = 500,
-    style,
-}: AnimatedViewProps) => {
+    ...props
+}: UAnimatedViewProps) => {
     const progress = useSharedValue(0);
 
     useEffect(() => {
@@ -87,9 +88,9 @@ const UAnimatedView = memo(({
     });
 
     return (
-        <Animated.View style={[style, animatedStyle]}>
+        <TamaguiAnimatedView {...props} style={[animatedStyle]}>
             {children}
-        </Animated.View>
+        </TamaguiAnimatedView>
     );
 });
 

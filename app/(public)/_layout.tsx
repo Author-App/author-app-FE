@@ -6,7 +6,7 @@ const PublicLayout = memo(function PublicLayout() {
     <Stack
       screenOptions={{
         headerShown: false,
-        animation: 'slide_from_right',
+        animation: 'fade',
         animationDuration: 250,
         gestureEnabled: true,
         gestureDirection: 'horizontal',
