@@ -1,6 +1,6 @@
 import { fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { RootState } from "../Store";
-import { logOut, updateTokens } from "../Slice/AuthSlice";
+import { logOut, updateTokens } from "@/src/store/slices/authSlice";
 import Toast from "react-native-toast-message";
 
 // Note: Direct state access via getState() is correct for middleware/RTK Query.

@@ -2,13 +2,12 @@ import React from "react";
 import UHeaderWithBackground from "@/src/components/core/layout/uHeaderWithBackground";
 import UText from "@/src/components/core/text/uText";
 import { exploreData } from "@/src/data/exploreData";
-// import { logOut } from "@/src/redux/Slice/AuthSlice";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Image, ScrollView, useWindowDimensions, View } from "react-native";
 import RenderHTML from "react-native-render-html";
 import { useDispatch } from "react-redux";
 import { XStack, YStack } from "tamagui";
-import { logOut } from "@/src/redux2/Slice/AuthSlice";
+import { logOut } from "@/src/store/slices/authSlice";
 import { BlogItem } from "@/src/types/content/contentTypes";
 
 const BlogDetailScreen = () => {

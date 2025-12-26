@@ -1,5 +1,5 @@
 /**
- * Login Form Controller
+ * Login Form Hook
  *
  * Complete form management for the login screen.
  * Returns everything the UI needs - screen becomes pure presentation.
@@ -9,16 +9,16 @@ import { useRef, useCallback } from 'react';
 import { TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFormik } from 'formik';
-import { useLogin } from '@/src/hooks/api/useAuth';
+import { useLogin } from '@/src/auth/hooks/useAuth';
 import { loginValidationSchema } from '@/src/utils/validator';
-import type { LoginFormValues } from '@/src/types';
+import type { LoginFormValues } from '@/src/types/api/auth.types';
 
 const initialValues: LoginFormValues = {
   email: '',
   password: '',
 };
 
-const useLoginForm = () => {
+export const useLoginForm = () => {
   const router = useRouter();
   const { login, isLoading } = useLogin();
   const passwordRef = useRef<TextInput>(null);
@@ -100,5 +100,3 @@ const useLoginForm = () => {
     passwordRef,
   };
 };
-
-export default useLoginForm;

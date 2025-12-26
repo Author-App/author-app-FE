@@ -18,7 +18,7 @@ import {
   useForgotPasswordMutation,
   useVerifyCodeMutation,
   useResetPasswordMutation,
-} from '@/src/redux2/Apis/Auth';
+} from '@/src/store/api/authApi';
 import { createLoginPayload, createSignupPayload } from '@/src/services/payload.service';
 import { handleApiError } from '@/src/services/error.service';
 import { showSuccessToast } from '@/src/utils/toast';

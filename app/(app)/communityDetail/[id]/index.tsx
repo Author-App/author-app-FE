@@ -6,7 +6,7 @@ import { useDispatch } from "react-redux";
 import { XStack, YStack } from "tamagui";
 import { useState } from "react";
 import UTextButton from "@/src/components/core/buttons/uTextButton";
-import { logOut } from "@/src/redux2/Slice/AuthSlice";
+import { logOut } from "@/src/store/slices/authSlice";
 import { useGetCommunitiesDetailQuery, useSendThreadMutation } from "@/src/redux2/Apis/Explore";
 import UImage from "@/src/components/core/image/uImage";
 import { formatDate } from "@/src/utils/helper";

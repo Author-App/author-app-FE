@@ -6,7 +6,7 @@
  */
 
 import { getDeviceInfo } from '@/src/services/device.service';
-import type { LoginRequest, SignupRequest } from '@/src/types';
+import type { LoginRequest, SignupRequest } from '@/src/types/api/auth.types';
 
 /**
  * Creates a login request payload

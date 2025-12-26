@@ -11,7 +11,7 @@ import UHeader from "@/src/components/core/layout/uHeader";
 import UText from "@/src/components/core/text/uText";
 import useSettingsController from "@/src/controllers/useSettingsController";
 import { useDeleteAccountMutation, useGetMeQuery } from "@/src/redux2/Apis/User";
-import { logOut } from "@/src/redux2/Slice/AuthSlice";
+import { logOut } from "@/src/store/slices/authSlice";
 import { persistor } from "@/src/redux2/Store";
 import type { Href } from "expo-router";
 import { useRouter } from "expo-router";

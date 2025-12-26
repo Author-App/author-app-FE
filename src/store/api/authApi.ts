@@ -1,8 +1,8 @@
 /**
- * Auth API (Repository Pattern)
- * 
- * Single source of truth for all authentication-related API calls.
- * All endpoints are fully typed with request and response generics.
+ * Auth API
+ *
+ * Authentication endpoints that don't require Bearer token.
+ * Separate from appApi because auth endpoints use different headers.
  */
 
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
@@ -20,12 +20,12 @@ import type {
   ResetPasswordResponse,
 } from '@/src/types/api/auth.types';
 
+const API_BASE_URL = 'https://api-dev.stanleypaden.com/api/v1';
+
 export const authApi = createApi({
   reducerPath: 'authApi',
-
-  // Auth endpoints don't need Bearer token - they use custom headers or no auth
   baseQuery: fetchBaseQuery({
-    baseUrl: 'https://api-dev.stanleypaden.com/api/v1',
+    baseUrl: API_BASE_URL,
     prepareHeaders: (headers) => {
       headers.set('Accept', 'application/json');
       return headers;
@@ -35,7 +35,6 @@ export const authApi = createApi({
   endpoints: (builder) => ({
     /**
      * POST /auth/login
-     * Authenticates user and returns session tokens
      */
     login: builder.mutation<ApiResponse<LoginResponse>, LoginRequest>({
       query: (body) => ({
@@ -47,7 +46,6 @@ export const authApi = createApi({
 
     /**
      * POST /auth/signup
-     * Creates a new user account
      */
     signup: builder.mutation<ApiResponse<SignupResponse>, SignupRequest>({
       query: (body) => ({
@@ -59,7 +57,6 @@ export const authApi = createApi({
 
     /**
      * POST /password/forgot
-     * Sends OTP to user's email for password reset
      */
     forgotPassword: builder.mutation<ApiResponse<ForgotPasswordResponse>, ForgotPasswordRequest>({
       query: (body) => ({
@@ -71,31 +68,25 @@ export const authApi = createApi({
 
     /**
      * POST /password/verify
-     * Verifies OTP code and returns reset token
      */
     verifyCode: builder.mutation<ApiResponse<VerifyCodeResponse>, VerifyCodeRequest>({
       query: ({ token, code }) => ({
         url: '/password/verify',
         method: 'POST',
-        headers: {
-          'x-forgot-password': token,
-        },
+        headers: { 'x-password-reset': token },
         body: { code },
       }),
     }),
 
     /**
      * POST /password/reset
-     * Resets password using reset token
      */
     resetPassword: builder.mutation<ApiResponse<ResetPasswordResponse>, ResetPasswordRequest>({
       query: ({ token, password }) => ({
         url: '/password/reset',
         method: 'POST',
-        headers: {
-          'x-reset-password': token,
-        },
-        body: { password },
+        headers: { 'x-password-reset': token },
+        body: { newPassword: password },
       }),
     }),
   }),
@@ -108,4 +99,3 @@ export const {
   useVerifyCodeMutation,
   useResetPasswordMutation,
 } = authApi;
-

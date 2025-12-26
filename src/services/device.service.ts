@@ -7,7 +7,7 @@
 
 import { Platform } from 'react-native';
 import * as Application from 'expo-application';
-import type { DeviceInfo } from '@/src/types';
+import type { DeviceInfo } from '@/src/types/api/auth.types';
 
 /**
  * Gets device information for auth requests

@@ -15,14 +15,14 @@ import Animated, {
 } from 'react-native-reanimated';
 import ULocalImage from '@/src/components/core/image/uLocalImage';
 
-const authScreenBg = require('@/assets/images/authScreenBg.png');
+const authScreenBg = require('@/assets/images/authScreenBg.jpg');
 const mainLogo = require('@/assets/images/mainLogo.png');
 
-const LOGO_WIDTH = 240;
+const LOGO_WIDTH = 255;
 const LOGO_HEIGHT = 336;
 
 // Final logo position on auth screens (left is fixed, top is relative to safe area)
-const AUTH_LOGO_LEFT = 24;
+const AUTH_LOGO_LEFT = 0;
 const AUTH_LOGO_WIDTH = 130;
 const AUTH_LOGO_HEIGHT = 70;
 
@@ -82,6 +82,10 @@ const OnboardingScreen = memo(() => {
     animateAndNavigate('signup');
   }, [animateAndNavigate]);
 
+  const onPlaceholderLayout = useCallback((event: any) => {
+    const { y, x } = event.nativeEvent.layout;
+    setInitialPosition({ top: y, left: x });
+  }, []);
   return (
     <ImageBackground
       source={authScreenBg}
@@ -102,11 +106,7 @@ const OnboardingScreen = memo(() => {
       <YStack flex={1} jc="center" ai="center" px={10}>
         
         {/* Transparent placeholder to maintain layout */}
-        <View height={LOGO_HEIGHT} width={LOGO_WIDTH} onLayout={(event) => {
-          const { y, x } = event.nativeEvent.layout;
-          setInitialPosition({ top: y, left: x });
-
-        }} />
+        <View height={LOGO_HEIGHT} width={LOGO_WIDTH} onLayout={onPlaceholderLayout}/>
 
         <UAnimatedView animation="fadeInUp" delay={300}>
           <NeonButton onPress={handleLoginPress} width={280}>

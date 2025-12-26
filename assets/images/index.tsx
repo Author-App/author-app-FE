@@ -8,7 +8,7 @@ const assets = {
     padden: require('@/assets/images/padden.jpg'),
     promo: require('@/assets/images/promo.jpg'),
     event: require('@/assets/images/event.webp'),
-    authBackgroundImage2: require('@/assets/images/authScreenBg.png'),
+    authBackgroundImage2: require('@/assets/images/authScreenBg.jpg'),
     mainLogo: require('@/assets/images/mainLogo.png'),
 
     headerbg2: require('@/assets/images/headerbg2.png'),

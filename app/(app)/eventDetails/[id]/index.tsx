@@ -9,7 +9,7 @@ import IconCalender from "@/assets/icons/iconCalender";
 import IconDuration from "@/assets/icons/iconDuration";
 import IconLocation from "@/assets/icons/iconLocation";
 import UTextButton from "@/src/components/core/buttons/uTextButton";
-import { logOut } from "@/src/redux2/Slice/AuthSlice";
+import { logOut } from "@/src/store/slices/authSlice";
 import { formatDate, formatTime12h, getJoinStatus } from "@/src/utils/helper";
 import { useGetEventsDetailQuery } from "@/src/redux2/Apis/Explore";
 

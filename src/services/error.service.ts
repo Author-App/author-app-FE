@@ -6,7 +6,7 @@
  */
 
 import { showErrorToast } from '@/src/utils/toast';
-import type { ApiError } from '@/src/types';
+import type { ApiError } from '@/src/types/api/common.types';
 
 /**
  * Handles API errors by showing a toast and optionally logging

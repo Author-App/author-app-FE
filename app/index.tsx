@@ -3,9 +3,9 @@ import { useSelector, useDispatch } from "react-redux";
 import { ActivityIndicator, View, StyleSheet } from "react-native";
 import { Redirect, useRouter } from "expo-router";
 import { useGetMeQuery } from "@/src/redux2/Apis/User";
-import { logOut } from "@/src/redux2/Slice/AuthSlice";
+import { logOut } from "@/src/store/slices/authSlice";
 import Toast from "react-native-toast-message";
-import { selectAuthToken, selectRefreshToken } from "@/src/redux2/Selectors";
+import { selectAuthToken, selectRefreshToken } from "@/src/store/selectors/authSelectors";
 
 export default function Index() {
   const router = useRouter();

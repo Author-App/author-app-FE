@@ -2,10 +2,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import Toast from 'react-native-toast-message';
 import { persistReducer, persistStore } from 'redux-persist';
-import { authApi } from '../Apis/Auth';
+
+// New clean auth imports
+import { authApi } from '@/src/store/api/authApi';
+import authSlice from '@/src/store/slices/authSlice';
+import pushTokenSlice from '@/src/store/slices/pushTokenSlice';
+
+// Legacy API imports (to be migrated)
 import { userApi } from '../Apis/User';
-import AuthSlice from '../Slice/AuthSlice';
-import PushTokenSlice from '../Slice/PushTokenSlice';
 import { bookingApi } from '../Apis/Booking';
 import { coachesApi } from '../Apis/Coaches';
 import { chatApi } from '../Apis/Chat';
@@ -34,28 +38,24 @@ const apiErrorHandler = (store: any) => (next: any) => (action: any) => {
 const authConfig = {
     key: 'author_app',
     storage: AsyncStorage,
-
     whitelist: ['token', 'user', 'refreshToken', 'isLoggedIn', 'rememberedEmail', 'rememberedPassword'],
-
-    // whitelist: ['auth'], // persist only auth state
 };
 
-const authReducer = persistReducer(authConfig, AuthSlice);
+const authReducer = persistReducer(authConfig, authSlice);
 
 const pushTokenConfig = {
     key: 'pushToken',
     storage: AsyncStorage,
-    whitelist: ['token'], // only persist the token
+    whitelist: ['token'],
 };
 
-const pushTokenReducer = persistReducer(pushTokenConfig, PushTokenSlice);
+const pushTokenReducer = persistReducer(pushTokenConfig, pushTokenSlice);
 
 const rootReducer = combineReducers({
-    // auth: persistReducer(authConfig, AuthSlice),
-    // [authApi.reducerPath]: authApi.reducer,
     auth: authReducer,
     pushToken: pushTokenReducer,
     [authApi.reducerPath]: authApi.reducer,
+    // Legacy APIs (to be migrated to src/store/api/appApi.ts)
     [homeApi.reducerPath]: homeApi.reducer,
     [articlesApi.reducerPath]: articlesApi.reducer,
     [exploreApi.reducerPath]: exploreApi.reducer,
@@ -72,12 +72,13 @@ const rootReducer = combineReducers({
 
 export const store = configureStore({
     reducer: rootReducer,
-    middleware: getDefaultMiddleware =>
+    middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({
             immutableCheck: false,
             serializableCheck: false,
         })
             .concat(authApi.middleware)
+            // Legacy APIs (to be migrated)
             .concat(homeApi.middleware)
             .concat(ordersApi.middleware)
             .concat(exploreApi.middleware)
@@ -89,8 +90,8 @@ export const store = configureStore({
             .concat(coachesApi.middleware)
             .concat(chatApi.middleware)
             .concat(bankApi.middleware)
-            .concat(apiErrorHandler)
-            .concat(generalContentApi.middleware),
+            .concat(generalContentApi.middleware)
+            .concat(apiErrorHandler),
 });
 
 export const persistor = persistStore(store);
