@@ -5,6 +5,7 @@ import { persistReducer, persistStore } from 'redux-persist';
 
 // New clean auth imports
 import { authApi } from '@/src/store/api/authApi';
+import { homeApi } from '@/src/store/api/homeApi';
 import authSlice from '@/src/store/slices/authSlice';
 import pushTokenSlice from '@/src/store/slices/pushTokenSlice';
 
@@ -16,7 +17,6 @@ import { chatApi } from '../Apis/Chat';
 import { slotsApi } from '../Apis/Slots';
 import { bankApi } from '../Apis/Bank';
 import { generalContentApi } from '../Apis/GeneralContent';
-import { homeApi } from '../Apis/Home';
 import { booksApi } from '../Apis/Books';
 import { ordersApi } from '../Apis/Orders';
 import { articlesApi } from '../Apis/Articles';
@@ -54,9 +54,10 @@ const pushTokenReducer = persistReducer(pushTokenConfig, pushTokenSlice);
 const rootReducer = combineReducers({
     auth: authReducer,
     pushToken: pushTokenReducer,
+    // Clean APIs (new architecture)
     [authApi.reducerPath]: authApi.reducer,
-    // Legacy APIs (to be migrated to src/store/api/appApi.ts)
     [homeApi.reducerPath]: homeApi.reducer,
+    // Legacy APIs (to be migrated)
     [articlesApi.reducerPath]: articlesApi.reducer,
     [exploreApi.reducerPath]: exploreApi.reducer,
     [ordersApi.reducerPath]: ordersApi.reducer,
@@ -77,9 +78,10 @@ export const store = configureStore({
             immutableCheck: false,
             serializableCheck: false,
         })
+            // Clean APIs (new architecture)
             .concat(authApi.middleware)
-            // Legacy APIs (to be migrated)
             .concat(homeApi.middleware)
+            // Legacy APIs (to be migrated)
             .concat(ordersApi.middleware)
             .concat(exploreApi.middleware)
             .concat(booksApi.middleware)
