@@ -10,4 +10,9 @@ export type TextVariant =
   | 'label-md'
   | 'label-sm'
   | 'label-xs'
-  | 'label-2xs';
+  | 'label-2xs'
+  | 'playfair-sm'
+  | 'playfair-md'
+  | 'playfair-lg'
+  | 'playfair-xl'
+  | 'playfair-2xl';

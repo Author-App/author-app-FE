@@ -1,93 +1,124 @@
 import React, { memo, useCallback } from 'react';
+import { ScrollView } from 'react-native';
 import { YStack } from 'tamagui';
-import { FlashList, ListRenderItem } from '@shopify/flash-list';
 import { router } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useHomeData } from '@/src/home/hooks/useHomeData';
-import type { HomeSection, HomeArticle, HomeBook } from '../types/home.types';
-import { HOME_SECTION_TITLES } from '@/src/types/api/home.types';
+import type { HomeArticle, HomeBook, HomeSectionItem, BannerItem } from '../types/home.types';
 
 import AppLoader from '@/src/components/core/loaders/AppLoader';
-import UHeaderWithBackground from '@/src/components/core/layout/uHeaderWithBackground';
-import HeroBanner from '@/src/components/home/banner/heroBanner';
-import CarouselSection from '@/src/components/home/carousel/carouselSection';
-import CarouselBooks from '@/src/components/home/carousel/carouselBooks';
-import CarouselArticles from '@/src/components/home/carousel/carouselArticles';
 import HomeError from './HomeError';
-
-const CONTENT_PADDING = { paddingBottom: 32 };
-
-interface ListHeaderProps {
-  bannerTitle?: string;
-}
-
-const ListHeader: React.FC<ListHeaderProps> = memo(({ bannerTitle }) => (
-  <YStack mb={20} position="relative">
-    <UHeaderWithBackground />
-    {bannerTitle && <HeroBanner title={bannerTitle} />}
-  </YStack>
-));
+import HeroBanner from '@/src/components/home/hero/HeroBanner';
+import FeaturedBooks from '@/src/components/home/sections/FeaturedBooks';
+import FeaturedArticles from '@/src/components/home/sections/FeaturedArticles';
 
 const HomeScreen: React.FC = () => {
-  const { banner, sections, isLoading, isError, errorMessage, refetch } = useHomeData();
+  const { top, bottom } = useSafeAreaInsets();
+  const { homeSections, isLoading, isError, errorMessage, refetch } = useHomeData();
 
-  const handleArticlePress = useCallback((article: HomeArticle) => {
-    router.push(`/(app)/article/${article.id}`);
+  const handleBannerPress = useCallback((item: BannerItem) => {
+    const id = item.id.split('-').pop();
+    switch (item.type) {
+      case 'book':
+      case 'audiobook':
+        router.push(`/(app)/bookDetail/${id}`);
+        break;
+      case 'article':
+        router.push(`/(app)/article/${id}`);
+        break;
+    }
   }, []);
 
   const handleBookPress = useCallback((book: HomeBook) => {
     router.push(`/(app)/bookDetail/${book.id}`);
   }, []);
 
-  const renderCarouselContent = useCallback(
-    (section: HomeSection) => {
+  const handleArticlePress = useCallback((article: HomeArticle) => {
+    router.push(`/(app)/article/${article.id}`);
+  }, []);
+
+  // Render section by type (type-safe switch)
+  const renderSection = useCallback(
+    (section: HomeSectionItem, index: number) => {
       switch (section.type) {
-        case 'articles':
-          return <CarouselArticles data={section.data} onPressItem={handleArticlePress} />;
+        case 'banner':
+          return (
+            <HeroBanner
+              key="banner"
+              items={section.data}
+              onPressItem={handleBannerPress}
+            />
+          );
+
         case 'books':
+          return (
+            <FeaturedBooks
+              key={`books-${index}`}
+              title={section.title}
+              subtitle={section.subtitle}
+              data={section.data}
+              onPressItem={handleBookPress}
+            />
+          );
+
         case 'audiobooks':
-          return <CarouselBooks data={section.data} onPressItem={handleBookPress} />;
+          return (
+            <FeaturedBooks
+              key={`audiobooks-${index}`}
+              title={section.title}
+              subtitle={section.subtitle}
+              data={section.data}
+              onPressItem={handleBookPress}
+              isAudiobook
+            />
+          );
+
+        case 'articles':
+          return (
+            <FeaturedArticles
+              key={`articles-${index}`}
+              title={section.title}
+              subtitle={section.subtitle}
+              data={section.data}
+              onPressItem={handleArticlePress}
+            />
+          );
+
+        default:
+          return null;
       }
     },
-    [handleArticlePress, handleBookPress]
-  );
-
-  const renderItem: ListRenderItem<HomeSection> = useCallback(
-    ({ item }) => (
-      <YStack px={16} pt={30}>
-        <CarouselSection title={HOME_SECTION_TITLES[item.type]}>
-          {renderCarouselContent(item)}
-        </CarouselSection>
-      </YStack>
-    ),
-    [renderCarouselContent]
-  );
-
-  const keyExtractor = useCallback((item: HomeSection) => item.type, []);
-
-  const renderListHeader = useCallback(
-    () => <ListHeader bannerTitle={banner?.title} />,
-    [banner?.title]
+    [handleBannerPress, handleBookPress, handleArticlePress]
   );
 
   if (isLoading) {
-    return <AppLoader />;
+    return (
+      <YStack flex={1} bg="$brandNavy">
+        <AppLoader />
+      </YStack>
+    );
   }
 
   if (isError) {
-    return <HomeError message={errorMessage} onRetry={refetch} />;
+    return (
+      <YStack flex={1} bg="$brandNavy">
+        <HomeError message={errorMessage} onRetry={refetch} />
+      </YStack>
+    );
   }
 
   return (
-    <YStack flex={1}>
-      <FlashList
-        data={sections}
-        renderItem={renderItem}
-        keyExtractor={keyExtractor}
-        contentContainerStyle={CONTENT_PADDING}
-        ListHeaderComponent={renderListHeader}
+    <YStack flex={1} bg="$brandNavy">
+      <ScrollView
         showsVerticalScrollIndicator={false}
-      />
+        contentContainerStyle={{
+          paddingTop: top,
+          paddingBottom: 64 + Math.max(bottom, 24),
+        }}
+      >
+        {homeSections.map(renderSection)}
+      </ScrollView>
     </YStack>
   );
 };

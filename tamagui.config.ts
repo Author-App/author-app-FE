@@ -91,6 +91,49 @@ const headingFont = createFont({
   },
 });
 
+const playfairFont = createFont({
+  family: 'PlayfairDisplay',
+  size: {
+    1: 12,
+    2: 14,
+    3: 16,
+    true: 18,
+    4: 18,
+    5: 20,
+    6: 24,
+    7: 28,
+    8: 32,
+    9: 40,
+    10: 48,
+    11: 56,
+    12: 64,
+  },
+  lineHeight: {
+    1: 16,
+    2: 20,
+    3: 24,
+    4: 28,
+    5: 32,
+    6: 36,
+    7: 40,
+    8: 48,
+    9: 56,
+    10: 64,
+    11: 72,
+    12: 80,
+  },
+  weight: {
+    4: '400',
+  },
+  letterSpacing: {
+    1: 0.5,
+    2: 0.25,
+  },
+  face: {
+    400: { normal: 'PlayfairDisplay', italic: 'PlayfairDisplay-Italic' },
+  },
+});
+
 const adaminaFont = createFont({
   family: 'Adamina',
   size: {
@@ -312,47 +355,6 @@ const cormorantGaramondFont = createFont({
     1: 0,
     2: 0.2,
   },
-  // size: {
-  //   1: 10,
-  //   2: 12,
-  //   3: 14,
-  //   true: 16,
-  //   4: 16,
-  //   5: 18,
-  //   6: 20,
-  //   7: 24,
-  //   8: 30,
-  //   9: 36,
-  //   10: 48,
-  //   11: 60,
-  //   12: 72,
-  //   13: 96,
-  //   14: 128,
-  // },
-  // lineHeight: {
-  //   1: 12,
-  //   2: 14,
-  //   3: 16,
-  //   4: 22,
-  //   5: 24,
-  //   6: 28,
-  //   7: 32,
-  //   8: 40,
-  //   9: 48,
-  //   10: 56,
-  //   11: 72,
-  //   12: 90,
-  //   13: 114,
-  //   14: 150,
-  // },
-  // weight: {
-  //   1: '400',
-  //   2: '500',
-  //   3: '600',
-  // },
-  // letterSpacing: {
-  //   1: 0.0,
-  // },
 });
 
 const interAltFont = createFont({
@@ -383,6 +385,12 @@ const tokens = createTokens({
     white: '#ffffff',
     black: '#000000',
 
+    // --- Brand Palette ---
+    brandCrimson: '#BF092F',
+    brandNavy: '#132440',
+    brandOcean: '#16476A',
+    brandTeal: '#3B9797',
+
     // --- New theme
 
     bg: '#F8F2E6',
@@ -402,6 +410,15 @@ const tokens = createTokens({
     secondaryHover: '#C19A4A',
     accent: '#587DA6',
     link: '#1F5FAF',
+
+    // --- Dark Theme Colors
+    darkBg: '#1C1B2B',
+    darkSurface: '#252438',
+    darkCard: '#2D2C3E',
+    darkBorder: '#3D3C52',
+    darkText: '#F5F5F7',
+    darkTextMuted: '#A0A0B0',
+    darkAccent: '#E8C872',
 
     success: '#3A955A',
     warning: '#D9A441',
@@ -608,7 +625,8 @@ const tamaguiConfig = createTamagui({
     sfpro: sfProFont,
     cinzel: cinzelFont,
     interAlt: interAltFont,
-    cormorantgaramond: cormorantGaramondFont
+    cormorantgaramond: cormorantGaramondFont,
+    playfair: playfairFont,
   },
   settings: {
     allowedStyleValues: 'somewhat-strict-web',

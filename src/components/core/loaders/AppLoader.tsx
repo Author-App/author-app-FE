@@ -7,7 +7,6 @@ interface AppLoaderProps extends YStackProps{
 }
 
 const AppLoader: React.FC<AppLoaderProps> = ({ 
-  backgroundColor = '$neutral1', 
   size = 200 
 }) => {
   return (
@@ -15,7 +14,7 @@ const AppLoader: React.FC<AppLoaderProps> = ({
       flex={1} 
       jc="center" 
       ai="center" 
-      backgroundColor={backgroundColor}
+      backgroundColor="$brandNavy"
     >
       <LottieView
         source={require('@/assets/animations/loader.json')}
