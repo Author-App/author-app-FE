@@ -1,1 +1,1 @@
-export type UInputVariant = 'primary' | 'secondary' | 'tertiary' | 'quaternary';
+export type UInputVariant = 'primary' | 'secondary' | 'tertiary' | 'quaternary' | 'dark';

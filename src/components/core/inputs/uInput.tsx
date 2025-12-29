@@ -84,6 +84,20 @@ const getVariantStyle = (variant: UInputVariant = 'primary'): StylesType => {
         color: '$black',
         placeholderTextColor: '$black'
       };
+    case 'dark':
+      return {
+        ...baseStyles,
+        backgroundColor: '$transparent',
+        hoverBackgroundColor: '$transparent',
+        pressBackgroundColor: '$transparent',
+        borderColor: '$transparent',
+        borderWidth: 0,
+        color: '$white',
+        placeholderTextColor: '$brandTeal',
+        py: 0,
+        px: 0,
+        minHeight: 20,
+      };
     default:
       return baseStyles;
   }

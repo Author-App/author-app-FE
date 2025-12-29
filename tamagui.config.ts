@@ -411,6 +411,11 @@ const tokens = createTokens({
     accent: '#587DA6',
     link: '#1F5FAF',
 
+    // --- Searchbar Colors
+    searchbarBg: 'rgba(255, 255, 255, 0.04)',
+    searchbarBorder: 'rgba(255, 255, 255, 0.08)',
+    searchbarClearBg: 'rgba(255, 255, 255, 0.12)',
+
     // --- Dark Theme Colors
     darkBg: '#1C1B2B',
     darkSurface: '#252438',

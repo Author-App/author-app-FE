@@ -6,6 +6,7 @@ import { persistReducer, persistStore } from 'redux-persist';
 // New clean auth imports
 import { authApi } from '@/src/store/api/authApi';
 import { homeApi } from '@/src/store/api/homeApi';
+import { exploreApi } from '@/src/store/api/exploreApi';
 import authSlice from '@/src/store/slices/authSlice';
 import pushTokenSlice from '@/src/store/slices/pushTokenSlice';
 
@@ -20,7 +21,7 @@ import { generalContentApi } from '../Apis/GeneralContent';
 import { booksApi } from '../Apis/Books';
 import { ordersApi } from '../Apis/Orders';
 import { articlesApi } from '../Apis/Articles';
-import { exploreApi } from '../Apis/Explore';
+import { exploreApi as legacyExploreApi } from '../Apis/Explore';
 
 const apiErrorHandler = (store: any) => (next: any) => (action: any) => {
     if (action.type.endsWith('/rejected') && action?.payload?.data?.data?.message?.failed) {
@@ -57,9 +58,10 @@ const rootReducer = combineReducers({
     // Clean APIs (new architecture)
     [authApi.reducerPath]: authApi.reducer,
     [homeApi.reducerPath]: homeApi.reducer,
+    [exploreApi.reducerPath]: exploreApi.reducer,
     // Legacy APIs (to be migrated)
     [articlesApi.reducerPath]: articlesApi.reducer,
-    [exploreApi.reducerPath]: exploreApi.reducer,
+    // [legacyExploreApi.reducerPath]: legacyExploreApi.reducer,
     [ordersApi.reducerPath]: ordersApi.reducer,
     [booksApi.reducerPath]: booksApi.reducer,
     [userApi.reducerPath]: userApi.reducer,
@@ -81,9 +83,10 @@ export const store = configureStore({
             // Clean APIs (new architecture)
             .concat(authApi.middleware)
             .concat(homeApi.middleware)
+            .concat(exploreApi.middleware)
             // Legacy APIs (to be migrated)
             .concat(ordersApi.middleware)
-            .concat(exploreApi.middleware)
+            // .concat(legacyExploreApi.middleware)
             .concat(booksApi.middleware)
             .concat(articlesApi.middleware)
             .concat(userApi.middleware)

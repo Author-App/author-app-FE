@@ -4,8 +4,7 @@ export default function ProfileLayout() {
 
   const router = useRouter();
   return (
-    <Stack 
-    >
+    <Stack>
       <Stack.Screen name="index" options={{ headerShown: false }} />
     </Stack>
   );
