@@ -1,8 +1,7 @@
-import React, { memo, useCallback } from 'react';
-import { FlatList, ListRenderItem } from 'react-native';
+import React, { memo, useCallback, useMemo } from 'react';
+import { Dimensions, FlatList, ListRenderItem } from 'react-native';
 import { YStack, XStack } from 'tamagui';
 import { Feather } from '@expo/vector-icons';
-import { getTokenValue } from 'tamagui';
 import UText from '@/src/components/core/text/uText';
 import ULocalImage from '@/src/components/core/image/uLocalImage';
 import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
@@ -17,11 +16,32 @@ interface FeaturedBooksProps {
   isAudiobook?: boolean;
 }
 
-
-const CARD_WIDTH = 140;
-const IMAGE_HEIGHT = 210;
 const ITEM_GAP = 16;
 const HORIZONTAL_PADDING = 20;
+
+// Responsive card sizing based on screen width
+// Shows: 2 cards on phones, 3 on small tablets, 4 on large tablets
+const getCardDimensions = () => {
+  const screenWidth = Dimensions.get('window').width;
+  
+  let numCards: number;
+  if (screenWidth > 900) {
+    numCards = 4; // Large tablets
+  } else if (screenWidth > 600) {
+    numCards = 3; // Small tablets
+  } else {
+    numCards = 2; // Phones
+  }
+
+  // Calculate card width to fit desired number of cards
+  // Account for horizontal padding (20 each side) and gaps between cards
+  const totalPadding = HORIZONTAL_PADDING * 2;
+  const totalGaps = ITEM_GAP * (numCards - 0.5); // Show partial next card
+  const cardWidth = Math.floor((screenWidth - totalPadding - totalGaps) / numCards);
+  const imageHeight = Math.floor(cardWidth * 1.5); // 2:3 aspect ratio
+
+  return { cardWidth, imageHeight };
+};
 
 const MOCK_PRICES = ['$9.99', '$12.99', '$14.99', '$7.99', '$19.99', '$11.99'];
 
@@ -30,15 +50,17 @@ interface BookCardProps {
   onPress: () => void;
   index: number;
   isAudiobook?: boolean;
+  cardWidth: number;
+  imageHeight: number;
 }
 
-const BookCard = memo(({ item, onPress, index, isAudiobook }: BookCardProps) => {
+const BookCard = memo(({ item, onPress, index, isAudiobook, cardWidth, imageHeight }: BookCardProps) => {
   const mockPrice = MOCK_PRICES[index % MOCK_PRICES.length];
 
   return (
     <UAnimatedView animation="fadeInUp" delay={index * 80} duration={400}>
       <YStack
-        w={CARD_WIDTH}
+        w={cardWidth}
         mr={ITEM_GAP}
         onPress={onPress}
         pressStyle={{ scale: 0.96, opacity: 0.9 }}
@@ -46,8 +68,8 @@ const BookCard = memo(({ item, onPress, index, isAudiobook }: BookCardProps) => 
       >
         <YStack position="relative">
           <YStack
-            w={CARD_WIDTH}
-            h={IMAGE_HEIGHT}
+            w={cardWidth}
+            h={imageHeight}
             borderRadius={12}
             overflow="hidden"
             shadowColor="$black"
@@ -58,8 +80,8 @@ const BookCard = memo(({ item, onPress, index, isAudiobook }: BookCardProps) => 
           >
             <ULocalImage
               source={{ uri: item.image }}
-              width={CARD_WIDTH}
-              height={IMAGE_HEIGHT}
+              width={cardWidth}
+              height={imageHeight}
               contentFit="cover"
             />
           </YStack>
@@ -163,6 +185,9 @@ const FeaturedBooks: React.FC<FeaturedBooksProps> = ({
   onPressSeeAll,
   isAudiobook,
 }) => {
+  // Responsive card dimensions
+  const { cardWidth, imageHeight } = useMemo(() => getCardDimensions(), []);
+
   const renderItem: ListRenderItem<HomeBook> = useCallback(
     ({ item, index }) => (
       <BookCard
@@ -170,9 +195,11 @@ const FeaturedBooks: React.FC<FeaturedBooksProps> = ({
         onPress={() => onPressItem(item)}
         index={index}
         isAudiobook={isAudiobook}
+        cardWidth={cardWidth}
+        imageHeight={imageHeight}
       />
     ),
-    [onPressItem, isAudiobook]
+    [onPressItem, isAudiobook, cardWidth, imageHeight]
   );
 
   const keyExtractor = useCallback((item: HomeBook) => item.id, []);

@@ -5,18 +5,13 @@ import { Ionicons } from '@expo/vector-icons';
 import UText from '@/src/components/core/text/uText';
 import ULocalImage from '@/src/components/core/image/uLocalImage';
 import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
+import { formatDuration } from '@/src/utils/helper';
 import type { MediaResponse } from '@/src/explore/types/explore.types';
 
 interface VideoCardProps extends YStackProps {
   data: MediaResponse;
   onPress: () => void;
 }
-
-const formatDuration = (seconds: number): string => {
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-  return `${mins}:${secs.toString().padStart(2, '0')}`;
-};
 
 const VideoCard: React.FC<VideoCardProps> = ({ data, onPress, ...props }) => {
   const white = getTokenValue('$white', 'color');

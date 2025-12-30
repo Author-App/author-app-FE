@@ -7,10 +7,6 @@ interface URefreshableListProps<T> extends Omit<FlashListProps<T>, 'refreshContr
   onRefresh: () => Promise<void> | void;
 }
 
-/**
- * Refreshable list component that wraps FlashList with pull-to-refresh functionality
- * Automatically handles loading state and provides smooth refresh experience
- */
 export function URefreshableList<T>({
   onRefresh,
   ...props
@@ -26,7 +22,7 @@ export function URefreshableList<T>({
     }
   }, [onRefresh]);
 
-  const primaryColor = getTokenValue('$primary7');
+  const primaryColor = getTokenValue('$neutral1');
 
   return (
     <FlashList

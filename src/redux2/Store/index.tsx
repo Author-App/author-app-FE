@@ -8,6 +8,7 @@ import { authApi } from '@/src/store/api/authApi';
 import { homeApi } from '@/src/store/api/homeApi';
 import { exploreApi } from '@/src/store/api/exploreApi';
 import { userApi } from '@/src/store/api/userApi';
+import { libraryApi } from '@/src/store/api/libraryApi';
 import authSlice from '@/src/store/slices/authSlice';
 import pushTokenSlice from '@/src/store/slices/pushTokenSlice';
 
@@ -18,10 +19,8 @@ import { chatApi } from '../Apis/Chat';
 import { slotsApi } from '../Apis/Slots';
 import { bankApi } from '../Apis/Bank';
 import { generalContentApi } from '../Apis/GeneralContent';
-import { booksApi } from '../Apis/Books';
 import { ordersApi } from '../Apis/Orders';
 import { articlesApi } from '../Apis/Articles';
-import { exploreApi as legacyExploreApi } from '../Apis/Explore';
 
 const apiErrorHandler = (store: any) => (next: any) => (action: any) => {
     if (action.type.endsWith('/rejected') && action?.payload?.data?.data?.message?.failed) {
@@ -59,12 +58,12 @@ const rootReducer = combineReducers({
     [authApi.reducerPath]: authApi.reducer,
     [homeApi.reducerPath]: homeApi.reducer,
     [exploreApi.reducerPath]: exploreApi.reducer,
+    [userApi.reducerPath]: userApi.reducer,
+    [libraryApi.reducerPath]: libraryApi.reducer,
     // Legacy APIs (to be migrated)
     [articlesApi.reducerPath]: articlesApi.reducer,
     // [legacyExploreApi.reducerPath]: legacyExploreApi.reducer,
     [ordersApi.reducerPath]: ordersApi.reducer,
-    [booksApi.reducerPath]: booksApi.reducer,
-    [userApi.reducerPath]: userApi.reducer,
     [bookingApi.reducerPath]: bookingApi.reducer,
     [slotsApi.reducerPath]: slotsApi.reducer,
     [coachesApi.reducerPath]: coachesApi.reducer,
@@ -84,12 +83,12 @@ export const store = configureStore({
             .concat(authApi.middleware)
             .concat(homeApi.middleware)
             .concat(exploreApi.middleware)
+            .concat(userApi.middleware)
+            .concat(libraryApi.middleware)
             // Legacy APIs (to be migrated)
             .concat(ordersApi.middleware)
             // .concat(legacyExploreApi.middleware)
-            .concat(booksApi.middleware)
             .concat(articlesApi.middleware)
-            .concat(userApi.middleware)
             .concat(bookingApi.middleware)
             .concat(slotsApi.middleware)
             .concat(coachesApi.middleware)
