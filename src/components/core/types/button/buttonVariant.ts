@@ -16,4 +16,6 @@ export type ButtonVariant =
   | 'quinary-xs'
   | 'quinary-md'
   | 'quinary-sm'
+  | 'glass-sm'
+  | 'glass-md'
 

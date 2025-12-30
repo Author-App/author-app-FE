@@ -183,6 +183,30 @@ const getVariantStyle = (variant: ButtonVariant = 'primary-md'): StylesType => {
         iconColor: '$primary7',
         borderWidth: 1,
       };
+    case 'glass-sm':
+      return {
+        ...baseStyles,
+        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+        pressBackgroundColor: 'rgba(255, 255, 255, 0.25)',
+        hoverBackgroundColor: 'rgba(255, 255, 255, 0.2)',
+        iconColor: '$white',
+        width: 36,
+        height: 36,
+        padding: 4,
+        iconSize: 18,
+      };
+    case 'glass-md':
+      return {
+        ...baseStyles,
+        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+        pressBackgroundColor: 'rgba(255, 255, 255, 0.25)',
+        hoverBackgroundColor: 'rgba(255, 255, 255, 0.2)',
+        iconColor: '$white',
+        width: 40,
+        height: 40,
+        padding: 6,
+        iconSize: 20,
+      };
 
     default:
       return baseStyles;

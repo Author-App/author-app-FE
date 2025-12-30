@@ -8,7 +8,7 @@ import LibraryHeader from './LibraryHeader';
 import LibraryFilters from './LibraryFilters';
 import LibraryBookCard from './LibraryBookCard';
 import LibraryEmptyState from './LibraryEmptyState';
-import LibraryError from './LibraryError';
+import UScreenError from '@/src/components/core/feedback/UScreenError';
 import { useLibraryData } from '../hooks/useLibraryData';
 import type { BookResponse } from '@/src/types/api/library.types';
 
@@ -60,7 +60,7 @@ const LibraryScreen: React.FC = () => {
     }
 
     if (isError) {
-      return <LibraryError onRetry={refetch} pb={64 + Math.max(bottom, 24)} />;
+      return <UScreenError message="We couldn't load your library. Please check your connection and try again." onRetry={refetch} pb={64 + Math.max(bottom, 24)} />;
     }
 
     return (

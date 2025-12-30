@@ -20,7 +20,6 @@ import { slotsApi } from '../Apis/Slots';
 import { bankApi } from '../Apis/Bank';
 import { generalContentApi } from '../Apis/GeneralContent';
 import { ordersApi } from '../Apis/Orders';
-import { articlesApi } from '../Apis/Articles';
 
 const apiErrorHandler = (store: any) => (next: any) => (action: any) => {
     if (action.type.endsWith('/rejected') && action?.payload?.data?.data?.message?.failed) {
@@ -61,7 +60,6 @@ const rootReducer = combineReducers({
     [userApi.reducerPath]: userApi.reducer,
     [libraryApi.reducerPath]: libraryApi.reducer,
     // Legacy APIs (to be migrated)
-    [articlesApi.reducerPath]: articlesApi.reducer,
     // [legacyExploreApi.reducerPath]: legacyExploreApi.reducer,
     [ordersApi.reducerPath]: ordersApi.reducer,
     [bookingApi.reducerPath]: bookingApi.reducer,
@@ -88,7 +86,6 @@ export const store = configureStore({
             // Legacy APIs (to be migrated)
             .concat(ordersApi.middleware)
             // .concat(legacyExploreApi.middleware)
-            .concat(articlesApi.middleware)
             .concat(bookingApi.middleware)
             .concat(slotsApi.middleware)
             .concat(coachesApi.middleware)

@@ -1,9 +1,3 @@
-/**
- * AuthorCard Component
- *
- * Displays author's name, image, and title.
- */
-
 import React, { memo } from 'react';
 import { XStack, YStack, getTokenValue } from 'tamagui';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,6 +7,7 @@ import ULocalImage from '@/src/components/core/image/uLocalImage';
 import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
 import assets from '@/assets/images';
 
+const authorProfilePicture = require('@/assets/images/padden.jpg');
 interface AuthorCardProps {
   name: string;
   title: string;
@@ -51,7 +46,7 @@ const AuthorCard: React.FC<AuthorCardProps> = ({ name, title, image }) => {
             />
           ) : (
             <ULocalImage
-              source={assets.images.padden}
+              source={authorProfilePicture}
               width={100}
               height={100}
               contentFit="cover"

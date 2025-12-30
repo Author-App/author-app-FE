@@ -29,6 +29,7 @@ interface UseExploreDataReturn {
   setSearch: (search: string) => void;
   items: ExploreSectionItem[];
   isLoading: boolean;
+  isRefreshing: boolean;
   isError: boolean;
   errorMessage: string | null;
   refetch: () => void;
@@ -191,6 +192,7 @@ export const useExploreData = (): UseExploreDataReturn => {
     setSearch,
     items,
     isLoading: currentQuery.isLoading,
+    isRefreshing: currentQuery.isFetching && !currentQuery.isLoading,
     isError: currentQuery.isError,
     errorMessage: getErrorMessage(currentQuery.error),
     refetch,

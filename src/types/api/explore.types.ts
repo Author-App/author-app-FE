@@ -35,6 +35,10 @@ export interface ArticleResponse {
   updatedAt: string;
 }
 
+export interface ArticleDetailResponse extends ArticleResponse {
+  content: string; // Full HTML or markdown content
+}
+
 export interface ArticleListResponse {
   articles: ArticleResponse[];
   pagination: ExplorePagination;

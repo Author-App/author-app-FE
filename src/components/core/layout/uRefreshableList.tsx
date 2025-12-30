@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from 'react';
-import { RefreshControl } from 'react-native';
 import { FlashList, FlashListProps } from '@shopify/flash-list';
-import { getTokenValue } from 'tamagui';
+import { YStack } from 'tamagui';
+import { useURefreshControl } from '@/src/components/core/feedback/URefreshControl';
 
 interface URefreshableListProps<T> extends Omit<FlashListProps<T>, 'refreshControl'> {
   onRefresh: () => Promise<void> | void;
@@ -9,6 +9,7 @@ interface URefreshableListProps<T> extends Omit<FlashListProps<T>, 'refreshContr
 
 export function URefreshableList<T>({
   onRefresh,
+  ListHeaderComponent,
   ...props
 }: URefreshableListProps<T>) {
   const [refreshing, setRefreshing] = useState(false);
@@ -22,19 +23,25 @@ export function URefreshableList<T>({
     }
   }, [onRefresh]);
 
-  const primaryColor = getTokenValue('$neutral1');
+  const { refreshControl, refreshProps } = useURefreshControl({
+    refreshing,
+    onRefresh: handleRefresh,
+  });
+
+  const Header = ListHeaderComponent ? (
+    <YStack>
+      {refreshControl}
+      {ListHeaderComponent}
+    </YStack>
+  ) : (
+    <YStack>{refreshControl}</YStack>
+  );
 
   return (
     <FlashList
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={handleRefresh}
-          tintColor={primaryColor}
-          colors={[primaryColor]}
-        />
-      }
+      ListHeaderComponent={Header}
       {...props}
+      {...refreshProps}
     />
   );
 }

@@ -8,7 +8,8 @@ import { useHomeData } from '@/src/home/hooks/useHomeData';
 import type { HomeArticle, HomeBook, HomeSectionItem, BannerItem } from '../types/home.types';
 
 import AppLoader from '@/src/components/core/loaders/AppLoader';
-import HomeError from './HomeError';
+import UScreenError from '@/src/components/core/feedback/UScreenError';
+import { useURefreshControl } from '@/src/components/core/feedback/URefreshControl';
 import HeroBanner from '@/src/components/home/hero/HeroBanner';
 import FeaturedBooks from '@/src/components/home/sections/FeaturedBooks';
 import FeaturedArticles from '@/src/components/home/sections/FeaturedArticles';
@@ -16,7 +17,12 @@ import FeaturedArticles from '@/src/components/home/sections/FeaturedArticles';
 
 const HomeScreen: React.FC = () => {
   const { top, bottom } = useSafeAreaInsets();
-  const { homeSections, isLoading, isError, errorMessage, refetch } = useHomeData();
+  const { homeSections, isLoading, isRefreshing, isError, errorMessage, refetch } = useHomeData();
+
+  const { refreshControl, refreshProps } = useURefreshControl({
+    refreshing: isRefreshing,
+    onRefresh: refetch,
+  });
 
   const handleBannerPress = useCallback((item: BannerItem) => {
     const id = item.id.split('-').pop();
@@ -104,7 +110,7 @@ const HomeScreen: React.FC = () => {
   if (isError) {
     return (
       <YStack flex={1} bg="$brandNavy">
-        <HomeError message={errorMessage} onRetry={refetch} />
+        <UScreenError message={errorMessage} onRetry={refetch} />
       </YStack>
     );
   }
@@ -117,7 +123,9 @@ const HomeScreen: React.FC = () => {
           paddingTop: top,
           paddingBottom: 64 + Math.max(bottom, 24),
         }}
+        {...refreshProps}
       >
+        {refreshControl}
         {homeSections.map(renderSection)}
       </ScrollView>
     </YStack>

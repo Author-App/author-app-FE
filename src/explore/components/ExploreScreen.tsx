@@ -1,5 +1,4 @@
 import React, { memo, useCallback } from 'react';
-import { FlatList } from 'react-native';
 import { YStack } from 'tamagui';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -14,7 +13,8 @@ import type {
 } from '@/src/explore/types/explore.types';
 
 import AppLoader from '@/src/components/core/loaders/AppLoader';
-import ExploreError from './ExploreError';
+import UScreenError from '@/src/components/core/feedback/UScreenError';
+import { URefreshableList } from '@/src/components/core/layout/uRefreshableList';
 import ExploreHeader from './ExploreHeader';
 import UText from '@/src/components/core/text/uText';
 
@@ -134,11 +134,11 @@ const ExploreScreen: React.FC = () => {
     }
 
     if (isError) {
-      return <ExploreError message={errorMessage} onRetry={refetch} pb={64+Math.max(bottom, 24)}/>;
+      return <UScreenError message={errorMessage} onRetry={refetch} pb={64+Math.max(bottom, 24)}/>;
     }
 
     return (
-      <FlatList
+      <URefreshableList
         data={items}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
@@ -148,11 +148,8 @@ const ExploreScreen: React.FC = () => {
           paddingBottom: 64 + Math.max(bottom, 24),
           flexGrow: 1,
         }}
-        numColumns={activeTab === 'Videos' ? 2 : 1}
         key={activeTab}
-        columnWrapperStyle={
-          activeTab === 'Videos' ? { paddingHorizontal: 12 } : undefined
-        }
+        onRefresh={refetch}
       />
     );
   };

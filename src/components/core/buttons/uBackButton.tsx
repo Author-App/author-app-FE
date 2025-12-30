@@ -7,7 +7,7 @@ import UIconButton from '@/src/components/core/buttons/uIconButtonVariants';
 
 interface UBackButtonProps extends GetProps<typeof UIconButton> {}
 
-const UBackButton = ({ ...props }: UBackButtonProps) => {
+const UBackButton = ({ variant = 'quaternary-sm', ...props }: UBackButtonProps) => {
   const router = useRouter();
 
   const navigateBack = useCallback(() => {
@@ -16,7 +16,7 @@ const UBackButton = ({ ...props }: UBackButtonProps) => {
 
   return (
     <UIconButton
-      variant="quaternary-sm"
+      variant={variant}
       icon={IconArrowLeft}
       onPress={navigateBack}
       {...props}

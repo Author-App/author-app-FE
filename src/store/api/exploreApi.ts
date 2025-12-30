@@ -1,15 +1,9 @@
-/**
- * Explore API
- *
- * Endpoints for explore screen: articles, media, events, communities.
- * Uses baseQueryWithReauth for automatic token refresh.
- */
-
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { baseQueryWithReauth } from './baseQuery';
 import type { ApiResponse } from '@/src/types/api/common.types';
 import type {
   ArticleListResponse,
+  ArticleDetailResponse,
   MediaListResponse,
   MediaQueryParams,
   EventListResponse,
@@ -34,6 +28,18 @@ export const exploreApi = createApi({
         params: params ?? undefined,
       }),
       providesTags: ['Articles'],
+    }),
+
+    /**
+     * GET /articles/:id
+     * Fetches single article by ID
+     */
+    getArticleDetail: builder.query<ApiResponse<ArticleDetailResponse>, string>({
+      query: (id) => ({
+        url: `/articles/${id}`,
+        method: 'GET',
+      }),
+      providesTags: (result, error, id) => [{ type: 'Articles', id }],
     }),
 
     /**
@@ -105,6 +111,7 @@ export const exploreApi = createApi({
 
 export const {
   useGetArticlesQuery,
+  useGetArticleDetailQuery,
   useGetMediaQuery,
   useGetEventsQuery,
   useGetCommunitiesQuery,

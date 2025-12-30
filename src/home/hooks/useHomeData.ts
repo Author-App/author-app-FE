@@ -13,6 +13,7 @@ interface UseHomeDataReturn {
   banner: HomeBanner | null;
   homeSections: HomeSectionItem[];
   isLoading: boolean;
+  isRefreshing: boolean;
   isError: boolean;
   errorMessage: string | null;
   refetch: () => void;
@@ -30,7 +31,7 @@ const getErrorMessage = (error: unknown): string | null => {
 };
 
 export const useHomeData = (): UseHomeDataReturn => {
-  const { isLoading, refetch } = useGetHomeFeedQuery();
+  const { isLoading, isFetching, refetch } = useGetHomeFeedQuery();
 
   const banner = useAppSelector(selectHomeBanner);
   const sections = useAppSelector(selectHomeSections);
@@ -128,6 +129,7 @@ export const useHomeData = (): UseHomeDataReturn => {
     banner,
     homeSections,
     isLoading,
+    isRefreshing: isFetching && !isLoading,
     isError: !!error,
     errorMessage: getErrorMessage(error),
     refetch,
