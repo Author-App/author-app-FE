@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useExploreData } from '@/src/explore/hooks/useExploreData';
+import UScreenLayout from '@/src/components/core/layout/UScreenLayout';
 import type {
   ExploreSectionItem,
   ArticleResponse,
@@ -128,7 +129,7 @@ const ExploreScreen: React.FC = () => {
     if (isLoading && items.length === 0) {
       return (
         <YStack jc="center" ai="center" flex={1} pb={64 + Math.max(bottom, 24)}>
-          <AppLoader size={150}/>
+          <AppLoader size={150} bg="Stransparent"/>
         </YStack>
       );
     }
@@ -155,7 +156,7 @@ const ExploreScreen: React.FC = () => {
   };
 
   return (
-    <YStack flex={1} bg="$brandNavy" pt={top}>
+    <UScreenLayout pt={top}>
       <ExploreHeader
         search={search}
         onSearchChange={setSearch}
@@ -164,7 +165,7 @@ const ExploreScreen: React.FC = () => {
       />
 
       {renderContent()}
-    </YStack>
+    </UScreenLayout>
   );
 };
 

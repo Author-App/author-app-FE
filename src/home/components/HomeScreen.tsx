@@ -9,6 +9,7 @@ import type { HomeArticle, HomeBook, HomeSectionItem, BannerItem } from '../type
 
 import AppLoader from '@/src/components/core/loaders/AppLoader';
 import UScreenError from '@/src/components/core/feedback/UScreenError';
+import UScreenLayout from '@/src/components/core/layout/UScreenLayout';
 import { useURefreshControl } from '@/src/components/core/feedback/URefreshControl';
 import HeroBanner from '@/src/components/home/hero/HeroBanner';
 import FeaturedBooks from '@/src/components/home/sections/FeaturedBooks';
@@ -101,22 +102,22 @@ const HomeScreen: React.FC = () => {
 
   if (isLoading) {
     return (
-      <YStack flex={1} bg="$brandNavy">
+      <UScreenLayout>
         <AppLoader />
-      </YStack>
+      </UScreenLayout>
     );
   }
 
   if (isError) {
     return (
-      <YStack flex={1} bg="$brandNavy">
+      <UScreenLayout>
         <UScreenError message={errorMessage} onRetry={refetch} />
-      </YStack>
+      </UScreenLayout>
     );
   }
 
   return (
-    <YStack flex={1} bg="$brandNavy">
+    <UScreenLayout>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
@@ -128,7 +129,7 @@ const HomeScreen: React.FC = () => {
         {refreshControl}
         {homeSections.map(renderSection)}
       </ScrollView>
-    </YStack>
+    </UScreenLayout>
   );
 };
 

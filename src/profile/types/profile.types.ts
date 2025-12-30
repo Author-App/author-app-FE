@@ -23,3 +23,10 @@ export interface AuthorProfile {
 export interface AuthorProfileResponse {
   author: AuthorProfile;
 }
+
+export type { UserData, UpdateProfileRequest } from '@/src/types/api/user.types';
+
+export interface ProfileFormValues {
+  fullName: string;
+  email: string;
+}

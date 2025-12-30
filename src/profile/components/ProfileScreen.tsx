@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useProfileData } from '../hooks/useProfileData';
 
 import AppLoader from '@/src/components/core/loaders/AppLoader';
+import UScreenLayout from '@/src/components/core/layout/UScreenLayout';
 import ProfileHeader from './ProfileHeader';
 import AuthorCard from './AuthorCard';
 import SocialLinks from './SocialLinks';
@@ -18,23 +19,23 @@ const ProfileScreen: React.FC = () => {
 
   if (isLoading) {
     return (
-      <YStack flex={1} bg="$brandNavy">
+      <UScreenLayout>
         <AppLoader />
-      </YStack>
+      </UScreenLayout>
     );
   }
 
   // TODO: Add error state component when API is integrated
   if (isError) {
     return (
-      <YStack flex={1} bg="$brandNavy" ai="center" jc="center">
+      <UScreenLayout ai="center" jc="center">
         {/* Error state */}
-      </YStack>
+      </UScreenLayout>
     );
   }
 
   return (
-    <YStack flex={1} bg="$brandNavy" pt={top}>
+    <UScreenLayout pt={top}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
@@ -60,7 +61,7 @@ const ProfileScreen: React.FC = () => {
           />
         </YStack>
       </ScrollView>
-    </YStack>
+    </UScreenLayout>
   );
 };
 

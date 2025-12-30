@@ -1,10 +1,3 @@
-/**
- * UserProfileCard Component
- *
- * Compact horizontal profile card with edit button.
- * Handles error state gracefully with inline retry option.
- */
-
 import React, { memo } from 'react';
 import { YStack, XStack, getTokenValue } from 'tamagui';
 import { Pressable, TouchableOpacity } from 'react-native';
@@ -16,6 +9,7 @@ import UText from '@/src/components/core/text/uText';
 import UImage from '@/src/components/core/image/uImage';
 import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
 import type { UserData } from '../types/settings.types';
+import { getInitials } from '@/src/utils/helper';
 
 interface UserProfileCardProps {
   user?: UserData | null;
@@ -85,13 +79,11 @@ const UserProfileCard: React.FC<UserProfileCardProps> = ({ user, isError, onRetr
     );
   }
 
-  const fullName = `${user.firstName} ${user.lastName}`;
+  const fullName = `${user.firstName} ${user.lastName}`
 
   return (
     <UAnimatedView animation="fadeInUp" duration={400} delay={100}>
-      <Pressable onPress={handleEditProfile}>
-        {({ pressed }) => (
-          <XStack
+        <XStack
             mx={20}
             p={16}
             bg="$searchbarBg"
@@ -100,80 +92,80 @@ const UserProfileCard: React.FC<UserProfileCardProps> = ({ user, isError, onRetr
             borderColor="$searchbarBorder"
             ai="center"
             gap={16}
-            opacity={pressed ? 0.9 : 1}
-          >
-            {/* Profile Image */}
-            <YStack
-              w={72}
-              h={72}
-              borderRadius={36}
-              overflow="hidden"
-              borderWidth={2}
-              borderColor="$brandTeal"
-            >
-              <UImage
+            onPress={handleEditProfile}
+            pressStyle={{
+                opacity:0.9
+            }}
+        >
+        {/* Profile Image */}
+        <YStack
+            w={72}
+            h={72}
+            borderRadius={36}
+            overflow="hidden"
+            borderWidth={2}
+            borderColor="$brandTeal"
+        >
+            <UImage
                 imageSource={user.profileImageUrl}
-                fallBackText={fullName}
+                fallBackText={getInitials(fullName)}
                 w={68}
                 h={68}
                 borderRadius={34}
-              />
-            </YStack>
+            />
+        </YStack>
 
-            {/* User Info */}
-            <YStack flex={1} gap={4}>
-              <UText variant="heading-h2" color="$white" fontWeight="600">
+        {/* User Info */}
+        <YStack flex={1} gap={4}>
+            <UText variant="heading-h2" color="$white" fontWeight="600">
                 {fullName}
-              </UText>
-              <UText variant="text-sm" color="$neutral1" numberOfLines={1}>
-                {user.email}
-              </UText>
-              {user.role && (
-                <XStack ai="center" gap={4} mt={4}>
-                  <YStack
+            </UText>
+            <UText variant="text-sm" color="$neutral1" numberOfLines={1}>
+            {user.email}
+            </UText>
+            {user.role && (
+            <XStack ai="center" gap={4} mt={4}>
+                <YStack
                     bg="$brandOcean"
                     px={8}
                     py={2}
                     br={8}
-                  >
-                    <UText variant="text-xs" color="$brandTeal" fontWeight="600">
-                      {user.role}
+                >
+                <UText variant="text-xs" color="$brandTeal" fontWeight="600">
+                    {user.role}
+                </UText>
+                </YStack>
+                {user.isEmailVerified && (
+                <YStack
+                    bg="rgba(16, 185, 129, 0.15)"
+                    px={8}
+                    py={2}
+                    br={8}
+                    flexDirection="row"
+                    ai="center"
+                    gap={4}
+                >
+                    <Ionicons name="checkmark-circle" size={12} color="#10B981" />
+                    <UText variant="text-xs" color="#10B981" fontWeight="500">
+                    Verified
                     </UText>
-                  </YStack>
-                  {user.isEmailVerified && (
-                    <YStack
-                      bg="rgba(16, 185, 129, 0.15)"
-                      px={8}
-                      py={2}
-                      br={8}
-                      flexDirection="row"
-                      ai="center"
-                      gap={4}
-                    >
-                      <Ionicons name="checkmark-circle" size={12} color="#10B981" />
-                      <UText variant="text-xs" color="#10B981" fontWeight="500">
-                        Verified
-                      </UText>
-                    </YStack>
-                  )}
-                </XStack>
-              )}
-            </YStack>
-
-            {/* Edit Arrow */}
-            <YStack
-              w={36}
-              h={36}
-              br={18}
-              bg="$brandOcean"
-              ai="center"
-              jc="center"
-            >
-              <Ionicons name="chevron-forward" size={18} color={teal} />
-            </YStack>
-          </XStack>
-        )}
-      </Pressable>
+                </YStack>
+                )}
+            </XStack>
+            )}
+        </YStack>
+        {/* Edit Arrow */}
+        <YStack
+            w={36}
+            h={36}
+            br={18}
+            bg="$brandOcean"
+            ai="center"
+            jc="center"
+        >
+            <Ionicons name="chevron-forward" size={18} color={teal} />
+        </YStack>
+        </XStack>
     </UAnimatedView>
   );
 };

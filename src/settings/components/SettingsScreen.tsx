@@ -1,10 +1,3 @@
-/**
- * SettingsScreen Component
- *
- * Modern settings screen with grouped sections and premium styling.
- * Profile errors show inline, not blocking access to settings/logout.
- */
-
 import React, { memo } from 'react';
 import { ScrollView } from 'react-native';
 import { YStack, XStack, Switch } from 'tamagui';
@@ -13,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import UText from '@/src/components/core/text/uText';
 import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
 import AppLoader from '@/src/components/core/loaders/AppLoader';
+import UScreenLayout from '@/src/components/core/layout/UScreenLayout';
 import SettingsHeader from './SettingsHeader';
 import UserProfileCard from './UserProfileCard';
 import SettingsSection from './SettingsSection';
@@ -65,7 +59,7 @@ const SettingsScreen = () => {
   }
 
   return (
-    <YStack flex={1} bg="$brandNavy" pt={top}>
+    <UScreenLayout pt={top}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
@@ -132,7 +126,7 @@ const SettingsScreen = () => {
         onCancel={hideDeleteModal}
         onConfirm={confirmDeleteAccount}
       />
-    </YStack>
+    </UScreenLayout>
   );
 };
 

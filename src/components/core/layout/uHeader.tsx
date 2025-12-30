@@ -72,14 +72,14 @@ const UHeader = ({
     );
   }
 
-  // Default variant - original centered design
+  // Default variant - centered design with light colors
   if (title) {
     if (titleElement) {
       throw new Error('title and titleElement cannot be used together');
     }
 
     titleElement = (
-      <UText variant="heading-h1" {...textProps} numberOfLines={1}>
+      <UText variant="heading-h2" color="$white" {...textProps} numberOfLines={1}>
         {title}
       </UText>
     );
@@ -88,22 +88,24 @@ const UHeader = ({
   return (
     <YStack w="100%" {...props} backgroundColor={headerColor}>
       {!safeAreaDisabled && <USpacer height={top} />}
-      <XStack py={8} gap={8} jc="space-between" ai="center">
-        {/* Left Section */}
-        <XStack flex={0.1} jc="center" ai="center">
-          {leftControl}
-        </XStack>
+      <UAnimatedView animation="fadeIn" duration={300} delay={animationDelay}>
+        <XStack py={12} px={4} gap={8} jc="space-between" ai="center">
+          {/* Left Section */}
+          <XStack flex={0.15} jc="flex-start" ai="center">
+            {leftControl}
+          </XStack>
 
-        {/* Center Title */}
-        <XStack flex={0.8} jc="center" ai="center">
-          {titleElement}
-        </XStack>
+          {/* Center Title */}
+          <XStack flex={0.7} jc="center" ai="center">
+            {titleElement}
+          </XStack>
 
-        {/* Right Section */}
-        <XStack flex={0.1} jc="center" ai="center">
-          {rightControl}
+          {/* Right Section */}
+          <XStack flex={0.15} jc="flex-end" ai="center">
+            {rightControl}
+          </XStack>
         </XStack>
-      </XStack>
+      </UAnimatedView>
     </YStack>
   );
 };

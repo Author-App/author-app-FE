@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import AppLoader from '@/src/components/core/loaders/AppLoader';
 import { URefreshableList } from '@/src/components/core/layout/uRefreshableList';
+import UScreenLayout from '@/src/components/core/layout/UScreenLayout';
 import LibraryHeader from './LibraryHeader';
 import LibraryFilters from './LibraryFilters';
 import LibraryBookCard from './LibraryBookCard';
@@ -54,7 +55,7 @@ const LibraryScreen: React.FC = () => {
     if (isLoading && books.length === 0) {
       return (
         <YStack jc="center" ai="center" flex={1} pb={64 + Math.max(bottom, 24)}>
-          <AppLoader size={150} />
+          <AppLoader size={150} bg="$transparent" />
         </YStack>
       );
     }
@@ -83,7 +84,7 @@ const LibraryScreen: React.FC = () => {
   };
 
   return (
-    <YStack flex={1} bg="$brandNavy" pt={top}>
+    <UScreenLayout pt={top}>
       <LibraryHeader />
       <LibraryFilters
         activeType={activeType}
@@ -93,7 +94,7 @@ const LibraryScreen: React.FC = () => {
       />
 
       {renderContent()}
-    </YStack>
+    </UScreenLayout>
   );
 };
 
