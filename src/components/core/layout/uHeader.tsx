@@ -4,29 +4,75 @@ import { ColorTokens, XStack, YStack, YStackProps } from 'tamagui';
 
 import USpacer from '@/src/components/core/layout/uSpacer';
 import UText, { UTextProps } from '@/src/components/core/text/uText';
+import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
 
 interface UHeaderProps extends YStackProps {
   title?: string;
+  subtitle?: string;
   titleElement?: React.ReactElement;
   leftControl?: React.ReactElement;
   rightControl?: React.ReactElement;
   safeAreaDisabled?: boolean;
   textProps?: Partial<UTextProps>;
   headerColor?: ColorTokens | 'transparent';
+  /** Use new premium design with accent bar */
+  variant?: 'default' | 'premium';
+  /** Animation delay in ms */
+  animationDelay?: number;
 }
 
 const UHeader = ({
   title,
+  subtitle,
   titleElement,
   leftControl,
   rightControl,
   safeAreaDisabled,
   textProps,
   headerColor = 'transparent',
+  variant = 'default',
+  animationDelay = 0,
   ...props
 }: UHeaderProps) => {
   const { top } = useSafeAreaInsets();
 
+  // Premium variant - new design with accent bar
+  if (variant === 'premium') {
+    return (
+      <YStack
+        pt={safeAreaDisabled ? 16 : top + 16}
+        pb={20}
+        px={20}
+        bg={headerColor}
+        {...props}
+      >
+        <UAnimatedView animation="fadeInUp" duration={400} delay={animationDelay}>
+          <YStack gap={4}>
+            <XStack ai="center" jc="space-between">
+              <XStack ai="center" gap={8} flex={1}>
+                <YStack w={4} h={28} bg="$brandCrimson" br={2} />
+                <UText variant="playfair-xl" color="$white" {...textProps}>
+                  {title}
+                </UText>
+              </XStack>
+              {rightControl && (
+                <XStack>{rightControl}</XStack>
+              )}
+            </XStack>
+            {subtitle && (
+              <XStack pl={12}>
+                <UText variant="text-sm" color="$neutral1" opacity={0.8}>
+                  {subtitle}
+                </UText>
+              </XStack>
+            )}
+          </YStack>
+        </UAnimatedView>
+      </YStack>
+    );
+  }
+
+  // Default variant - original centered design
   if (title) {
     if (titleElement) {
       throw new Error('title and titleElement cannot be used together');
@@ -40,15 +86,11 @@ const UHeader = ({
   }
 
   return (
-    <YStack 
-    // px={16} 
-    w="100%" {...props} backgroundColor={headerColor}>
+    <YStack w="100%" {...props} backgroundColor={headerColor}>
       {!safeAreaDisabled && <USpacer height={top} />}
       <XStack py={8} gap={8} jc="space-between" ai="center">
-        {/* 0.8 2.5 0.8 */}
         {/* Left Section */}
-        <XStack 
-        flex={0.1} jc="center" ai="center">
+        <XStack flex={0.1} jc="center" ai="center">
           {leftControl}
         </XStack>
 
@@ -61,12 +103,6 @@ const UHeader = ({
         <XStack flex={0.1} jc="center" ai="center">
           {rightControl}
         </XStack>
-
-        {/* <XStack gap={8} flexGrow={1}>
-          {leftControl}
-          {titleElement}
-        </XStack>
-        {rightControl} */}
       </XStack>
     </YStack>
   );

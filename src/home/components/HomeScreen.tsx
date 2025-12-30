@@ -1,5 +1,5 @@
 import React, { memo, useCallback } from 'react';
-import { ScrollView, Image, StyleSheet } from 'react-native';
+import { ScrollView } from 'react-native';
 import { YStack } from 'tamagui';
 import { router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -13,7 +13,6 @@ import HeroBanner from '@/src/components/home/hero/HeroBanner';
 import FeaturedBooks from '@/src/components/home/sections/FeaturedBooks';
 import FeaturedArticles from '@/src/components/home/sections/FeaturedArticles';
 
-const BG_GIF = require('@/assets/animations/innerScreenBg.gif');
 
 const HomeScreen: React.FC = () => {
   const { top, bottom } = useSafeAreaInsets();
@@ -112,13 +111,6 @@ const HomeScreen: React.FC = () => {
 
   return (
     <YStack flex={1} bg="$brandNavy">
-      {/* Animated GIF Background */}
-      <Image
-        source={BG_GIF}
-        style={styles.backgroundGif}
-        resizeMode="cover"
-      />
-      
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
@@ -132,17 +124,5 @@ const HomeScreen: React.FC = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  backgroundGif: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    width: '100%',
-    height: '100%',
-    opacity: 0.3,
-  },
-});
 
 export default memo(HomeScreen);

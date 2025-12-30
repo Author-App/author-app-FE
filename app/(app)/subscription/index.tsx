@@ -4,7 +4,6 @@ import UIconButton from "@/src/components/core/buttons/uIconButtonVariants";
 import UTextButton from "@/src/components/core/buttons/uTextButton";
 import UHeader from "@/src/components/core/layout/uHeader";
 import UText from "@/src/components/core/text/uText";
-import useSettingsController from "@/src/controllers/useSettingsController";
 import { benefits, premiumBnefits, premiumSubscriptionDetails } from "@/src/data/subscriptionData";
 import { useLocalSearchParams } from "expo-router";
 import { useRouter } from "expo-router";
@@ -12,7 +11,6 @@ import { Card, ScrollView, XStack, YStack } from "tamagui";
 
 
 const SubscriptionScreen = () => {
-    const { functions, states } = useSettingsController();
 
     const router = useRouter();
 

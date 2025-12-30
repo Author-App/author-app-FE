@@ -7,11 +7,11 @@ import { persistReducer, persistStore } from 'redux-persist';
 import { authApi } from '@/src/store/api/authApi';
 import { homeApi } from '@/src/store/api/homeApi';
 import { exploreApi } from '@/src/store/api/exploreApi';
+import { userApi } from '@/src/store/api/userApi';
 import authSlice from '@/src/store/slices/authSlice';
 import pushTokenSlice from '@/src/store/slices/pushTokenSlice';
 
 // Legacy API imports (to be migrated)
-import { userApi } from '../Apis/User';
 import { bookingApi } from '../Apis/Booking';
 import { coachesApi } from '../Apis/Coaches';
 import { chatApi } from '../Apis/Chat';

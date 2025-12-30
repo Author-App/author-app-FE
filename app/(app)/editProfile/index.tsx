@@ -7,7 +7,6 @@ import UInput from "@/src/components/core/inputs/uInput";
 import UHeader from "@/src/components/core/layout/uHeader";
 import UKeyboardAvoidingView from "@/src/components/core/layout/uKeyboardAvoidingView";
 import useEditProfileController from "@/src/controllers/useEditProfileController";
-import useSettingsController from "@/src/controllers/useSettingsController";
 import { getInitials } from "@/src/utils/helper";
 import { useFormik } from "formik";
 import { Image, TouchableOpacity, View } from "react-native";

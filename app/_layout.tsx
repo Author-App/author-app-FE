@@ -8,7 +8,6 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import AppTamaguiProvider from '@/src/components/providers/appTamaguiProvider';
 import FontProvider from '@/src/components/providers/fontProvider';
 import toastConfig from '@/src/components/core/toast/toastConfig';
-import { getTokenValue } from 'tamagui';
 
 import { PortalProvider } from '@tamagui/portal';
 import { Provider } from 'react-redux';
@@ -27,7 +26,8 @@ import { setPushToken } from '@/src/redux2/Slice/PushTokenSlice';
 
 export default function RootLayout() {
 
-  const color = getTokenValue('$neutral1');
+  // Brand Navy color for root background
+  const BRAND_NAVY = '#132440';
 
   Notifications.setNotificationHandler({
     handleNotification: async () => ({
@@ -75,8 +75,8 @@ export default function RootLayout() {
 
 
   return (
-    <SafeAreaProvider style={{ backgroundColor: color }}>
-      <GestureHandlerRootView style={{ flex: 1 }}>
+    <SafeAreaProvider style={{ backgroundColor: BRAND_NAVY }}>
+      <GestureHandlerRootView style={{ flex: 1, backgroundColor: BRAND_NAVY }}>
         <AppHead />
         <Provider store={store}>
           <PersistGate loading={null} persistor={persistor}>
