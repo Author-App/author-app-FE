@@ -392,7 +392,7 @@ const tokens = createTokens({
     brandTeal: '#3B9797',
 
     // --- New theme
-
+  
     bg: '#F8F2E6',
     bg2: '#F3E9D6',
     surface: '#FFFFFF',
@@ -458,7 +458,7 @@ const tokens = createTokens({
     primary9: '#232D2A',
     primary10: '#182220',
     primary11: '#4456505E',
-    secondary0: '#FFECEB',
+    secondary0: '#FFD700',
     secondary1: '#FFE1DF',
     secondary2: '#FFC4BF',
     secondary3: '#FFA69F',
@@ -562,6 +562,9 @@ const tokens = createTokens({
     secondaryAlpha9: '#FF6A5FE6',
     secondaryAlpha10: '#FF6A5FFF',
     secondaryAlpha11: '#A63B33FF',
+
+    // Gold/secondary0 alpha variants (for Pro plan theme)
+    goldAlpha2: '#FFD70033',
 
     positive5: '#00FF66',
     positiveAlpha0: '#00FF6600',

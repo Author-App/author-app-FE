@@ -129,7 +129,7 @@ const ExploreScreen: React.FC = () => {
     if (isLoading && items.length === 0) {
       return (
         <YStack jc="center" ai="center" flex={1} pb={64 + Math.max(bottom, 24)}>
-          <AppLoader size={150} bg="Stransparent"/>
+          <AppLoader size={150} bg="transparent"/>
         </YStack>
       );
     }

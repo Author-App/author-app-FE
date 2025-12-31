@@ -1,15 +1,10 @@
-/**
- * ArticleHeader Component
- *
- * Displays article title, author info, and metadata.
- */
-
 import React from 'react';
 import { XStack, YStack } from 'tamagui';
 import { Image } from 'react-native';
 import UText from '@/src/components/core/text/uText';
 import type { ArticleDetailResponse } from '../types/article.types';
 import { formatDate } from '@/src/utils/helper';
+import ULocalImage from '@/src/components/core/image/uLocalImage';
 
 interface ArticleHeaderProps {
   article: ArticleDetailResponse;
@@ -38,14 +33,12 @@ export function ArticleHeader({ article }: ArticleHeaderProps) {
       {/* Author & Meta */}
       <XStack alignItems="center" gap={12}>
         {article.author.profileImage ? (
-          <Image
-            source={{ uri: article.author.profileImage }}
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 22,
-              backgroundColor: '#1E3A5F',
-            }}
+          <ULocalImage
+            source={article.author.profileImage}
+            w={44}
+            h={44}
+            borderRadius={22}
+            backgroundColor="#1E3A5F"
           />
         ) : (
           <YStack

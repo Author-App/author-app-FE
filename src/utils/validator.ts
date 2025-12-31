@@ -1,4 +1,5 @@
 import * as Yup from 'yup';
+import { passwordYupValidation } from './passwordValidation';
 
 export const loginValidationSchema = Yup.object({
     email: Yup.string()
@@ -16,7 +17,9 @@ export const signupValidationSchema = Yup.object({
         .email('Invalid email format')
         .required('Email is required'),
     password: Yup.string()
-        .min(6, 'Password must be at least 6 characters')
+        .min(passwordYupValidation.min, passwordYupValidation.minMessage)
+        .max(passwordYupValidation.max, passwordYupValidation.maxMessage)
+        .test(passwordYupValidation.test)
         .required('Password is required'),
 });
 
@@ -35,7 +38,11 @@ export const codeValidationSchema = Yup.object().shape({
 });
 
 export const resetPasswordFormValidator = Yup.object().shape({
-    password: Yup.string().min(6, 'Password must be at least 6 characters').required('Password is required'),
+    password: Yup.string()
+        .min(passwordYupValidation.min, passwordYupValidation.minMessage)
+        .max(passwordYupValidation.max, passwordYupValidation.maxMessage)
+        .test(passwordYupValidation.test)
+        .required('Password is required'),
 });
 
 export const editProfileValidationSchema = Yup.object({

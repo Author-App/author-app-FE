@@ -207,6 +207,18 @@ const getVariantStyle = (variant: ButtonVariant = 'primary-md'): StylesType => {
         padding: 6,
         iconSize: 20,
       };
+    case 'glass-lg':
+      return {
+        ...baseStyles,
+        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+        pressBackgroundColor: 'rgba(255, 255, 255, 0.25)',
+        hoverBackgroundColor: 'rgba(255, 255, 255, 0.2)',
+        iconColor: '$white',
+        width: 64,
+        height: 64,
+        padding: 12,
+        iconSize: 32,
+      };
 
     default:
       return baseStyles;

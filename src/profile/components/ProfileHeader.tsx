@@ -1,9 +1,3 @@
-/**
- * ProfileHeader Component
- *
- * Header for the profile screen using premium UHeader variant.
- */
-
 import React, { memo } from 'react';
 
 import UHeader from '@/src/components/core/layout/uHeader';

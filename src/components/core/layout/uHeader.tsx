@@ -86,10 +86,10 @@ const UHeader = ({
   }
 
   return (
-    <YStack w="100%" {...props} backgroundColor={headerColor}>
+    <YStack px={20} w="100%" {...props} backgroundColor={headerColor}>
       {!safeAreaDisabled && <USpacer height={top} />}
       <UAnimatedView animation="fadeIn" duration={300} delay={animationDelay}>
-        <XStack py={12} px={4} gap={8} jc="space-between" ai="center">
+        <XStack py={12} gap={8} jc="space-between" ai="center">
           {/* Left Section */}
           <XStack flex={0.15} jc="flex-start" ai="center">
             {leftControl}

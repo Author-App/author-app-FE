@@ -30,6 +30,7 @@ const ProfileScreen: React.FC = () => {
     return (
       <UScreenLayout ai="center" jc="center">
         {/* Error state */}
+        <></>
       </UScreenLayout>
     );
   }

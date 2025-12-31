@@ -59,9 +59,8 @@ export interface UpdateProfileRequest {
  * POST /password/change request body
  */
 export interface ChangePasswordRequest {
-  currentPassword: string;
+  oldPassword: string;
   newPassword: string;
-  confirmPassword: string;
 }
 
 // ============================================================================

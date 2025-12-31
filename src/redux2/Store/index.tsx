@@ -7,6 +7,7 @@ import { persistReducer, persistStore } from 'redux-persist';
 import { authApi } from '@/src/store/api/authApi';
 import { homeApi } from '@/src/store/api/homeApi';
 import { exploreApi } from '@/src/store/api/exploreApi';
+import { mediaApi } from '@/src/store/api/mediaApi';
 import { userApi } from '@/src/store/api/userApi';
 import { libraryApi } from '@/src/store/api/libraryApi';
 import authSlice from '@/src/store/slices/authSlice';
@@ -57,6 +58,7 @@ const rootReducer = combineReducers({
     [authApi.reducerPath]: authApi.reducer,
     [homeApi.reducerPath]: homeApi.reducer,
     [exploreApi.reducerPath]: exploreApi.reducer,
+    [mediaApi.reducerPath]: mediaApi.reducer,
     [userApi.reducerPath]: userApi.reducer,
     [libraryApi.reducerPath]: libraryApi.reducer,
     // Legacy APIs (to be migrated)
@@ -81,6 +83,7 @@ export const store = configureStore({
             .concat(authApi.middleware)
             .concat(homeApi.middleware)
             .concat(exploreApi.middleware)
+            .concat(mediaApi.middleware)
             .concat(userApi.middleware)
             .concat(libraryApi.middleware)
             // Legacy APIs (to be migrated)
