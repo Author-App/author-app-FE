@@ -8,8 +8,11 @@ import type {
 } from '@/src/types/api/explore.types';
 
 export interface MediaProgress {
-  currentSec: number;
+  currentPositionSec: number;
+  durationSec: number;
   lastPlayedAt: string;
+  percentage: number;
+  watchedSec: number;
 }
 
 export interface MediaDetailResponse extends MediaResponse {
@@ -17,6 +20,10 @@ export interface MediaDetailResponse extends MediaResponse {
   progress?: MediaProgress;
 }
 
+export interface UpdateProgressRequest {
+  mediaId: string;
+  currentPositionSec: number;
+}
 
 export const mediaApi = createApi({
   reducerPath: 'mediaApi',
@@ -42,7 +49,23 @@ export const mediaApi = createApi({
       }),
       providesTags: (result, error, id) => [{ type: 'MediaDetail', id }],
     }),
+
+    updateMediaProgress: builder.mutation<ApiResponse<{ message: string }>, UpdateProgressRequest>({
+      query: ({ mediaId, currentPositionSec }) => ({
+        url: `/media/${mediaId}/progress`,
+        method: 'PUT',
+        body: { currentPositionSec },
+      }),
+      // Invalidate the media detail cache so it refetches with new progress
+      invalidatesTags: (result, error, { mediaId }) => [
+        { type: 'MediaDetail', id: mediaId },
+      ],
+    }),
   }),
 });
 
-export const { useGetMediaQuery, useGetMediaDetailQuery } = mediaApi;
+export const { 
+  useGetMediaQuery, 
+  useGetMediaDetailQuery,
+  useUpdateMediaProgressMutation,
+} = mediaApi;

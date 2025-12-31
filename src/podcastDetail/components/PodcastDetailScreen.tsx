@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import { ScrollView } from 'react-native';
 import { YStack } from 'tamagui';
 import { useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -12,6 +13,7 @@ import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
 
 import { usePodcastDetail } from '../hooks/usePodcastDetail';
 import { useAudioPlayer } from '../hooks/useAudioPlayer';
+import { useSaveMediaProgress } from '../hooks/useSaveMediaProgress';
 import { PodcastHero } from './PodcastHero';
 import { PodcastPlayer } from './PodcastPlayer';
 import { PodcastDescription } from './PodcastDescription';
@@ -30,6 +32,13 @@ export function PodcastDetailScreen() {
     refetch,
   } = usePodcastDetail(id);
 
+  // Calculate initial position from saved progress
+  const initialPosition = podcast?.progress?.currentPositionSec
+    ? podcast.progress.currentPositionSec * 1000
+    : 0;
+
+  console.log('🎬 [PodcastDetailScreen] podcast?.progress:', podcast?.progress, '| initialPosition:', initialPosition);
+
   const {
     isPlaying,
     isLoading: isAudioLoading,
@@ -41,10 +50,11 @@ export function PodcastDetailScreen() {
     formatTime,
   } = useAudioPlayer(podcast?.fileUrl, {
     autoPlay: true,
-    initialPosition: podcast?.progress?.currentSec
-      ? podcast.progress.currentSec * 1000
-      : 0,
+    initialPosition,
   });
+
+  // Handle saving progress when leaving
+  const { handleBack } = useSaveMediaProgress(id, progressRef);
 
   const handleRewind = useCallback(() => rewind(10), [rewind]);
   const handleForward = useCallback(() => forward(10), [forward]);
@@ -82,11 +92,15 @@ export function PodcastDetailScreen() {
 
   return (
     <UScreenLayout>
-        <UHeader
-            title="Podcast"
-            leftControl={<UBackButton variant="glass-md" />}
-        />
-        <YStack flex={1} px={20}>
+      <UHeader
+        title="Podcast"
+        leftControl={<UBackButton variant="glass-md" onPress={handleBack} />}
+      />
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: bottom + 24 }}
+      >
+        <YStack px={20}>
           <PodcastHero
             title={podcast.name}
             duration={formattedDuration}
@@ -110,14 +124,9 @@ export function PodcastDetailScreen() {
             <PodcastDescription description={podcast.description} />
           )}
 
-        {/* Related podcasts list */}
-        <YStack mt={32}>
-          <RelatedPodcastList
-            podcasts={relatedPodcasts}
-            paddingBottom={bottom + 24}
-          />
+          <RelatedPodcastList podcasts={relatedPodcasts} />
         </YStack>
-      </YStack>
+      </ScrollView>
     </UScreenLayout>
   );
 }

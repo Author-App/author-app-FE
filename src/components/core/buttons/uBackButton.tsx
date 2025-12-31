@@ -5,9 +5,7 @@ import { GetProps } from 'tamagui';
 import IconArrowLeft from '@/assets/icons/iconArrowLeft';
 import UIconButton from '@/src/components/core/buttons/uIconButtonVariants';
 
-interface UBackButtonProps extends GetProps<typeof UIconButton> {}
-
-const UBackButton = ({ variant = 'quaternary-sm', ...props }: UBackButtonProps) => {
+const UBackButton = ({ variant = 'quaternary-sm', onPress, ...props }: GetProps<typeof UIconButton>) => {
   const router = useRouter();
 
   const navigateBack = useCallback(() => {

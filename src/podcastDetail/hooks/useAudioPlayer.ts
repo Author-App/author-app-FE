@@ -101,6 +101,8 @@ export function useAudioPlayer(
           staysActiveInBackground: true,
         });
 
+        console.log('🎧 [useAudioPlayer] Loading audio | initialPosition:', initialPosition, 'ms');
+
         const { sound } = await Audio.Sound.createAsync(
           { uri: fileUrl },
           {
@@ -112,6 +114,7 @@ export function useAudioPlayer(
         );
 
         soundRef.current = sound;
+        console.log('✅ [useAudioPlayer] Audio loaded successfully');
       } catch (error) {
         console.error('Error loading audio:', error);
         if (isMountedRef.current) {
@@ -127,7 +130,7 @@ export function useAudioPlayer(
       soundRef.current?.unloadAsync();
       soundRef.current = null;
     };
-  }, [fileUrl]);
+  }, [fileUrl, initialPosition]);
 
   // Play/Pause toggle
   const togglePlayPause = useCallback(async () => {

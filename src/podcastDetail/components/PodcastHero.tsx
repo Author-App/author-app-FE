@@ -20,6 +20,8 @@ export const PodcastHero = memo(function PodcastHero({
   duration,
   thumbnail,
 }: PodcastHeroProps) {
+  console.log('🎨 [PodcastHero] RE-RENDER | title:', title);
+  
   return (
     <UAnimatedView animation="fadeInUp" delay={100}>
       <YStack ai="center" mt={24} mb={24}>
