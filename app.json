@@ -3,7 +3,7 @@
     "name": "stanley-paden",
     "slug": "stanley-paden",
     "notification": {
-      "icon": "./assets/images/icons/notificationsIcon.png",
+      "icon": "./assets/icons/notificationsIcon.png",
       "color": "#1A4D7A",
       "androidMode": "default",
       "androidCollapsedTitle": "New notification"
