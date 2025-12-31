@@ -37,8 +37,6 @@ export function PodcastDetailScreen() {
     ? podcast.progress.currentPositionSec * 1000
     : 0;
 
-  console.log('🎬 [PodcastDetailScreen] podcast?.progress:', podcast?.progress, '| initialPosition:', initialPosition);
-
   const {
     isPlaying,
     isLoading: isAudioLoading,

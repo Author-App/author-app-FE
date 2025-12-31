@@ -28,8 +28,6 @@ const ProgressDisplay = memo(function ProgressDisplay({
   formatTime,
   onSeek,
 }: ProgressDisplayProps) {
-  console.log('⏱️ [ProgressDisplay] RE-RENDER');
-  
   const [displayProgress, setDisplayProgress] = useState({
     progress: 0,
     position: 0,
@@ -134,8 +132,6 @@ const PlayerControls = memo(function PlayerControls({
   onRewind,
   onForward,
 }: PlayerControlsProps) {
-  console.log('🎮 [PlayerControls] RE-RENDER | isPlaying:', isPlaying);
-  
   return (
     <XStack jc="center" ai="center" gap={40}>
       {/* Rewind 10s - fixed size container */}
@@ -225,8 +221,6 @@ export const PodcastPlayer = memo(function PodcastPlayer({
   onForward,
   onSeek,
 }: PodcastPlayerProps) {
-  console.log('🎵 [PodcastPlayer] RE-RENDER | isPlaying:', isPlaying, '| isLoading:', isLoading);
-
   return (
     <YStack gap={24}>
       {/* Progress Slider - handles its own re-renders */}

@@ -26,29 +26,21 @@ export function useSaveMediaProgress(
 
   // Save progress to API
   const saveProgress = useCallback(async () => {
-    console.log('🎯 [saveProgress] Called | mediaId:', mediaId, '| hasSaved:', hasSavedRef.current);
-    
     // Guard: no mediaId, already saved, or ref not available
     if (!mediaId || hasSavedRef.current || !progressRef.current) {
-      console.log('⏭️ [saveProgress] Skipping - guard failed');
       return;
     }
 
     const currentPositionMs = progressRef.current.position;
     const currentPositionSec = Math.floor(currentPositionMs / 1000);
 
-    console.log('📍 [saveProgress] Position:', currentPositionSec, 'sec | Threshold:', minSecondsThreshold, 'sec');
-
     // Only save if user listened past the threshold
     if (currentPositionSec < minSecondsThreshold) {
-      console.log('⏭️ [saveProgress] Skipping - under threshold');
       return;
     }
 
     // Mark as saved to prevent duplicates
     hasSavedRef.current = true;
-
-    console.log('💾 [saveProgress] Saving progress:', currentPositionSec, 'seconds');
 
     try {
       await onBeforeSave?.();
@@ -56,9 +48,8 @@ export function useSaveMediaProgress(
         mediaId,
         currentPositionSec,
       }).unwrap();
-      console.log('✅ [saveProgress] Progress saved successfully!');
     } catch (error) {
-      console.error('❌ [saveProgress] Failed to save:', error);
+      console.error('Failed to save progress:', error);
       // Reset flag so it can try again if needed
       hasSavedRef.current = false;
     }
