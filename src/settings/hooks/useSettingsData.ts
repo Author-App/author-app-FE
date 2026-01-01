@@ -70,7 +70,7 @@ export const useSettingsData = () => {
   }, [router]);
 
   const navigateToChangePassword = useCallback(() => {
-    router.push('/(app)/changePassword' as Href);
+    router.push('/(app)/changePassword');
   }, [router]);
 
   const navigateToSubscription = useCallback(() => {
