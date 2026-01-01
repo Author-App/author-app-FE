@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "5399181604",
+    "project_id": "stanley-paden",
+    "storage_bucket": "stanley-paden.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:5399181604:android:3c9a058bb6574432a41bb1",
+        "android_client_info": {
+          "package_name": "com.laibaair.stanleypaden"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDX5HgjW0O0tS6j4HLbrvU1KIsczAK5V0M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
