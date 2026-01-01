@@ -12,7 +12,7 @@ import UImage from "@/src/components/core/image/uImage";
 import { formatDate } from "@/src/utils/helper";
 
 const CommunityDetailScreen = () => {
-    const { id } = useLocalSearchParams<{ id: string }>();
+    const { communityId } = useLocalSearchParams<{ communityId: string }>();
 
     const router = useRouter();
     const dispatch = useDispatch();
@@ -23,8 +23,8 @@ const CommunityDetailScreen = () => {
         isLoading,
         isError,
         refetch,
-    } = useGetCommunitiesDetailQuery(id!, {
-        skip: !id,
+    } = useGetCommunitiesDetailQuery(communityId!, {
+        skip: !communityId,
         refetchOnMountOrArgChange: true,
     });
 
@@ -64,7 +64,7 @@ const CommunityDetailScreen = () => {
 
         try {
             await sendThread({
-                id,
+                id: communityId,
                 body: {
                     message: reply,
                 },
@@ -216,4 +216,3 @@ const CommunityDetailScreen = () => {
 };
 
 export default CommunityDetailScreen;
-

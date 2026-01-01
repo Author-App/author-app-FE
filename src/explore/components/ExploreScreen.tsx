@@ -1,6 +1,6 @@
 import React, { memo, useCallback } from 'react';
 import { YStack } from 'tamagui';
-import { router } from 'expo-router';
+import { Href, router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useExploreData } from '@/src/explore/hooks/useExploreData';
@@ -48,11 +48,17 @@ const ExploreScreen: React.FC = () => {
   }, []);
 
   const handlePodcastPress = useCallback((media: MediaResponse) => {
-    router.push(`/(app)/podcastDetail/${media.id}`);
+    router.push({
+      pathname: '/(app)/podcast/[podcastId]' as Href,
+      params: { podcastId: media.id },
+    } as Href);
   }, []);
 
   const handleVideoPress = useCallback((media: MediaResponse) => {
-    router.push(`/(app)/videoDetails/${media.id}`);
+    router.push({
+      pathname: '/(app)/video/[videoId]' as Href,
+      params: { videoId: media.id },
+    } as Href);
   }, []);
 
   const handleEventPress = useCallback((event: EventResponse) => {
@@ -60,7 +66,10 @@ const ExploreScreen: React.FC = () => {
   }, []);
 
   const handleCommunityPress = useCallback((community: CommunityResponse) => {
-    router.push(`/(app)/communityDetail/${community.id}`);
+    router.push({
+      pathname: '/(app)/community/[communityId]' as Href,
+      params: { communityId: community.id },
+    } as Href);
   }, []);
 
   const handleCommunityToggle = useCallback(

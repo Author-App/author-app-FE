@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import { StyleSheet } from 'react-native';
 import { YStack, XStack } from 'tamagui';
-import { useRouter } from 'expo-router';
+import { Href, useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 
 import IconPlay2 from '@/assets/icons/iconPlay2';
@@ -20,7 +20,10 @@ export const RelatedVideoCard = memo(function RelatedVideoCard({
   const router = useRouter();
 
   const handlePress = () => {
-    router.push(`/(app)/videoDetails/${video.id}`);
+    router.push({
+      pathname: '/(app)/video/[videoId]' as Href,
+      params: { videoId: video.id },
+    } as Href);
   };
 
   const duration = formatDuration(video.durationSec || 0);

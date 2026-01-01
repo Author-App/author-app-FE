@@ -20,8 +20,8 @@ export const RelatedPodcastCard = memo(function RelatedPodcastCard({
 
   const handlePress = useCallback(() => {
     router.push({
-      pathname: '/(app)/podcastDetail/[id]' as Href,
-      params: { id: podcast.id },
+      pathname: '/(app)/podcast/[podcastId]' as Href,
+      params: { podcastId: podcast.id },
     } as Href);
   }, [router, podcast.id]);
 

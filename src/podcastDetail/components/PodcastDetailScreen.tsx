@@ -20,7 +20,7 @@ import { PodcastDescription } from './PodcastDescription';
 import { RelatedPodcastList } from './RelatedPodcastList';
 
 export function PodcastDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { podcastId } = useLocalSearchParams<{ podcastId: string }>();
   const { bottom } = useSafeAreaInsets();
 
   const {
@@ -30,7 +30,7 @@ export function PodcastDetailScreen() {
     isLoading,
     isError,
     refetch,
-  } = usePodcastDetail(id);
+  } = usePodcastDetail(podcastId);
 
   // Calculate initial position from saved progress
   const initialPosition = podcast?.progress?.currentPositionSec
@@ -52,7 +52,7 @@ export function PodcastDetailScreen() {
   });
 
   // Handle saving progress when leaving
-  const { handleBack } = useSaveMediaProgress(id, progressRef);
+  const { handleBack } = useSaveMediaProgress(podcastId, progressRef);
 
   const handleRewind = useCallback(() => rewind(10), [rewind]);
   const handleForward = useCallback(() => forward(10), [forward]);

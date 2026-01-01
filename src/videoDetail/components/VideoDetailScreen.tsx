@@ -18,7 +18,7 @@ import { VideoInfo } from './VideoInfo';
 import { RelatedVideoList } from './RelatedVideoList';
 
 export function VideoDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { videoId } = useLocalSearchParams<{ videoId: string }>();
   const { bottom } = useSafeAreaInsets();
 
   const {
@@ -28,7 +28,7 @@ export function VideoDetailScreen() {
     isLoading,
     isError,
     refetch,
-  } = useVideoDetail(id);
+  } = useVideoDetail(videoId);
 
   // Calculate initial position from saved progress
   const initialPosition = video?.progress?.currentPositionSec
@@ -45,7 +45,7 @@ export function VideoDetailScreen() {
   });
 
   // Handle saving progress when leaving
-  const { handleBack } = useSaveMediaProgress(id, progressRef);
+  const { handleBack } = useSaveMediaProgress(videoId, progressRef);
 
   // Loading state
   if (isLoading) {
