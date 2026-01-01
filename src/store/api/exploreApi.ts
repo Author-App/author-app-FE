@@ -7,6 +7,7 @@ import type {
   MediaListResponse,
   MediaQueryParams,
   EventListResponse,
+  EventResponse,
   CommunityListResponse,
   ExploreQueryParams,
 } from '@/src/types/api/explore.types';
@@ -71,6 +72,18 @@ export const exploreApi = createApi({
     }),
 
     /**
+     * GET /events/:id
+     * Fetches single event by ID
+     */
+    getEventDetail: builder.query<ApiResponse<EventResponse>, string>({
+      query: (id) => ({
+        url: `/events/${id}`,
+        method: 'GET',
+      }),
+      providesTags: (result, error, id) => [{ type: 'Events', id }],
+    }),
+
+    /**
      * GET /communities
      * Fetches list of communities
      */
@@ -114,6 +127,7 @@ export const {
   useGetArticleDetailQuery,
   useGetMediaQuery,
   useGetEventsQuery,
+  useGetEventDetailQuery,
   useGetCommunitiesQuery,
   useJoinCommunityMutation,
   useExitCommunityMutation,

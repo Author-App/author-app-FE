@@ -1,14 +1,10 @@
-import { YStack, Text } from 'tamagui';
 import { useLocalSearchParams } from 'expo-router';
+import { EventDetailScreen } from '@/src/eventDetail/components/EventDetailScreen';
 
 const EventScreen = () => {
-  const { eventId } = useLocalSearchParams();
-  return (
-    <YStack f={1} ai="center" jc="center" p="$4">
-      <Text fontSize="$7" fontWeight="700">Event {eventId}</Text>
-      <Text theme="alt2">Event details</Text>
-    </YStack>
-  );
-}
+  const { eventId } = useLocalSearchParams<{ eventId: string }>();
+
+  return <EventDetailScreen eventId={eventId!} />;
+};
 
 export default EventScreen;

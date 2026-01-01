@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 import { ScrollView } from 'react-native';
 import { YStack } from 'tamagui';
 import { useLocalSearchParams } from 'expo-router';
@@ -9,60 +9,50 @@ import UBackButton from '@/src/components/core/buttons/uBackButton';
 import UScreenLayout from '@/src/components/core/layout/UScreenLayout';
 import AppLoader from '@/src/components/core/loaders/AppLoader';
 import UScreenError from '@/src/components/core/feedback/UScreenError';
-import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
 
-import { usePodcastDetail } from '../hooks/usePodcastDetail';
-import { useAudioPlayer } from '../hooks/useAudioPlayer';
+import { useVideoDetail } from '@/src/videoDetail/hooks/useVideoDetail';
+import { useVideoPlayer } from '@/src/videoDetail/hooks/useVideoPlayer';
 import { useSaveMediaProgress } from '@/src/hooks/useSaveMediaProgress';
-import { PodcastHero } from './PodcastHero';
-import { PodcastPlayer } from './PodcastPlayer';
-import { PodcastDescription } from './PodcastDescription';
-import { RelatedPodcastList } from './RelatedPodcastList';
+import { VideoPlayer } from './VideoPlayer';
+import { VideoInfo } from './VideoInfo';
+import { RelatedVideoList } from './RelatedVideoList';
 
-export function PodcastDetailScreen() {
+export function VideoDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { bottom } = useSafeAreaInsets();
 
   const {
-    podcast,
-    relatedPodcasts,
+    video,
+    relatedVideos,
     formattedDuration,
     isLoading,
     isError,
     refetch,
-  } = usePodcastDetail(id);
+  } = useVideoDetail(id);
 
   // Calculate initial position from saved progress
-  const initialPosition = podcast?.progress?.currentPositionSec
-    ? podcast.progress.currentPositionSec * 1000
+  const initialPosition = video?.progress?.currentPositionSec
+    ? video.progress.currentPositionSec * 1000
     : 0;
 
   const {
-    isPlaying,
-    isLoading: isAudioLoading,
-    togglePlayPause,
-    rewind,
-    forward,
-    seekTo,
+    videoRef,
     progressRef,
-    formatTime,
-  } = useAudioPlayer(podcast?.fileUrl, {
-    autoPlay: true,
+    isLoading: isVideoLoading,
+    handlePlaybackStatusUpdate,
+  } = useVideoPlayer({
     initialPosition,
   });
 
   // Handle saving progress when leaving
   const { handleBack } = useSaveMediaProgress(id, progressRef);
 
-  const handleRewind = useCallback(() => rewind(10), [rewind]);
-  const handleForward = useCallback(() => forward(10), [forward]);
-
   // Loading state
   if (isLoading) {
     return (
       <UScreenLayout>
         <UHeader
-          title="Podcast"
+          title="Video"
           leftControl={<UBackButton variant="glass-md" />}
         />
         <YStack flex={1} ai="center" jc="center">
@@ -73,15 +63,15 @@ export function PodcastDetailScreen() {
   }
 
   // Error state
-  if (isError || !podcast) {
+  if (isError || !video) {
     return (
       <UScreenLayout>
         <UHeader
-          title="Podcast"
+          title="Video"
           leftControl={<UBackButton variant="glass-md" />}
         />
         <UScreenError
-          message="Unable to load podcast. Please try again."
+          message="Unable to load video. Please try again."
           onRetry={refetch}
         />
       </UScreenLayout>
@@ -91,39 +81,36 @@ export function PodcastDetailScreen() {
   return (
     <UScreenLayout>
       <UHeader
-        title="Podcast"
+        title=""
         leftControl={<UBackButton variant="glass-md" onPress={handleBack} />}
+        style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 10 }}
       />
+
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: bottom + 24 }}
       >
-        <YStack px={20}>
-          <PodcastHero
-            title={podcast.name}
+        {/* Video Player */}
+        <VideoPlayer
+          videoRef={videoRef}
+          fileUrl={video.fileUrl}
+          thumbnail={video.thumbnail}
+          initialPosition={initialPosition}
+          onPlaybackStatusUpdate={handlePlaybackStatusUpdate}
+          isLoading={isVideoLoading}
+        />
+
+        {/* Video Info */}
+        <YStack mt={16}>
+          <VideoInfo
+            title={video.name}
             duration={formattedDuration}
-            thumbnail={podcast.thumbnail}
+            description={video.description}
           />
-
-          <UAnimatedView animation="fadeInUp" delay={200}>
-            <PodcastPlayer
-              isPlaying={isPlaying}
-              isLoading={isAudioLoading}
-              progressRef={progressRef}
-              formatTime={formatTime}
-              onPlayPause={togglePlayPause}
-              onRewind={handleRewind}
-              onForward={handleForward}
-              onSeek={seekTo}
-            />
-          </UAnimatedView>
-
-          {podcast.description && (
-            <PodcastDescription description={podcast.description} />
-          )}
-
-          <RelatedPodcastList podcasts={relatedPodcasts} />
         </YStack>
+
+        {/* Related Videos */}
+        <RelatedVideoList videos={relatedVideos} />
       </ScrollView>
     </UScreenLayout>
   );

@@ -1,3 +1,8 @@
+/**
+ * Save Media Progress Hook
+ * Reusable hook for saving playback progress for any media type (podcast, video, audio)
+ */
+
 import { useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'expo-router';
 import { useUpdateMediaProgressMutation } from '@/src/store/api/mediaApi';
@@ -19,7 +24,7 @@ export function useSaveMediaProgress(
   options: UseSaveMediaProgressOptions = {}
 ) {
   const { minSecondsThreshold = 5, onBeforeSave } = options;
-  
+
   const router = useRouter();
   const [updateProgress] = useUpdateMediaProgressMutation();
   const hasSavedRef = useRef(false);
@@ -34,7 +39,7 @@ export function useSaveMediaProgress(
     const currentPositionMs = progressRef.current.position;
     const currentPositionSec = Math.floor(currentPositionMs / 1000);
 
-    // Only save if user listened past the threshold
+    // Only save if user consumed past the threshold
     if (currentPositionSec < minSecondsThreshold) {
       return;
     }

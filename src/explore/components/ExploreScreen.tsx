@@ -56,7 +56,7 @@ const ExploreScreen: React.FC = () => {
   }, []);
 
   const handleEventPress = useCallback((event: EventResponse) => {
-    router.push(`/(app)/eventDetails/${event.id}`);
+    router.push(`/(app)/events/${event.id}`);
   }, []);
 
   const handleCommunityPress = useCallback((community: CommunityResponse) => {
