@@ -46,3 +46,6 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# ignore all android files except google-services.json
+!android/google-services.json

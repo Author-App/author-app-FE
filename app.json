@@ -35,7 +35,8 @@
         "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS"
       ],
-      "package": "com.laibaair.stanleypaden"
+      "package": "com.laibaair.stanleypaden",
+      "googleServicesFile": "./android/google-services.json"
     },
     "web": {
       "bundler": "metro",
@@ -45,7 +46,8 @@
     "plugins": [
       "expo-router",
       "expo-audio",
-      "expo-font"
+      "expo-font",
+      "expo-notifications"
     ],
     "experiments": {
       "typedRoutes": true

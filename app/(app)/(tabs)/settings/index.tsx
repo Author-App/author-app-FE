@@ -9,6 +9,7 @@ import IconReport from "@/assets/icons/iconReport";
 import IconSubscription from "@/assets/icons/iconSubscription";
 import assets from "@/assets/images";
 import UIconButton from "@/src/components/core/buttons/uIconButtonVariants";
+import UIconTextButton from "@/src/components/core/buttons/uIconTextButton";
 import UImage from "@/src/components/core/image/uImage";
 import UHeader from "@/src/components/core/layout/uHeader";
 import UText from "@/src/components/core/text/uText";
@@ -17,15 +18,28 @@ import { useDeleteAccountMutation, useGetMeQuery } from "@/src/redux2/Apis/User"
 import { logOut } from "@/src/redux2/Slice/AuthSlice";
 import { persistor } from "@/src/redux2/Store";
 import { getInitials } from "@/src/utils/helper";
+import { registerForPushNotificationsAsync } from "@/src/utils/registerForPushNotifications";
 import type { Href } from "expo-router";
 import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 import { ActivityIndicator, Alert } from "react-native";
+import * as Clipboard from "expo-clipboard";
 import Toast from "react-native-toast-message";
 import { useDispatch } from "react-redux";
 import { YStack, XStack, Switch, Card, ScrollView } from "tamagui";
 
 const SettingsScreen = () => {
   const { functions, states } = useSettingsController();
+  const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const token = await registerForPushNotificationsAsync();
+      setExpoPushToken(token);
+    })();
+  }, []);
+  console.log("THIS IS EXPO PUSH NOTIFICATIONS", expoPushToken);
+  
 
 
   const { data, isLoading, isError, refetch } = useGetMeQuery(undefined);
@@ -110,7 +124,7 @@ const SettingsScreen = () => {
       onPress: () =>
         router.push({
           pathname: "/(app)/subscription",
-          params: { premium: "true" },
+          // params: { premium: "true" },
         } as unknown as Href),
     },
     {
@@ -213,6 +227,48 @@ const SettingsScreen = () => {
             <UText textAlign="center" width={'50%'} variant="heading-h1" mt={10}>{`${user?.firstName} ${user?.lastName}`}</UText>
             <UText textAlign="center" width={'50%'} variant="text-md" mt={10}>{user?.email}</UText>
           </YStack>
+
+          {expoPushToken && (
+            <Card
+              marginHorizontal={20}
+              borderRadius={16}
+              backgroundColor="#ffffff"
+              shadowColor="#000"
+              shadowOffset={{ width: 0, height: 2 }}
+              shadowOpacity={0.08}
+              shadowRadius={6}
+              elevation={4}
+              px={15}
+              py={20}
+              mt={20}
+            >
+              <UText variant="text-sm" color="$gray10" mb={6}>
+                Expo Push Token (for testing)
+              </UText>
+
+              <UText
+                variant="text-xs"
+                selectable
+                numberOfLines={3}
+              >
+                {expoPushToken}
+              </UText>
+
+              <UIconTextButton
+                mt={10}
+                onPress={async () => {
+                  await Clipboard.setStringAsync(expoPushToken);
+                  Toast.show({
+                    type: "success",
+                    text2: "Push token copied to clipboard",
+                  });
+                }}
+              >
+                Copy Token
+              </UIconTextButton>
+            </Card>
+          )}
+
           <YStack mt={30} gap={20}>
             {accountOptions.map(renderCard)}
           </YStack>
