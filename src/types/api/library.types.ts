@@ -123,6 +123,65 @@ export interface RateBookApiResponse {
 }
 
 // ============================================================================
+// POST /orders - Create Order
+// ============================================================================
+
+export interface CreateOrderRequest {
+  bookId: string;
+}
+
+export type OrderStatus = 'created' | 'succeeded' | 'failed' | 'pending';
+
+export interface OrderResponse {
+  orderId: string;
+  bookId: string;
+  amount: number;
+  currency: string;
+  status: OrderStatus;
+  paymentUrl?: string;
+  clientSecret?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateOrderApiResponse {
+  status: string;
+  data: OrderResponse;
+}
+
+// ============================================================================
+// GET /orders/:orderId/verify-payment
+// ============================================================================
+
+export type PaymentStatus = 'succeeded' | 'failed' | 'pending' | 'paid';
+
+export interface VerifyPaymentResponse {
+  orderId: string;
+  status: PaymentStatus;
+  paidAmount?: number;
+  currency?: string;
+  message?: string;
+}
+
+export interface VerifyPaymentApiResponse {
+  status: string;
+  data: VerifyPaymentResponse;
+}
+
+// ============================================================================
+// Computed types for UI
+// ============================================================================
+
+export interface RatingStats {
+  average: number;
+  total: number;
+  recommended: number;
+  breakdown: RatingsBreakdown;
+  userReviews: ReviewResponse[];
+  currentUserReview?: ReviewResponse;
+}
+
+// ============================================================================
 // Legacy Compatibility Types (for gradual migration)
 // ============================================================================
 

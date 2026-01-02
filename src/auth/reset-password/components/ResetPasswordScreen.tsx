@@ -79,10 +79,7 @@ export const ResetPasswordScreen = memo(() => {
 
         <UAnimatedView animation="fadeInUp" delay={400}>
           <YStack gap={16}>
-            <NeonButton onPress={handleSubmit} loading={isLoading}>
-              Submit
-            </NeonButton>
-
+            <NeonButton onPress={handleSubmit} loading={isLoading} title='Submit' />
             <XStack jc="center" mt={16}>
               <UText
                 variant="text-md"

@@ -48,9 +48,7 @@ export function ProfileForm({
       />
 
     <YStack mt={8}>
-        <NeonButton onPress={onSubmit} loading={isSubmitting}>
-            Update
-        </NeonButton>
+        <NeonButton onPress={onSubmit} loading={isSubmitting} title='Update' />
     </YStack>
       
     </YStack>

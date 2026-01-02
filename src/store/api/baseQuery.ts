@@ -33,9 +33,19 @@ export const baseQueryWithReauth = async (
 
   // Handle 401 - try refresh
   if (result?.error?.status === 401) {
-    const refreshToken = (api.getState() as RootState).auth.refreshToken;
+    console.log('⚠️ [baseQuery] Access token expired. Trying refresh...');
+    const authState = (api.getState() as RootState).auth;
+    console.log('🔐 [baseQuery] Full auth state:', JSON.stringify({
+      hasToken: !!authState.token,
+      hasRefreshToken: !!authState.refreshToken,
+      isLoggedIn: authState.isLoggedIn,
+      hasUser: !!authState.user,
+    }));
+    const refreshToken = authState.refreshToken;
+    console.log('🔑 [baseQuery] Refresh token exists:', !!refreshToken);
 
     if (!refreshToken) {
+      console.log('❌ [baseQuery] No refresh token - logging out');
       api.dispatch(logOut());
       Toast.show({
         type: 'error',
@@ -46,6 +56,7 @@ export const baseQueryWithReauth = async (
     }
 
     // Attempt refresh
+    console.log('🔄 [baseQuery] Attempting token refresh...');
     const refreshResult = await baseQuery(
       {
         url: '/auth/refresh',
@@ -66,10 +77,14 @@ export const baseQueryWithReauth = async (
       };
     } | undefined;
 
+    console.log('🔄 [baseQuery] Refresh response:', refreshResult?.error ? 'FAILED' : 'SUCCESS');
+    console.log('🔄 [baseQuery] Refresh data:', JSON.stringify(refreshResult?.data, null, 2));
+
     const newAccessToken = refreshData?.data?.session?.accessToken;
     const newRefreshToken = refreshData?.data?.session?.refreshToken;
 
     if (newAccessToken) {
+      console.log('✅ [baseQuery] Got new tokens - updating and retrying request');
       api.dispatch(
         updateTokens({
           access: newAccessToken,
@@ -80,6 +95,7 @@ export const baseQueryWithReauth = async (
       // Retry original request
       result = await baseQuery(args, api, extraOptions);
     } else {
+      console.log('❌ [baseQuery] Refresh failed - logging out');
       api.dispatch(logOut());
       Toast.show({
         type: 'error',

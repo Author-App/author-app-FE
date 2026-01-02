@@ -10,6 +10,7 @@ import { exploreApi } from '@/src/store/api/exploreApi';
 import { mediaApi } from '@/src/store/api/mediaApi';
 import { userApi } from '@/src/store/api/userApi';
 import { libraryApi } from '@/src/store/api/libraryApi';
+import { ordersApi } from '@/src/store/api/ordersApi';
 import authSlice, { type AuthState } from '@/src/store/slices/authSlice';
 import pushTokenSlice, { type PushTokenState } from '@/src/store/slices/pushTokenSlice';
 
@@ -20,7 +21,6 @@ import { chatApi } from '../Apis/Chat';
 import { slotsApi } from '../Apis/Slots';
 import { bankApi } from '../Apis/Bank';
 import { generalContentApi } from '../Apis/GeneralContent';
-import { ordersApi } from '../Apis/Orders';
 
 const apiErrorHandler = (store: any) => (next: any) => (action: any) => {
     if (action.type.endsWith('/rejected') && action?.payload?.data?.data?.message?.failed) {

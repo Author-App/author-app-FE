@@ -8,12 +8,14 @@ type NeonButtonProps = ButtonProps & {
     loading?: boolean
     style?: StyleProp<ViewStyle>
     children?: React.ReactNode
+    title?: string
 }
 
 export function NeonButton({
     children,
     style,
     loading,
+    title,
     ...props }: NeonButtonProps) {
     return (
         <Button
@@ -48,10 +50,12 @@ export function NeonButton({
             />
             {loading ? (
                 <ActivityIndicator size="small" color={'#fff'} />
-            ) : (
+            ) : title ? (
                 <UText variant='text-sm' color="white">
-                    {children}
+                    {title}
                 </UText>
+            ) : (
+                children
             )}
         </Button>
     )

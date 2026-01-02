@@ -109,10 +109,7 @@ export const LoginScreen = memo(() => {
 
         <UAnimatedView animation="fadeInUp" delay={600}>
           <YStack gap={16}>
-            <NeonButton onPress={handleSubmit} loading={isLoading}>
-              Sign In
-            </NeonButton>
-
+            <NeonButton onPress={handleSubmit} loading={isLoading} title='Sign In' />
             <XStack jc="center" mt={16}>
               <UText variant="text-sm" color="$white">
                 Don't have an account?{' '}

@@ -123,10 +123,7 @@ export const SignupScreen = memo(() => {
 
         <UAnimatedView animation="fadeInUp" delay={600}>
           <YStack gap={16}>
-            <NeonButton onPress={handleSubmit} loading={isLoading}>
-              Sign Up
-            </NeonButton>
-
+            <NeonButton onPress={handleSubmit} loading={isLoading} title='Sign Up' />
             <XStack jc="center" mt={16}>
               <UText variant="text-sm" color="$white">
                 Already have an account?{' '}

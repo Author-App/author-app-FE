@@ -72,17 +72,23 @@ const authSlice = createSlice({
     builder.addMatcher(
       authApi.endpoints.login.matchFulfilled,
       (state, action) => {
+        console.log('🔐 [authSlice] Login response:', JSON.stringify(action.payload, null, 2));
+        
         const payload = action.payload?.data;
         const user = payload?.user;
         const accessToken = payload?.session?.access;
         const refreshToken = payload?.session?.refresh;
+
+        console.log('🔐 [authSlice] Extracted tokens - access:', !!accessToken, 'refresh:', !!refreshToken);
 
         if (user && accessToken) {
           state.user = user;
           state.token = accessToken;
           state.refreshToken = refreshToken ?? null;
           state.isLoggedIn = true;
+          console.log('✅ [authSlice] Login successful - tokens saved');
         } else {
+          console.log('❌ [authSlice] Login failed - missing user or token');
           Toast.show({
             type: 'error',
             text2: 'Invalid credentials',

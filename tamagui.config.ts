@@ -392,7 +392,7 @@ const tokens = createTokens({
     brandTeal: '#3B9797',
 
     // --- New theme
-  
+    gold: "#D4AF37",
     bg: '#F8F2E6',
     bg2: '#F3E9D6',
     surface: '#FFFFFF',

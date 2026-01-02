@@ -97,13 +97,9 @@ export const CommunityAboutView: React.FC<CommunityAboutViewProps> = ({
           pb={bottom + 16}
         >
           {community.isJoined ? (
-            <NeonButton onPress={onViewDiscussions}>
-              View Discussions
-            </NeonButton>
+            <NeonButton onPress={onViewDiscussions} title='View Discussions' />
           ) : (
-            <NeonButton onPress={onJoin} loading={isJoining}>
-              Join Community
-            </NeonButton>
+            <NeonButton onPress={onJoin} loading={isJoining} title='Join Community' />
           )}
         </YStack>
       )}

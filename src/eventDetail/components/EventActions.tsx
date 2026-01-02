@@ -76,9 +76,8 @@ export const EventActions = memo(function EventActions({
         disabled={isDisabled}
         opacity={isDisabled ? 0.5 : 1}
         width="100%"
-      >
-        {eventType === 'offline' ? 'Open in Maps' : getJoinButtonText()}
-      </NeonButton>
+        title={eventType === 'offline' ? 'Open in Maps' : getJoinButtonText()}
+      />
     </YStack>
   );
 });

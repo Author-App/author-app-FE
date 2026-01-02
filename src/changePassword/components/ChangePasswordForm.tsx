@@ -55,9 +55,7 @@ export function ChangePasswordForm({
       />
 
       <YStack mt={8}>
-        <NeonButton onPress={onSubmit} loading={isSubmitting}>
-          Update Password
-        </NeonButton>
+        <NeonButton onPress={onSubmit} loading={isSubmitting} title='Update Password' />
       </YStack>
     </YStack>
   );

@@ -1,7 +1,6 @@
 import React, { memo, useCallback } from 'react';
 import { ScrollView } from 'react-native';
-import { YStack } from 'tamagui';
-import { router } from 'expo-router';
+import { Href, router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useHomeData } from '@/src/home/hooks/useHomeData';
@@ -30,7 +29,7 @@ const HomeScreen: React.FC = () => {
     switch (item.type) {
       case 'book':
       case 'audiobook':
-        router.push(`/(app)/bookDetail/${id}`);
+        router.push(`/(app)/book/${id}` as Href);
         break;
       case 'article':
         router.push(`/(app)/article/${id}`);
@@ -39,7 +38,7 @@ const HomeScreen: React.FC = () => {
   }, []);
 
   const handleBookPress = useCallback((book: HomeBook) => {
-    router.push(`/(app)/bookDetail/${book.id}`);
+      router.push(`/(app)/book/${book.id}` as Href);
   }, []);
 
   const handleArticlePress = useCallback((article: HomeArticle) => {

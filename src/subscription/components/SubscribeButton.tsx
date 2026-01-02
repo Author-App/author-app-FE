@@ -103,9 +103,8 @@ export function SubscribeButton({
             <NeonButton 
               onPress={isPremium ? onManage : onSubscribe} 
               loading={isLoading}
-            >
-              {isPremium ? 'Manage Subscription' : 'Subscribe Now'}
-            </NeonButton>
+              title={isPremium ? 'Manage Subscription' : 'Subscribe Now'}
+            />
           </Animated.View>
 
           {/* Fine print - only show for non-premium */}

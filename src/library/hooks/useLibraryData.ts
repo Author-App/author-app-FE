@@ -46,10 +46,7 @@ export const useLibraryData = () => {
 
   const navigateToBook = useCallback(
     (bookId: string) => {
-      router.push({
-        pathname: '/(app)/bookDetail/[id]',
-        params: { id: bookId },
-      } as unknown as Href);
+      router.push(`/(app)/book/${bookId}` as Href);
     },
     [router]
   );
