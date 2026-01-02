@@ -10,8 +10,8 @@ import { exploreApi } from '@/src/store/api/exploreApi';
 import { mediaApi } from '@/src/store/api/mediaApi';
 import { userApi } from '@/src/store/api/userApi';
 import { libraryApi } from '@/src/store/api/libraryApi';
-import authSlice from '@/src/store/slices/authSlice';
-import pushTokenSlice from '@/src/store/slices/pushTokenSlice';
+import authSlice, { type AuthState } from '@/src/store/slices/authSlice';
+import pushTokenSlice, { type PushTokenState } from '@/src/store/slices/pushTokenSlice';
 
 // Legacy API imports (to be migrated)
 import { bookingApi } from '../Apis/Booking';
@@ -100,7 +100,15 @@ export const store = configureStore({
 
 export const persistor = persistStore(store);
 
-export type RootState = ReturnType<typeof store.getState>;
+// Base RootState from store
+type BaseRootState = ReturnType<typeof store.getState>;
+
+// Properly typed RootState that replaces PersistPartial with actual state types
+export type RootState = Omit<BaseRootState, 'auth' | 'pushToken'> & {
+    auth: AuthState;
+    pushToken: PushTokenState;
+};
+
 export type AppDispatch = typeof store.dispatch;
 
 

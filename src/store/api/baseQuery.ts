@@ -1,10 +1,3 @@
-/**
- * Base Query with Reauth
- *
- * Handles token refresh automatically when 401 is received.
- * Used by all authenticated API endpoints.
- */
-
 import { fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import Toast from 'react-native-toast-message';
 import type { RootState } from '@/src/redux2/Store';

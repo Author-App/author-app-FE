@@ -2,12 +2,14 @@ import { useLocalSearchParams } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { useGetBookDetailQuery, useRateBookMutation } from "../redux2/Apis/Books";
 import { useCreateOrderMutation, usePollPaymentStatusQuery } from "../redux2/Apis/Orders";
-import { useStripe } from "@stripe/stripe-react-native";
+// TODO: Re-enable when Stripe is configured
+// import { useStripe } from "@stripe/stripe-react-native";
 
 const useBookDetailController = () => {
 
     const { id } = useLocalSearchParams();
-    const { confirmPayment } = useStripe();
+    // TODO: Re-enable when Stripe is configured
+    // const { confirmPayment } = useStripe();
 
     const { data, isLoading, isFetching, error, refetch } = useGetBookDetailQuery(id);
 
@@ -60,33 +62,39 @@ const useBookDetailController = () => {
 
     // ---------------------------------------------------------
     // STEP 2: Confirm payment after card input
+    // TODO: Re-enable when Stripe is configured
     // ---------------------------------------------------------
     const confirmBookPayment = async () => {
-        if (!clientSecret) {
-            alert("No payment secret available");
-            return;
-        }
-        try {
-            const { paymentIntent, error } = await confirmPayment(clientSecret, {
-                paymentMethodType: "Card",
-            });
+        // Stripe payment disabled - re-enable when configured
+        alert("Payment functionality coming soon!");
+        setPaymentModal(false);
+        
+        // Original implementation:
+        // if (!clientSecret) {
+        //     alert("No payment secret available");
+        //     return;
+        // }
+        // try {
+        //     const { paymentIntent, error } = await confirmPayment(clientSecret, {
+        //         paymentMethodType: "Card",
+        //     });
 
-            if (error) {
-                alert("Payment error: " + error.message);
-                return;
-            }
+        //     if (error) {
+        //         alert("Payment error: " + error.message);
+        //         return;
+        //     }
 
-            console.log("STRIPE PAYMENT INTENT:", paymentIntent);
+        //     console.log("STRIPE PAYMENT INTENT:", paymentIntent);
 
-            // Close card modal
-            setPaymentModal(false);
+        //     // Close card modal
+        //     setPaymentModal(false);
 
-            // Start polling backend
-            setStartPolling(true);
+        //     // Start polling backend
+        //     setStartPolling(true);
 
-        } catch (e) {
-            alert("Payment failed. Try again.");
-        }
+        // } catch (e) {
+        //     alert("Payment failed. Try again.");
+        // }
     };
 
     // ---------------------------------------------------------

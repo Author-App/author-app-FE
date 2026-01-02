@@ -46,7 +46,7 @@ export function useSubscription() {
     //   await Purchases.purchasePackage(packageToPurchase);
     // }
     console.log(`Subscribe pressed - ${billingPeriod} plan - RevenueCat integration pending`);
-  }, [billingPeriod]);
+}, [billingPeriod]);
 
   const handleManageSubscription = useCallback(async () => {
     // TODO: Open subscription management via RevenueCat

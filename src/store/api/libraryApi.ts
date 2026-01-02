@@ -1,12 +1,4 @@
-/**
- * Library API
- *
- * RTK Query API for book-related endpoints.
- * Handles fetching books, book details, and reviews.
- */
-
 import { createApi } from '@reduxjs/toolkit/query/react';
-import baseQueryWithReauth from '@/src/redux2/Services/baseQuery';
 import type {
   GetBooksParams,
   GetBooksApiResponse,
@@ -15,6 +7,7 @@ import type {
   RateBookRequest,
   RateBookApiResponse,
 } from '@/src/types/api/library.types';
+import baseQueryWithReauth from './baseQuery';
 
 export const libraryApi = createApi({
   reducerPath: 'libraryApi',

@@ -3,7 +3,6 @@ import { YStack } from 'tamagui';
 
 import UInput from '@/src/components/core/inputs/uInput';
 import { NeonButton } from '@/src/components/core/buttons/neonButton';
-import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
 
 interface ProfileFormProps {
   fullName: string;

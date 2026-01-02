@@ -1,10 +1,3 @@
-/**
- * User/Settings API
- *
- * Authenticated endpoints for user profile and account management.
- * Uses baseQueryWithReauth for automatic token refresh.
- */
-
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { baseQueryWithReauth } from './baseQuery';
 import type { ApiResponse } from '@/src/types/api/common.types';

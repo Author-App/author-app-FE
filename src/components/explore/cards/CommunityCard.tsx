@@ -24,7 +24,6 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
   const teal = getTokenValue('$brandTeal', 'color');
   const white = getTokenValue('$white', 'color');
   const neutral = getTokenValue('$neutral1', 'color');
-
   return (
     <UAnimatedView animation="fadeInUp" duration={400}>
       <YStack

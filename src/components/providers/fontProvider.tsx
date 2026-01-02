@@ -23,7 +23,6 @@ const FontProvider = ({ children }: PropsWithChildren) => {
   if (!fontsLoaded || fontError) {
     return null;
   }
-  console.log('Fonts loaded:', fontsLoaded);
   return <>{children}</>;
 };
 

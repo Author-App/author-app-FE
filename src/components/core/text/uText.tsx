@@ -66,6 +66,7 @@ const getVariantStyle = (variant: TextVariant): StylesType => {
         ...baseStyles,
         fontSize: 12,
         lineHeight: 16,
+        letterSpacing: 0.4,
       };
     case 'text-sm':
       return {

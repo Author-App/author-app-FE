@@ -92,11 +92,13 @@ const getVariantStyle = (variant: UInputVariant = 'primary'): StylesType => {
         pressBackgroundColor: '$transparent',
         borderColor: '$transparent',
         borderWidth: 0,
+        borderRadius: 0,
         color: '$white',
-        placeholderTextColor: '$brandTeal',
+        placeholderTextColor: 'rgba(255, 255, 255, 0.4)',
         py: 0,
         px: 0,
-        minHeight: 20,
+        minHeight: 30,
+        width: '100%',
       };
     default:
       return baseStyles;

@@ -66,6 +66,11 @@ const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
       result = await rawBaseQuery(args, api, extraOptions);
     } else {
       api.dispatch(logOut());
+      Toast.show({
+        type: 'error',
+        text1: 'Session expired',
+        text2: 'Please login again',
+      });
     }
 
 

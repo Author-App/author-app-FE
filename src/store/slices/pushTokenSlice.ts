@@ -6,7 +6,7 @@
 
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-interface PushTokenState {
+export interface PushTokenState {
   token: string | null;
 }
 

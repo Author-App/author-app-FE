@@ -1,6 +1,7 @@
 import { memo } from "react";
 import { Modal, View, TouchableOpacity, TouchableWithoutFeedback, Dimensions } from "react-native";
-import { CardField } from "@stripe/stripe-react-native";
+// TODO: Re-enable when Stripe is configured
+// import { CardField } from "@stripe/stripe-react-native";
 import UText from "../../text/uText";
 import UTextButton from "../../buttons/uTextButton";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
@@ -54,12 +55,16 @@ const PaymentModal = ({ visible, onClose, onPay }: PaymentModalProps) => {
                         >
                             <UText variant="heading-h2" mb={10}>Enter Card Details</UText>
 
-                            <CardField
+                            {/* TODO: Re-enable when Stripe is configured */}
+                            {/* <CardField
                                 postalCodeEnabled={true}
                                 placeholders={{ number: "4242 4242 4242 4242" }}
                                 cardStyle={{ backgroundColor: "#f2f2f2" }}
                                 style={{ height: 55, marginVertical: 20 }}
-                            />
+                            /> */}
+                            <View style={{ height: 55, marginVertical: 20, backgroundColor: "#f2f2f2", borderRadius: 8, justifyContent: "center", alignItems: "center" }}>
+                                <UText color="$neutral6">Payment coming soon</UText>
+                            </View>
 
                             <UTextButton variant="primary-md" height={50} onPress={onPay}>
                                 Pay Now

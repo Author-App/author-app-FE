@@ -9,7 +9,7 @@ import Toast from 'react-native-toast-message';
 import { authApi } from '@/src/store/api/authApi';
 import type { User } from '@/src/types/api/auth.types';
 
-interface AuthState {
+export interface AuthState {
   isLoggedIn: boolean;
   token: string | null;
   refreshToken: string | null;

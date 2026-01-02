@@ -1,10 +1,3 @@
-/**
- * Home API
- *
- * Authenticated endpoints for home feed data.
- * Uses baseQueryWithReauth for automatic token refresh.
- */
-
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { baseQueryWithReauth } from './baseQuery';
 import type { ApiResponse } from '@/src/types/api/common.types';

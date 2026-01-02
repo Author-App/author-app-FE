@@ -6,6 +6,7 @@ import type { Href } from 'expo-router';
 
 import { useGetMeQuery, useDeleteAccountMutation } from '@/src/store/api/userApi';
 import { logOut } from '@/src/store/slices/authSlice';
+// persistor is only available from redux2/Store until full migration
 import { persistor } from '@/src/redux2/Store';
 import type { UserData } from '@/src/types/api/user.types';
 import type { SettingsSection } from '../types/settings.types';

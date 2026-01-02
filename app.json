@@ -13,7 +13,7 @@
     "icon": "./assets/images/mainLogo.png",
     "scheme": "authorapp",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "splash": {
       "image": "./assets/images/mainLogo.png",
       "resizeMode": "contain",

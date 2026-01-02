@@ -11,6 +11,11 @@ import type {
   CommunityListResponse,
   ExploreQueryParams,
 } from '@/src/types/api/explore.types';
+import type {
+  CommunityDetailResponse,
+  ThreadResponse,
+  CreateThreadInput,
+} from '@/src/types/api/community.types';
 
 export const exploreApi = createApi({
   reducerPath: 'exploreApi',
@@ -119,6 +124,34 @@ export const exploreApi = createApi({
       }),
       invalidatesTags: ['Communities'],
     }),
+
+    /**
+     * GET /communities/:id
+     * Fetches single community by ID with threads
+     * Cached for 5 minutes, polled in background for fresh messages
+     */
+    getCommunityDetail: builder.query<ApiResponse<CommunityDetailResponse>, string>({
+      query: (id) => ({
+        url: `/communities/${id}`,
+        method: 'GET',
+      }),
+      providesTags: (result, error, id) => [{ type: 'Communities', id }],
+      // Keep cached data for 5 minutes after last subscriber unsubscribes
+      keepUnusedDataFor: 300,
+    }),
+
+    /**
+     * POST /communities/:id/threads
+     * Send a new thread/message to a community
+     */
+    sendThread: builder.mutation<ApiResponse<ThreadResponse>, { id: string; body: CreateThreadInput }>({
+      query: ({ id, body }) => ({
+        url: `/communities/${id}/threads`,
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: (result, error, { id }) => [{ type: 'Communities', id }],
+    }),
   }),
 });
 
@@ -129,6 +162,8 @@ export const {
   useGetEventsQuery,
   useGetEventDetailQuery,
   useGetCommunitiesQuery,
+  useGetCommunityDetailQuery,
   useJoinCommunityMutation,
   useExitCommunityMutation,
+  useSendThreadMutation,
 } = exploreApi;
