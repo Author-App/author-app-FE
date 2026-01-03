@@ -35,7 +35,7 @@ export function BookActions({
       px={20}
       pb={bottom + 16}
       pt={16}
-      bg="$brandNavy"
+      bg="$brandNavyTransparent"
       btw={1}
       btc="rgba(255, 255, 255, 0.1)"
     >

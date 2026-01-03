@@ -40,12 +40,13 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/mainLogo.png" 
+      "favicon": "./assets/images/mainLogo.png"
     },
     "plugins": [
       "expo-router",
       "expo-audio",
-      "expo-font"
+      "expo-font",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true

@@ -21,11 +21,7 @@ export function BookHero({ book, averageRating, totalRatings }: BookHeroProps) {
   const TypeIcon = isAudiobook ? IconHeadphone : IconBook;
 
   return (
-    <>
-      <XStack mb={24}>
-        <UBackButton variant="glass-md" />
-      </XStack>
-
+  
       <UAnimatedView animation="fadeInUp" delay={100}>
         <YStack ai="center" mb={20}>
           <YStack
@@ -86,6 +82,5 @@ export function BookHero({ book, averageRating, totalRatings }: BookHeroProps) {
             </UText>
         </XStack>
       </UAnimatedView>
-    </>
   );
 }

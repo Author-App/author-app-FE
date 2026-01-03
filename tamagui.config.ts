@@ -387,9 +387,10 @@ const tokens = createTokens({
 
     // --- Brand Palette ---
     brandCrimson: '#BF092F',
-    brandNavy: '#132440',
+    brandNavy: '#132440ff',
     brandOcean: '#16476A',
     brandTeal: '#3B9797',
+    brandNavyTransparent: '#132440e0',
 
     // --- New theme
     gold: "#D4AF37",

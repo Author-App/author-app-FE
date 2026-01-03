@@ -1,10 +1,9 @@
 import { memo } from "react";
 import { Modal, View, TouchableOpacity, TouchableWithoutFeedback, Dimensions } from "react-native";
-// TODO: Re-enable when Stripe is configured
-// import { CardField } from "@stripe/stripe-react-native";
 import UText from "../../text/uText";
 import UTextButton from "../../buttons/uTextButton";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import IconLock from "@/assets/icons/iconLock";
 
 interface PaymentModalProps {
     visible: boolean;
@@ -15,65 +14,58 @@ interface PaymentModalProps {
 const PaymentModal = ({ visible, onClose, onPay }: PaymentModalProps) => {
     const insets = useSafeAreaInsets();
 
-    const { height: SCREEN_HEIGHT } = Dimensions.get("window");
-
-    console.log("THIS IS SCREEN HEIGHT", SCREEN_HEIGHT);
-    
     return (
         <Modal
             transparent
             visible={visible}
             animationType="slide"
-            
         >
             <TouchableWithoutFeedback onPress={onClose}>
                 <View style={{
-                    // height: SCREEN_HEIGHT, width: "100%",
                     flex: 1,
                     justifyContent: "flex-end",
                     backgroundColor: "rgba(0,0,0,0.5)"
                 }}>
-                    {/* <View style={{
-                    // backgroundColor: "white",
-                    backgroundColor:'red',
-                    padding: 20,
-                    borderTopLeftRadius: 20,
-                    borderTopRightRadius: 20,
-                }}> */}
                     <TouchableWithoutFeedback onPress={() => { }}>
                         <SafeAreaView
                             edges={["bottom"]}
                             style={{
                                 backgroundColor: "white",
                                 paddingHorizontal: 20,
-                                paddingTop: 20,
-                                // paddingBottom: 0,      // ⛔ remove bottom space
+                                paddingTop: 24,
                                 paddingBottom: insets.bottom,
                                 borderTopLeftRadius: 20,
                                 borderTopRightRadius: 20,
                             }}
                         >
-                            <UText variant="heading-h2" mb={10}>Enter Card Details</UText>
+                            <UText variant="heading-h2" mb={8}>Complete Purchase</UText>
+                            <UText variant="text-md" color="$neutral6" mb={20}>
+                                You'll be redirected to Stripe's secure checkout to complete your payment.
+                            </UText>
 
-                            {/* TODO: Re-enable when Stripe is configured */}
-                            {/* <CardField
-                                postalCodeEnabled={true}
-                                placeholders={{ number: "4242 4242 4242 4242" }}
-                                cardStyle={{ backgroundColor: "#f2f2f2" }}
-                                style={{ height: 55, marginVertical: 20 }}
-                            /> */}
-                            <View style={{ height: 55, marginVertical: 20, backgroundColor: "#f2f2f2", borderRadius: 8, justifyContent: "center", alignItems: "center" }}>
-                                <UText color="$neutral6">Payment coming soon</UText>
+                            {/* Secure payment badge */}
+                            <View style={{ 
+                                flexDirection: "row", 
+                                alignItems: "center", 
+                                justifyContent: "center",
+                                backgroundColor: "#f8f9fa", 
+                                borderRadius: 8, 
+                                padding: 12,
+                                marginBottom: 20,
+                            }}>
+                                <IconLock dimen={16} color="#6c757d" />
+                                <UText variant="text-sm" color="$neutral6" ml={8}>
+                                    Secured by Stripe
+                                </UText>
                             </View>
 
                             <UTextButton variant="primary-md" height={50} onPress={onPay}>
-                                Pay Now
+                                Continue to Payment
                             </UTextButton>
 
-                            <TouchableOpacity onPress={onClose} style={{ marginTop: 10 }}>
-                                <UText textAlign="center" color="$red10">Cancel</UText>
+                            <TouchableOpacity onPress={onClose} style={{ marginTop: 12, paddingVertical: 8 }}>
+                                <UText textAlign="center" color="$neutral6">Cancel</UText>
                             </TouchableOpacity>
-                            {/* </View> */}
                         </SafeAreaView>
                     </TouchableWithoutFeedback>
                 </View>

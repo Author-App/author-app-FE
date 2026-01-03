@@ -1,9 +1,7 @@
 import React from 'react';
-import { YStack, XStack } from 'tamagui';
+import { YStack, XStack, ScrollView } from 'tamagui';
 import { useLocalSearchParams } from 'expo-router';
-import { ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
 import UBackButton from '@/src/components/core/buttons/uBackButton';
 import AppLoader from '@/src/components/core/loaders/AppLoader';
 import UScreenError from '@/src/components/core/feedback/UScreenError';
@@ -70,13 +68,21 @@ export function BookDetailScreen() {
 
   return (
     <UScreenLayout flex={1} pt={top + 8}>
-      <ScrollView 
+      <XStack px={20} mb={16}>
+        <UBackButton variant="glass-md" />
+      </XStack>
+     
+      <ScrollView
+        scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 120, paddingHorizontal: 20 }}
+        contentContainerStyle={{
+          paddingBottom: 120,
+          paddingHorizontal: 20,
+        }}
       >
-        <BookHero 
-          book={book} 
-          averageRating={ratingStats?.average} 
+        <BookHero
+          book={book}
+          averageRating={ratingStats?.average}
           totalRatings={ratingStats?.total}
         />
 

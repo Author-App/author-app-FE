@@ -20,22 +20,13 @@ interface StylesType extends ButtonVariantStylesType {
 
 const getVariantStyle = (variant: ButtonVariant = 'primary-md'): StylesType => {
   const baseStyles: StylesType = {
-    // backgroundColor: '$primary7',
-    // backgroundColor: '$accent',
     backgroundColor: '#385d83ff',
-    // backgroundColor: '#2f506fff',
-
-
     hoverBackgroundColor: '$primary8',
     pressBackgroundColor: '$primary9',
     px: 16,
-    // py: 18,
-    // height: 'auto',
     height:40,
-    // borderRadius: 999,
     borderRadius: 5,
     color: '$neutral1',
-    // color: '$black',
     textVariant: 'text-sm',
     alignItems: 'center',
     justifyContent: 'center',
@@ -95,35 +86,8 @@ const getVariantStyle = (variant: ButtonVariant = 'primary-md'): StylesType => {
         py: 4,
         px: 12,
         textVariant: 'text-sm',
-        // color:'red'
       };
-    // case 'secondary-xs':
-    //   return {
-    //     ...baseStyles,
-    //     backgroundColor: '$secondary5',
-    //     hoverBackgroundColor: '$secondary6',
-    //     pressBackgroundColor: '$secondary7',
-    //     py: 4,
-    //     px: 8,
-    //     textVariant: 'text-2xs',
-    //   };
-    // case 'secondary-sm':
-    //   return {
-    //     ...baseStyles,
-    //     backgroundColor: '$secondary5',
-    //     hoverBackgroundColor: '$secondary6',
-    //     pressBackgroundColor: '$secondary7',
-    //     py: 4,
-    //     px: 12,
-    //     textVariant: 'text-xs',
-    //   };
-    // case 'secondary-md':
-    //   return {
-    //     ...baseStyles,
-    //     backgroundColor: '$secondary5',
-    //     hoverBackgroundColor: '$secondary6',
-    //     pressBackgroundColor: '$secondary7',
-    //   };
+   
     case 'tertiary-xs':
       return {
         ...baseStyles,
@@ -196,39 +160,6 @@ const getVariantStyle = (variant: ButtonVariant = 'primary-md'): StylesType => {
         pressBackgroundColor: '$primaryAlpha2',
         color: '$primary7',
       };
-    // case 'quinary-sm': // 🆕 Silver small button
-    //   return {
-    //     ...baseStyles,
-    //     backgroundColor: '$neutral3',
-    //     hoverBackgroundColor: '$neutral4',
-    //     pressBackgroundColor: '$neutral5',
-    //     color: '$neutral9',
-    //     py: 4,
-    //     px: 12,
-    //     textVariant: 'text-xs',
-    //   };
-
-    // case 'quinary-md': // 🆕 Silver medium button
-    //   return {
-    //     ...baseStyles,
-    //     backgroundColor: '#E9E5E5',
-    //     hoverBackgroundColor: '$neutral4',
-    //     pressBackgroundColor: '$neutral5',
-    //     color: '$black',
-    //     borderRadius: 10
-    //   };
-
-    // case 'quinary-xs': // 🆕 Silver extra-small button
-    //   return {
-    //     ...baseStyles,
-    //     backgroundColor: '$neutral3',
-    //     hoverBackgroundColor: '$neutral4',
-    //     pressBackgroundColor: '$neutral5',
-    //     color: '$neutral9',
-    //     py: 4,
-    //     px: 8,
-    //     textVariant: 'text-2xs',
-    //   };
     default:
       return baseStyles;
   }

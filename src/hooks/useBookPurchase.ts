@@ -1,5 +1,6 @@
-
 import { useCallback, useState, useEffect } from 'react';
+import * as WebBrowser from 'expo-web-browser';
+import * as Linking from 'expo-linking';
 import {
   useCreateOrderMutation,
   useVerifyPaymentQuery,
@@ -7,6 +8,9 @@ import {
 import type { PaymentStatus } from '@/src/types/api/library.types';
 
 const PAYMENT_POLL_INTERVAL_MS = 3000;
+
+// Deep link URL for payment return
+const PAYMENT_RETURN_URL = Linking.createURL('payment-complete');
 
 interface UseBookPurchaseOptions {
   onPaymentSuccess?: () => void;
@@ -36,12 +40,12 @@ export function useBookPurchase(
 
   // Payment state
   const [orderId, setOrderId] = useState<string | null>(null);
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
   const [isPollingPayment, setIsPollingPayment] = useState(false);
   const [isPaymentModalVisible, setPaymentModalVisible] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus | null>(null);
 
-  // Payment polling
+  // Payment polling - checks payment status after user returns from Stripe
   const { data: paymentResult } = useVerifyPaymentQuery(orderId!, {
     skip: !isPollingPayment || !orderId,
     pollingInterval: isPollingPayment ? PAYMENT_POLL_INTERVAL_MS : 0,
@@ -69,9 +73,10 @@ export function useBookPurchase(
   // Reset payment state
   const resetPaymentState = useCallback(() => {
     setOrderId(null);
-    setClientSecret(null);
+    setPaymentUrl(null);
     setPaymentStatus(null);
     setPaymentModalVisible(false);
+    setIsPollingPayment(false);
   }, []);
 
   // Start purchase flow - creates order and shows payment modal
@@ -80,7 +85,7 @@ export function useBookPurchase(
       const res = await createOrderMutation({ bookId }).unwrap();
 
       const newOrderId = res?.data?.orderId;
-      const secret = res?.data?.clientSecret;
+      const url = res?.data?.paymentUrl;
 
       if (!newOrderId) {
         alert('Could not start payment.');
@@ -88,7 +93,7 @@ export function useBookPurchase(
       }
 
       setOrderId(newOrderId);
-      setClientSecret(secret ?? null);
+      setPaymentUrl(url ?? null);
       setPaymentModalVisible(true);
     } catch (error) {
       const errorData = error as { data?: { message?: string } };
@@ -96,27 +101,37 @@ export function useBookPurchase(
     }
   }, [createOrderMutation]);
 
-  // Confirm payment (Stripe integration)
+  // Confirm payment - opens Stripe Checkout in browser
   const confirmPayment = useCallback(async () => {
-    // TODO: Re-enable when Stripe is configured
-    // if (!clientSecret) {
-    //   alert('No payment secret available');
-    //   return;
-    // }
-    // const { confirmPayment } = useStripe();
-    // const { paymentIntent, error } = await confirmPayment(clientSecret, {
-    //   paymentMethodType: 'Card',
-    // });
-    // if (error) {
-    //   alert('Payment error: ' + error.message);
-    //   return;
-    // }
-    // setPaymentModalVisible(false);
-    // setIsPollingPayment(true);
+    if (!paymentUrl) {
+      alert('No payment URL available');
+      return;
+    }
 
-    alert('Payment functionality coming soon!');
-    setPaymentModalVisible(false);
-  }, [clientSecret]);
+    try {
+      // Close the modal before opening browser
+      setPaymentModalVisible(false);
+
+      // Open Stripe Checkout in in-app browser
+      const result = await WebBrowser.openAuthSessionAsync(
+        paymentUrl,
+        PAYMENT_RETURN_URL
+      );
+
+      // Handle browser result
+      if (result.type === 'success' || result.type === 'dismiss') {
+        // User completed or dismissed - start polling to check payment status
+        setIsPollingPayment(true);
+      } else if (result.type === 'cancel') {
+        // User cancelled - reset state
+        resetPaymentState();
+      }
+    } catch (error) {
+      console.error('Payment browser error:', error);
+      alert('Failed to open payment page. Please try again.');
+      resetPaymentState();
+    }
+  }, [paymentUrl, resetPaymentState]);
 
   // Cancel payment
   const cancelPayment = useCallback(() => {
