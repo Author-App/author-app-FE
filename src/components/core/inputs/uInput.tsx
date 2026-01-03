@@ -2,7 +2,7 @@ import { forwardRef, memo, useMemo } from 'react';
 import { GetProps, GetThemeValueForKey, Input as TamaguiInput, YStack } from 'tamagui';
 
 import { UInputVariant } from '@/src/components/core/types/input/inputVariants';
-import UText from '../text/uText';
+import UText from '@/src/components/core/text/uText';
 
 interface UInputProps extends Omit<GetProps<typeof TamaguiInput>, 'variant'> {
   variant?: UInputVariant;
