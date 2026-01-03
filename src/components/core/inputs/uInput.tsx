@@ -42,6 +42,9 @@ const getVariantStyle = (variant: UInputVariant = 'primary'): StylesType => {
     py: 12,
     px: 16,
     color: '$white',
+    fontFamily:'$cormorantgaramond',
+    fontSize:16,
+    letterSpacing:0,
     borderRadius: 10,
     boxSizing: 'border-box',
     marginBottom: 0

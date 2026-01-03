@@ -82,9 +82,11 @@ const ArticleCard = memo(({ item, index, w, ...props }: ArticleCardProps) => (
 
         <XStack ai="center" gap={8}>
           <YStack w={4} h={4} borderRadius={2} bg="$brandTeal" />
-          <UText variant="text-xs" color="$neutralAlphaLight6">
-            5 min read
-          </UText>
+          {item.readTime && (
+            <UText variant="text-xs" color="$neutralAlphaLight6">
+              {item.readTime.value} {item.readTime.unit} read
+            </UText>
+          )}
         </XStack>
       </YStack>
     </XStack>

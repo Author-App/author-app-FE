@@ -16,10 +16,6 @@ interface BlogCardProps extends YStackProps {
 const BlogCard: React.FC<BlogCardProps> = ({ data, onPress, ...props }) => {
   const teal = getTokenValue('$brandTeal', 'color');
   const neutral = getTokenValue('$neutral1', 'color');
-
-  // Estimate read time if not provided (avg 200 words/min, assume ~500 words per article)
-  const readTime = data.readTime || Math.floor(Math.random() * (7 - 3) + 3).toFixed(0);
-
   return (
     <UAnimatedView animation="fadeInUp" duration={400}>
       <YStack
@@ -57,9 +53,11 @@ const BlogCard: React.FC<BlogCardProps> = ({ data, onPress, ...props }) => {
             gap={4}
           >
             <Ionicons name="time-outline" size={12} color={neutral} />
-            <UText variant="text-xs" color="$neutral1" fontWeight="500">
-              {readTime} min read
-            </UText>
+            {data.readTime && (
+              <UText variant="text-xs" color="$neutral1" fontWeight="500">
+                {data.readTime.value} {data.readTime.unit} read
+              </UText>
+            )}
           </XStack>
         </YStack>
 

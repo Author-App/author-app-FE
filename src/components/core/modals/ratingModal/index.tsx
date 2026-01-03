@@ -33,9 +33,6 @@ const RatingModal = ({
     onClose();
   };
 
-  console.log("THIS IS RATING", rating);
-
-
   return (
     <Modal visible={visible} animationType="fade" transparent>
       <TouchableWithoutFeedback onPress={onClose}>

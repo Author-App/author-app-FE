@@ -32,6 +32,7 @@ export interface HomeArticle {
   id: string;
   title: string;
   image?: string;
+  readTime?: { value: number; unit: string };
 }
 
 // ============================================================================

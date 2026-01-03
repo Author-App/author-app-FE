@@ -29,7 +29,7 @@ export interface ArticleResponse {
   title: string;
   author: ArticleAuthor;
   publishedAt: string | null;
-  readTime?: number;
+  readTime?: { value: number; unit: string };
   thumbnail?: string;
   createdAt: string;
   updatedAt: string;

@@ -42,12 +42,8 @@ const UButtonTabItem = memo(<T extends string>({
   const animatedStyle = useAnimatedStyle(() => {
     return {
       transform: [{ scale: withSpring(scale.value, { damping: 15, stiffness: 200 }) }],
-      backgroundColor: withSpring(isActive ? crimson : 'transparent', {
-        damping: 20,
-        stiffness: 180,
-      }),
     };
-  }, [isActive]);
+  });
 
   const handlePressIn = useCallback(() => {
     scale.value = 0.95;
@@ -67,6 +63,7 @@ const UButtonTabItem = memo(<T extends string>({
       py={10}
       br={999}
       borderWidth={1}
+      backgroundColor={isActive ? '$brandCrimson' : 'transparent'}
       borderColor={isActive ? '$brandCrimson' : '$searchbarBorder'}
       onPress={onPress}
       onPressIn={handlePressIn}

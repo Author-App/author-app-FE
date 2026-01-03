@@ -66,4 +66,4 @@ const ProfileScreen: React.FC = () => {
   );
 };
 
-export default memo(ProfileScreen);
+export default ProfileScreen

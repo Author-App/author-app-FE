@@ -16,7 +16,7 @@ export function ArticleHeader({ article }: ArticleHeaderProps) {
     : formatDate(article.createdAt);
 
   const readTimeText = article.readTime
-    ? `${article.readTime} min read`
+    ? `${article.readTime.value} ${article.readTime.unit} read`
     : null;
 
   return (
