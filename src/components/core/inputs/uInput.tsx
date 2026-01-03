@@ -1,5 +1,5 @@
 import { forwardRef, memo, useMemo } from 'react';
-import { GetProps, GetThemeValueForKey, Input as TamaguiInput, Text, YStack } from 'tamagui';
+import { GetProps, GetThemeValueForKey, Input as TamaguiInput, YStack } from 'tamagui';
 
 import { UInputVariant } from '@/src/components/core/types/input/inputVariants';
 import UText from '../text/uText';
@@ -14,6 +14,7 @@ interface StylesType extends Omit<GetProps<typeof TamaguiInput>, 'ref'> {
   pressBackgroundColor?: GetThemeValueForKey<'backgroundColor'>;
   hoverBackgroundColor?: GetThemeValueForKey<'backgroundColor'>;
 }
+
 const getErrorColor = (variant: UInputVariant = 'primary') => {
   switch (variant) {
     case 'primary':
@@ -38,14 +39,9 @@ const getVariantStyle = (variant: UInputVariant = 'primary'): StylesType => {
     borderColor: '$secondary',
     borderWidth: 2,
     minHeight: 40,
-    // flex: 1,
     py: 12,
     px: 16,
-    fontFamily: '$cormorantgaramond',
-    fontSize: 16,
-    letterSpacing: 0,
     color: '$white',
-    // borderRadius: 999,
     borderRadius: 10,
     boxSizing: 'border-box',
     marginBottom: 0
@@ -64,7 +60,7 @@ const getVariantStyle = (variant: UInputVariant = 'primary'): StylesType => {
         borderWidth: 1,
         hoverBackgroundColor: '$primaryAlpha1',
         pressBackgroundColor: '$primaryAlpha2',
-        placeholderTextColor: '#676767ff',
+        placeholderTextColor: '$placeholderGray',
         color: '$black'
       };
     case 'tertiary':
@@ -94,7 +90,7 @@ const getVariantStyle = (variant: UInputVariant = 'primary'): StylesType => {
         borderWidth: 0,
         borderRadius: 0,
         color: '$white',
-        placeholderTextColor: 'rgba(255, 255, 255, 0.4)',
+        placeholderTextColor: '$placeholderGray',
         py: 0,
         px: 0,
         minHeight: 30,

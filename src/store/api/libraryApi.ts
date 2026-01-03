@@ -90,6 +90,7 @@ export const libraryApi = createApi({
 export const {
   useGetBooksQuery,
   useGetBookDetailQuery,
+  useLazyGetBookDetailQuery,
   useGetBookReviewsQuery,
   useRateBookMutation,
 } = libraryApi;

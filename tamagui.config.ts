@@ -391,6 +391,7 @@ const tokens = createTokens({
     brandOcean: '#16476A',
     brandTeal: '#3B9797',
     brandNavyTransparent: '#132440e0',
+    placeholderGray: '#676767ff',
 
     // --- New theme
     gold: "#D4AF37",

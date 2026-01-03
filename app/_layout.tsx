@@ -6,7 +6,6 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
-import { PortalProvider } from '@tamagui/portal';
 import Toast from 'react-native-toast-message';
 import * as Notifications from 'expo-notifications';
 
@@ -71,12 +70,10 @@ export default function RootLayout() {
           <PersistGate loading={null} persistor={persistor}>
             <AppStripeProvider>
               <AppTamaguiProvider>
-                <PortalProvider>
-                  <FontProvider>
-                    <Slot />
-                    <Toast config={toastConfig} topOffset={0} />
-                  </FontProvider>
-                </PortalProvider>
+                <FontProvider>
+                  <Slot />
+                  <Toast config={toastConfig} topOffset={0} />
+                </FontProvider>
               </AppTamaguiProvider>
             </AppStripeProvider>
           </PersistGate>
