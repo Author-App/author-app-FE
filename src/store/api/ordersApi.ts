@@ -1,9 +1,9 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import type {
   CreateOrderRequest,
-  CreateOrderApiResponse,
-  VerifyPaymentApiResponse,
-} from '@/src/types/api/library.types';
+  CreateOrderResponse,
+  VerifyPaymentResponse,
+} from '@/src/types/api/orders.types';
 import baseQueryWithReauth from './baseQuery';
 
 export const ordersApi = createApi({
@@ -14,9 +14,9 @@ export const ordersApi = createApi({
   endpoints: (builder) => ({
     /**
      * POST /orders
-     * Creates a new order for book purchase
+     * Creates a new order and returns clientSecret for Payment Sheet
      */
-    createOrder: builder.mutation<CreateOrderApiResponse, CreateOrderRequest>({
+    createOrder: builder.mutation<CreateOrderResponse, CreateOrderRequest>({
       query: (body) => ({
         url: '/orders',
         method: 'POST',
@@ -26,9 +26,9 @@ export const ordersApi = createApi({
 
     /**
      * GET /orders/:orderId/verify-payment
-     * Polls payment status for an order
+     * Verifies payment status after Payment Sheet completion
      */
-    verifyPayment: builder.query<VerifyPaymentApiResponse, string>({
+    verifyPayment: builder.query<VerifyPaymentResponse, string>({
       query: (orderId) => `/orders/${orderId}/verify-payment`,
     }),
   }),
@@ -37,4 +37,5 @@ export const ordersApi = createApi({
 export const {
   useCreateOrderMutation,
   useVerifyPaymentQuery,
+  useLazyVerifyPaymentQuery,
 } = ordersApi;

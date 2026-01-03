@@ -1,5 +1,5 @@
 import React from 'react';
-import { YStack, XStack } from 'tamagui';
+import { YStack, XStack, Spinner } from 'tamagui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import UText from '@/src/components/core/text/uText';
@@ -11,6 +11,7 @@ import type { BookResponse } from '@/src/types/api/library.types';
 interface BookActionsProps {
   book: BookResponse;
   hasAccess?: boolean;
+  isPurchasing?: boolean;
   onStartReading: () => void;
   onPurchase: () => void;
 }
@@ -18,6 +19,7 @@ interface BookActionsProps {
 export function BookActions({
   book,
   hasAccess,
+  isPurchasing,
   onStartReading,
   onPurchase,
 }: BookActionsProps) {
@@ -25,6 +27,8 @@ export function BookActions({
   const isAudiobook = book.type === 'audiobook';
   const TypeIcon = isAudiobook ? IconHeadphone : IconBook;
   const actionLabel = isAudiobook ? 'Start Listening' : 'Start Reading';
+
+  const priceLabel = `Purchase – $${book.price} ${book.currency}`;
 
   return (
     <YStack
@@ -49,7 +53,18 @@ export function BookActions({
           </XStack>
         </NeonButton>
       ) : (
-        <NeonButton onPress={onPurchase} title={`Purchase – $${book.price} ${book.currency}`} />
+        <NeonButton
+          onPress={onPurchase}
+          disabled={isPurchasing}
+        >
+          {isPurchasing ? (
+            <Spinner color="$white" size="small" />
+          ) : (
+            <UText variant="text-md" color="$white" fontWeight="600">
+              {priceLabel}
+            </UText>
+          )}
+        </NeonButton>
       )}
     </YStack>
   );

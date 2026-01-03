@@ -16,6 +16,7 @@ import { setupNotificationChannel } from '@/src/utils/notifications';
 import { registerForPushNotificationsAsync } from '@/src/utils/registerForPushNotifications';
 import AppTamaguiProvider from '@/src/components/providers/appTamaguiProvider';
 import FontProvider from '@/src/components/providers/fontProvider';
+import { AppStripeProvider } from '@/src/components/providers/appStripeProvider';
 import toastConfig from '@/src/components/core/toast/toastConfig';
 
 // Brand colors
@@ -68,14 +69,16 @@ export default function RootLayout() {
         <AppHead />
         <Provider store={store}>
           <PersistGate loading={null} persistor={persistor}>
-            <AppTamaguiProvider>
-              <PortalProvider>
-                <FontProvider>
-                  <Slot />
-                  <Toast config={toastConfig} topOffset={0} />
-                </FontProvider>
-              </PortalProvider>
-            </AppTamaguiProvider>
+            <AppStripeProvider>
+              <AppTamaguiProvider>
+                <PortalProvider>
+                  <FontProvider>
+                    <Slot />
+                    <Toast config={toastConfig} topOffset={0} />
+                  </FontProvider>
+                </PortalProvider>
+              </AppTamaguiProvider>
+            </AppStripeProvider>
           </PersistGate>
         </Provider>
       </GestureHandlerRootView>

@@ -6,7 +6,7 @@ import {
   selectHomeSections,
   selectHomeFeedError,
 } from '@/src/store/selectors/homeSelectors';
-import type { HomeBanner, HomeSection } from '@/src/types/api/home.types';
+import type { HomeBanner } from '@/src/types/api/home.types';
 import type { BannerItem, HomeSectionItem } from '../types/home.types';
 
 interface UseHomeDataReturn {

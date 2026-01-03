@@ -1,153 +1,117 @@
-import { useCallback, useState, useEffect } from 'react';
-import * as WebBrowser from 'expo-web-browser';
-import * as Linking from 'expo-linking';
-import {
-  useCreateOrderMutation,
-  useVerifyPaymentQuery,
-} from '@/src/store/api/ordersApi';
-import type { PaymentStatus } from '@/src/types/api/library.types';
+import { useCallback, useRef, useEffect } from 'react';
+import { useStripe } from '@stripe/stripe-react-native';
+import { useLazyVerifyPaymentQuery, useCreateOrderMutation } from '@/src/store/api/ordersApi';
+import type { PaymentStatus } from '@/src/types/api/orders.types';
 
-const PAYMENT_POLL_INTERVAL_MS = 3000;
-
-// Deep link URL for payment return
-const PAYMENT_RETURN_URL = Linking.createURL('payment-complete');
+const VERIFICATION_POLL_INTERVAL = 2000;
+const MAX_VERIFICATION_ATTEMPTS = 10;
 
 interface UseBookPurchaseOptions {
-  onPaymentSuccess?: () => void;
-  onPaymentFailed?: () => void;
+  onSuccess?: () => void;
+  onError?: (message: string) => void;
 }
 
 interface UseBookPurchaseReturn {
-  // State
-  isPaymentModalVisible: boolean;
-  isCreatingOrder: boolean;
-  isProcessingPayment: boolean;
-  paymentStatus: PaymentStatus | null;
-
-  // Actions
-  startPurchase: (bookId: string) => Promise<void>;
-  confirmPayment: () => Promise<void>;
-  cancelPayment: () => void;
+  isPurchasing: boolean;
+  purchase: (bookId: string) => Promise<void>;
 }
 
-export function useBookPurchase(
-  options: UseBookPurchaseOptions = {}
-): UseBookPurchaseReturn {
-  const { onPaymentSuccess, onPaymentFailed } = options;
+/**
+ * Hook for handling book purchases via Stripe Payment Sheet.
+ * 
+ * Flow:
+ * 1. Create order → get clientSecret
+ * 2. Initialize & present Payment Sheet
+ * 3. On success → verify payment on backend
+ * 4. Trigger callback when verified
+ */
+export function useBookPurchase(options: UseBookPurchaseOptions = {}): UseBookPurchaseReturn {
+  const { onSuccess, onError } = options;
 
-  // API mutations
-  const [createOrderMutation, { isLoading: isCreatingOrder }] = useCreateOrderMutation();
-
-  // Payment state
-  const [orderId, setOrderId] = useState<string | null>(null);
-  const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
-  const [isPollingPayment, setIsPollingPayment] = useState(false);
-  const [isPaymentModalVisible, setPaymentModalVisible] = useState(false);
-  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus | null>(null);
-
-  // Payment polling - checks payment status after user returns from Stripe
-  const { data: paymentResult } = useVerifyPaymentQuery(orderId!, {
-    skip: !isPollingPayment || !orderId,
-    pollingInterval: isPollingPayment ? PAYMENT_POLL_INTERVAL_MS : 0,
-  });
-
-  // Handle payment status updates
+  // Refs for callbacks to avoid re-renders and stale closures
+  const onSuccessRef = useRef(onSuccess);
+  const onErrorRef = useRef(onError);
+  
   useEffect(() => {
-    if (!paymentResult) return;
+    onSuccessRef.current = onSuccess;
+    onErrorRef.current = onError;
+  }, [onSuccess, onError]);
 
-    const status = paymentResult?.data?.status;
-    setPaymentStatus(status);
+  // Stripe
+  const { initPaymentSheet, presentPaymentSheet } = useStripe();
 
-    if (status === 'succeeded' || status === 'paid') {
-      setIsPollingPayment(false);
-      resetPaymentState();
-      onPaymentSuccess?.();
-    }
+  // RTK Query
+  const [createOrder, { isLoading: isCreatingOrder }] = useCreateOrderMutation();
+  const [verifyPayment, { isFetching: isVerifying }] = useLazyVerifyPaymentQuery();
 
-    if (status === 'failed') {
-      setIsPollingPayment(false);
-      onPaymentFailed?.();
-    }
-  }, [paymentResult, onPaymentSuccess, onPaymentFailed]);
+  // Verify payment with polling
+  const pollPaymentVerification = useCallback(async (orderId: string): Promise<PaymentStatus> => {
+    let attempts = 0;
 
-  // Reset payment state
-  const resetPaymentState = useCallback(() => {
-    setOrderId(null);
-    setPaymentUrl(null);
-    setPaymentStatus(null);
-    setPaymentModalVisible(false);
-    setIsPollingPayment(false);
-  }, []);
+    while (attempts < MAX_VERIFICATION_ATTEMPTS) {
+      const result = await verifyPayment(orderId).unwrap();
+      const status = result.data.status;
 
-  // Start purchase flow - creates order and shows payment modal
-  const startPurchase = useCallback(async (bookId: string) => {
-    try {
-      const res = await createOrderMutation({ bookId }).unwrap();
-
-      const newOrderId = res?.data?.orderId;
-      const url = res?.data?.paymentUrl;
-
-      if (!newOrderId) {
-        alert('Could not start payment.');
-        return;
+      if (status === 'succeeded' || status === 'paid') {
+        return status;
       }
 
-      setOrderId(newOrderId);
-      setPaymentUrl(url ?? null);
-      setPaymentModalVisible(true);
-    } catch (error) {
-      const errorData = error as { data?: { message?: string } };
-      alert(errorData?.data?.message || 'Error creating order');
-    }
-  }, [createOrderMutation]);
-
-  // Confirm payment - opens Stripe Checkout in browser
-  const confirmPayment = useCallback(async () => {
-    if (!paymentUrl) {
-      alert('No payment URL available');
-      return;
-    }
-
-    try {
-      // Close the modal before opening browser
-      setPaymentModalVisible(false);
-
-      // Open Stripe Checkout in in-app browser
-      const result = await WebBrowser.openAuthSessionAsync(
-        paymentUrl,
-        PAYMENT_RETURN_URL
-      );
-
-      // Handle browser result
-      if (result.type === 'success' || result.type === 'dismiss') {
-        // User completed or dismissed - start polling to check payment status
-        setIsPollingPayment(true);
-      } else if (result.type === 'cancel') {
-        // User cancelled - reset state
-        resetPaymentState();
+      if (status === 'failed') {
+        throw new Error('Payment failed');
       }
-    } catch (error) {
-      console.error('Payment browser error:', error);
-      alert('Failed to open payment page. Please try again.');
-      resetPaymentState();
-    }
-  }, [paymentUrl, resetPaymentState]);
 
-  // Cancel payment
-  const cancelPayment = useCallback(() => {
-    resetPaymentState();
-  }, [resetPaymentState]);
+      // Still pending, wait and retry
+      attempts++;
+      await new Promise(resolve => setTimeout(resolve, VERIFICATION_POLL_INTERVAL));
+    }
+
+    throw new Error('Payment verification timed out');
+  }, [verifyPayment]);
+
+  // Main purchase function
+  const purchase = useCallback(async (bookId: string) => {
+    try {
+      // 1. Create order
+      const { data } = await createOrder({ bookId }).unwrap();
+      const { id: orderId, clientSecret } = data;
+
+      if (!clientSecret) {
+        throw new Error('Payment not configured');
+      }
+
+      // 2. Initialize Payment Sheet
+      const { error: initError } = await initPaymentSheet({
+        paymentIntentClientSecret: clientSecret,
+        merchantDisplayName: 'Stanley Paden',
+      });
+
+      if (initError) {
+        throw new Error(initError.message);
+      }
+
+      // 3. Present Payment Sheet
+      const { error: paymentError } = await presentPaymentSheet();
+
+      if (paymentError) {
+        // User cancelled - not an error
+        if (paymentError.code === 'Canceled') return;
+        throw new Error(paymentError.message);
+      }
+
+      // 4. Verify payment on backend
+      await pollPaymentVerification(orderId);
+
+      // 5. Success!
+      onSuccessRef.current?.();
+
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Purchase failed';
+      onErrorRef.current?.(message);
+    }
+  }, [createOrder, initPaymentSheet, presentPaymentSheet, pollPaymentVerification]);
 
   return {
-    // State
-    isPaymentModalVisible,
-    isCreatingOrder,
-    isProcessingPayment: isPollingPayment,
-    paymentStatus,
-
-    // Actions
-    startPurchase,
-    confirmPayment,
-    cancelPayment,
+    isPurchasing: isCreatingOrder || isVerifying,
+    purchase,
   };
 }

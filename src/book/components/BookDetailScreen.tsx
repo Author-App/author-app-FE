@@ -6,7 +6,6 @@ import UBackButton from '@/src/components/core/buttons/uBackButton';
 import AppLoader from '@/src/components/core/loaders/AppLoader';
 import UScreenError from '@/src/components/core/feedback/UScreenError';
 import RatingModal from '@/src/components/core/modals/ratingModal';
-import PaymentModal from '@/src/components/core/modals/paymentModal';
 
 import { useBookDetail } from '@/src/book/hooks/useBookDetail';
 import { BookHero } from './BookHero';
@@ -27,14 +26,12 @@ export function BookDetailScreen() {
     hasAccess,
     isLoading,
     isError,
+    isPurchasing,
     isReviewModalVisible,
-    isPaymentModalVisible,
     setReviewModalVisible,
-    closePaymentModal,
     refetch,
     startReading,
     purchaseBook,
-    confirmPayment,
     submitReview,
     openRelatedBook,
   } = useBookDetail(bookId);
@@ -107,23 +104,18 @@ export function BookDetailScreen() {
       <BookActions
         book={book}
         hasAccess={hasAccess}
+        isPurchasing={isPurchasing}
         onStartReading={startReading}
         onPurchase={purchaseBook}
       />
 
-      {/* Modals */}
+      {/* Rating Modal */}
       <RatingModal
         visible={isReviewModalVisible}
         onClose={() => setReviewModalVisible(false)}
         onSubmit={submitReview}
         allowRating
         allowReview
-      />
-
-      <PaymentModal
-        visible={isPaymentModalVisible}
-        onClose={closePaymentModal}
-        onPay={confirmPayment}
       />
     </UScreenLayout>
   );

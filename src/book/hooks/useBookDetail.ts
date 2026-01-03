@@ -23,19 +23,10 @@ export function useBookDetail(bookId: string | undefined) {
     isLoading,
     isFetching,
     isError,
-    error,
     refetch,
   } = useGetBookDetailQuery(bookId!, {
     skip: !bookId,
   });
-
-  // Debug logging
-  console.log('📚 [useBookDetail] bookId:', bookId);
-  console.log('📚 [useBookDetail] isLoading:', isLoading, 'isError:', isError);
-  console.log('📚 [useBookDetail] data:', JSON.stringify(data, null, 2));
-  if (error) {
-    console.log('📚 [useBookDetail] error:', JSON.stringify(error, null, 2));
-  }
 
   // Mutations
   const [rateBookMutation, { isLoading: isSubmittingReview }] = useRateBookMutation();
@@ -43,27 +34,17 @@ export function useBookDetail(bookId: string | undefined) {
   // Review modal state
   const [isReviewModalVisible, setReviewModalVisible] = useState(false);
 
-  // Purchase hook - reusable across the app
-  const {
-    isPaymentModalVisible,
-    isCreatingOrder,
-    startPurchase,
-    confirmPayment,
-    cancelPayment,
-  } = useBookPurchase({
-    onPaymentSuccess: () => {
-      refetch();
-    },
-    onPaymentFailed: () => {
-      // Error already shown by hook
-    },
+  // Purchase hook
+  const { isPurchasing, purchase } = useBookPurchase({
+    onSuccess: refetch,
+    onError: (message) => alert(message),
   });
 
   // Extract data
   const book: BookResponse | undefined = data?.data?.book;
   const moreBooks: RelatedBookCardResponse[] = data?.data?.moreBooks ?? [];
   const reviews = data?.data?.reviews;
-  console.log('📚 [useBookDetail] reviews:', reviews);
+
   // Computed rating stats - use dummy data if no reviews from API
   const ratingStats: RatingStats | null = useMemo(() => {
     if (!reviews?.userReviews.length) {
@@ -79,7 +60,7 @@ export function useBookDetail(bookId: string | undefined) {
       currentUserReview: reviews.currentUserReview,
     };
   }, [reviews]);
-console.log('📚 [useBookDetail] ratingStats:', ratingStats);
+
   // Check if user has access (free book or purchased)
   const hasAccess = book?.isFree || book?.hasAccess;
 
@@ -88,23 +69,17 @@ console.log('📚 [useBookDetail] ratingStats:', ratingStats);
     if (!book) return;
 
     if (book.type === 'audiobook') {
-      router.push({
-        pathname: '/(app)/audiobookPlayer',
-        params: { bookId: book.id },
-      });
+      router.push(`/(app)/audiobookPlayer?bookId=${book.id}`);
     } else {
-      router.push({
-        pathname: '/(app)/ebookReader',
-        params: { bookId: book.id },
-      });
+      router.push(`/(app)/ebookReader?bookId=${book.id}`);
     }
   }, [book, router]);
 
-  // Purchase book - delegates to reusable hook
+  // Purchase book
   const purchaseBook = useCallback(() => {
     if (!bookId) return;
-    startPurchase(bookId);
-  }, [bookId, startPurchase]);
+    purchase(bookId);
+  }, [bookId, purchase]);
 
   // Submit review
   const submitReview = useCallback(
@@ -156,16 +131,11 @@ console.log('📚 [useBookDetail] ratingStats:', ratingStats);
     isFetching,
     isError,
     isSubmittingReview,
-    isCreatingOrder,
+    isPurchasing,
 
     // Review modal
     isReviewModalVisible,
     setReviewModalVisible,
-
-    // Payment modal (from useBookPurchase)
-    isPaymentModalVisible,
-    closePaymentModal: cancelPayment,
-    confirmPayment,
 
     // Actions
     refetch,
