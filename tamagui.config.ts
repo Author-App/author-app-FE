@@ -269,73 +269,7 @@ const dmMonoFont = createFont({
   },
 });
 
-const sfProFont = createFont({
-  family: 'SFProDisplay',
-  size: {
-    1: 10,
-    2: 12,
-    3: 14,
-    true: 16,
-    4: 16,
-    5: 18,
-    6: 20,
-    7: 24,
-    8: 30,
-    9: 36,
-    10: 48,
-    11: 60,
-    12: 72,
-    13: 96,
-    14: 128,
-  },
-  lineHeight: {
-    1: 12,
-    2: 14,
-    3: 16,
-    4: 22,
-    5: 24,
-    6: 28,
-    7: 32,
-    8: 40,
-    9: 48,
-    10: 56,
-    11: 72,
-    12: 90,
-    13: 114,
-    14: 150,
-  },
-  weight: {
-    1: '400',
-    2: '500',
-    3: '600',
-  },
-  letterSpacing: {
-    1: 0.0,
-  },
-});
-
 // ---------------- New Fonts ----------------
-const cinzelFont = createFont({
-  family: 'Cinzel',
-  size: {
-    1: 14,
-    2: 16,
-    3: 20,
-    4: 24,
-    5: 28,
-    6: 32,
-  },
-  weight: {
-    1: '400',
-    2: '500',
-    3: '700',
-  },
-  letterSpacing: {
-    1: 0,
-    2: 0.2,
-  },
-});
-
 const cormorantGaramondFont = createFont({
   family: 'CormorantGaramond',
   size: {
@@ -632,8 +566,6 @@ const tamaguiConfig = createTamagui({
     adamina: adaminaFont,
     dmsans: dmSansFont,
     dmmono: dmMonoFont,
-    sfpro: sfProFont,
-    cinzel: cinzelFont,
     interAlt: interAltFont,
     cormorantgaramond: cormorantGaramondFont,
     playfair: playfairFont,

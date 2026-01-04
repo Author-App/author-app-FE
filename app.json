@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "stanley-paden",
-    "slug": "stanley-paden",
+    "slug": "stanley-paden-staging",
     "notification": {
       "icon": "./assets/icons/notificationsIcon.png",
       "color": "#1A4D7A",
@@ -21,7 +21,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.laibaair.stanleypaden"
+      "bundleIdentifier": "com.swiftreflex.stanleypaden"
     },
     "android": {
       "adaptiveIcon": {
@@ -35,7 +35,7 @@
         "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS"
       ],
-      "package": "com.laibaair.stanleypaden"
+      "package": "com.swiftreflex.stanleypaden"
     },
     "web": {
       "bundler": "metro",
@@ -54,8 +54,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "7a14cd2e-ec7a-4fde-a2d4-8e490efb513e"
+        "projectId": "7ed82ebb-1889-49c9-8925-9c793670c3f3"
       }
-    }
+    },
+    "owner": "shehzar-abbasi-sg"
   }
 }

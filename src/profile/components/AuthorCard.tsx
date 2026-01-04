@@ -5,7 +5,6 @@ import { Ionicons } from '@expo/vector-icons';
 import UText from '@/src/components/core/text/uText';
 import ULocalImage from '@/src/components/core/image/uLocalImage';
 import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
-import assets from '@/assets/images';
 
 const authorProfilePicture = require('@/assets/images/padden.jpg');
 interface AuthorCardProps {

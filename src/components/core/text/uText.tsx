@@ -4,7 +4,7 @@ import { TamaguiTextElement, Text, TextProps } from 'tamagui';
 import { TextVariant } from '@/src/components/core/types/text/textVariant';
 
 export type FontFamily = {
-  fontFamily?: '$cormorantgaramond' | '$adamina' | '$sfpro' | '$dmsans' | '$dmmono' | '$cinzel' | '$playfair';
+  fontFamily?: '$cormorantgaramond' | '$adamina' | '$dmsans' | '$dmmono' | '$playfair';
 };
 export interface UTextProps
   extends Omit<
