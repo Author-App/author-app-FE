@@ -31,6 +31,8 @@ export const libraryApi = createApi({
               { type: 'Books', id: 'LIST' },
             ]
           : [{ type: 'Books', id: 'LIST' }],
+      // Cache book list for 5 minutes
+      keepUnusedDataFor: 300,
     }),
 
     /**
@@ -43,6 +45,8 @@ export const libraryApi = createApi({
         { type: 'BookDetail', id },
         { type: 'BookReviews', id },
       ],
+      // Cache book details for 10 minutes - book info is mostly static
+      keepUnusedDataFor: 600,
     }),
 
     /**

@@ -34,6 +34,8 @@ export const exploreApi = createApi({
         params: params ?? undefined,
       }),
       providesTags: ['Articles'],
+      // Cache article list for 5 minutes
+      keepUnusedDataFor: 300,
     }),
 
     /**
@@ -46,6 +48,8 @@ export const exploreApi = createApi({
         method: 'GET',
       }),
       providesTags: (result, error, id) => [{ type: 'Articles', id }],
+      // Cache article details for 10 minutes
+      keepUnusedDataFor: 600,
     }),
 
     /**
@@ -61,6 +65,8 @@ export const exploreApi = createApi({
       providesTags: (result, error, { mediaType }) => [
         { type: 'Media', id: mediaType },
       ],
+      // Cache media list for 5 minutes
+      keepUnusedDataFor: 300,
     }),
 
     /**
@@ -74,6 +80,8 @@ export const exploreApi = createApi({
         params: params ?? undefined,
       }),
       providesTags: ['Events'],
+      // Cache events list for 5 minutes
+      keepUnusedDataFor: 300,
     }),
 
     /**
@@ -86,6 +94,8 @@ export const exploreApi = createApi({
         method: 'GET',
       }),
       providesTags: (result, error, id) => [{ type: 'Events', id }],
+      // Cache event details for 10 minutes
+      keepUnusedDataFor: 600,
     }),
 
     /**
@@ -99,6 +109,8 @@ export const exploreApi = createApi({
         params: params ?? undefined,
       }),
       providesTags: ['Communities'],
+      // Cache communities list for 5 minutes
+      keepUnusedDataFor: 300,
     }),
 
     /**

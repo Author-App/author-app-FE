@@ -19,6 +19,8 @@ export const homeApi = createApi({
         method: 'GET',
       }),
       providesTags: ['HomeFeed'],
+      // Cache home feed for 5 minutes - content doesn't change frequently
+      keepUnusedDataFor: 300,
     }),
   }),
 });

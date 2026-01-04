@@ -40,6 +40,8 @@ export const mediaApi = createApi({
       providesTags: (result, error, { mediaType }) => [
         { type: 'Media', id: mediaType },
       ],
+      // Cache media list for 5 minutes
+      keepUnusedDataFor: 300,
     }),
     
     getMediaDetail: builder.query<ApiResponse<MediaDetailResponse>, string>({

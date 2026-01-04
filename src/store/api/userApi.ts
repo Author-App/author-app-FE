@@ -24,6 +24,8 @@ export const userApi = createApi({
         method: 'GET',
       }),
       providesTags: ['User'],
+      // Cache user profile for 5 minutes
+      keepUnusedDataFor: 300,
     }),
 
     /**
