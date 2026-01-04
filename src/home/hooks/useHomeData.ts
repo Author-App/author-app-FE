@@ -41,14 +41,14 @@ export const useHomeData = (): UseHomeDataReturn => {
     const booksSection = sections.find((s) => s.type === 'books');
     const audiobooksSection = sections.find((s) => s.type === 'audiobooks');
     const articlesSection = sections.find((s) => s.type === 'articles');
-
+    
     return {
       books: booksSection?.data ?? [],
       audiobooks: audiobooksSection?.data ?? [],
       articles: articlesSection?.data ?? [],
     };
   }, [sections]);
-
+  console.log("🏠 Home Data - Books:", books);
   const bannerItems = useMemo((): BannerItem[] => {
     const items: BannerItem[] = [];
 

@@ -1,10 +1,9 @@
 import React, { useCallback } from 'react';
 import { FlashList } from '@shopify/flash-list';
-import { YStack, View } from 'tamagui';
+import { View } from 'tamagui';
 
 import UText from '@/src/components/core/text/uText';
 import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
-import { NeonButton } from '@/src/components/core/buttons/neonButton';
 import type { RatingStats } from '@/src/types/api/library.types';
 import type { ReviewResponse } from '@/src/types/api/library.types';
 
@@ -48,22 +47,16 @@ export function ReviewsSection({
     []
   );
 
-  const ListHeaderComponent = useCallback(
-    () => (
-      <RatingStatsCard ratingStats={ratingStats} mb={16} />
-    ),
-    [ratingStats, hasAccess, onWriteReview]
-  );
-
   return (
     <UAnimatedView animation="fadeInUp" delay={700}>
+      <RatingStatsCard ratingStats={ratingStats} hasAccess={hasAccess} onWriteReview={onWriteReview} />
       <FlashList
         data={ratingStats.userReviews}
         renderItem={renderReview}
         keyExtractor={keyExtractor}
         ItemSeparatorComponent={ItemSeparatorComponent}
         ListEmptyComponent={ListEmptyComponent}
-        ListHeaderComponent={ListHeaderComponent}
+        contentContainerStyle={{ paddingVertical: 16 }}
         scrollEnabled={false}
       />
     </UAnimatedView>

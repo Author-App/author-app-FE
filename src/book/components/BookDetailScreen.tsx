@@ -114,8 +114,7 @@ export function BookDetailScreen() {
         visible={isReviewModalVisible}
         onClose={() => setReviewModalVisible(false)}
         onSubmit={submitReview}
-        allowRating
-        allowReview
+        bookTitle={book.title}
       />
     </UScreenLayout>
   );

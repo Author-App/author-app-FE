@@ -87,7 +87,6 @@ const LibraryBookCard: React.FC<LibraryBookCardProps> = ({
               </UText>
             </XStack>
           </YStack>
-
           {/* Bookmark */}
           {book.bookmark && (
             <YStack bg="rgba(0,0,0,0.5)" p={6} br={8}>
@@ -95,6 +94,27 @@ const LibraryBookCard: React.FC<LibraryBookCardProps> = ({
             </YStack>
           )}
         </XStack>
+
+        {/* Owned Badge */}
+        {book.hasAccess && !book.isFree && (
+          <XStack
+            position="absolute"
+            bottom={5}
+            left={10}
+            bg="$brandTeal"
+            px={8}
+            py={4}
+            br={6}
+            ai="center"
+            gap={4}
+            zIndex={22}
+          >
+            <Ionicons name="checkmark-circle" size={12} color="white" />
+            <UText variant="text-xs" color="$white" fontWeight="600">
+              Owned
+            </UText>
+          </XStack>
+        )}
 
         {/* Bottom Content Overlay */}
         <YStack

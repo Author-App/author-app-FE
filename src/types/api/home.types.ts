@@ -23,6 +23,7 @@ export interface HomeBook {
   id: string;
   title: string;
   image?: string;
+  hasAccess?: boolean;
 }
 
 /**

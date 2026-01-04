@@ -1,0 +1,44 @@
+import React, { memo } from 'react';
+import { YStack, XStack } from 'tamagui';
+
+import UText from '@/src/components/core/text/uText';
+import { HORIZONTAL_PADDING } from './constants';
+
+export interface SectionHeaderProps {
+  title: string;
+  subtitle?: string;
+  onPressSeeAll?: () => void;
+}
+
+const SectionHeader = memo(({ title, subtitle, onPressSeeAll }: SectionHeaderProps) => (
+  <XStack jc="space-between" ai="flex-end" px={HORIZONTAL_PADDING} mb={20}>
+    <YStack flex={1} mr={16}>
+      <UText variant="playfair-lg" color="$white">
+        {title}
+      </UText>
+      {subtitle && (
+        <UText variant="text-sm" color="$neutralAlphaLight6" mt={4}>
+          {subtitle}
+        </UText>
+      )}
+    </YStack>
+
+    {onPressSeeAll && (
+      <XStack
+        onPress={onPressSeeAll}
+        pressStyle={{ opacity: 0.7 }}
+        animation="quick"
+        ai="center"
+        gap={4}
+      >
+        <UText variant="text-sm" color="$brandTeal" fontWeight="500">
+          See all
+        </UText>
+      </XStack>
+    )}
+  </XStack>
+));
+
+SectionHeader.displayName = 'SectionHeader';
+
+export default SectionHeader;
