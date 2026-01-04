@@ -35,17 +35,17 @@ export function VideoDetailScreen() {
     ? video.progress.currentPositionSec * 1000
     : 0;
 
+  // Handle saving progress when leaving
+  const { handleBack, handleProgressUpdate } = useSaveMediaProgress(videoId);
+
   const {
     videoRef,
-    progressRef,
     isLoading: isVideoLoading,
     handlePlaybackStatusUpdate,
   } = useVideoPlayer({
     initialPosition,
+    onProgressUpdate: handleProgressUpdate,
   });
-
-  // Handle saving progress when leaving
-  const { handleBack } = useSaveMediaProgress(videoId, progressRef);
 
   // Loading state
   if (isLoading) {

@@ -1,11 +1,10 @@
-import { memo, useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { YStack, XStack, getTokenValue } from 'tamagui';
 import { Rating } from 'react-native-ratings';
-import { Modal, TouchableWithoutFeedback, KeyboardAvoidingView, Platform } from 'react-native';
+import { Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import UText from '@/src/components/core/text/uText';
-import UTextButton from '@/src/components/core/buttons/uTextButton';
 import UInput from '@/src/components/core/inputs/uInput';
 import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
 import UKeyboardAvoidingView from '../../layout/uKeyboardAvoidingView';

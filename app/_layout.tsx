@@ -9,7 +9,7 @@ import { PersistGate } from 'redux-persist/integration/react';
 import Toast from 'react-native-toast-message';
 import * as Notifications from 'expo-notifications';
 
-import { persistor, store } from '@/src/redux2/Store';
+import { persistor, store } from '@/src/store';
 import { setPushToken } from '@/src/store/slices/pushTokenSlice';
 import { setupNotificationChannel } from '@/src/utils/notifications';
 import { registerForPushNotificationsAsync } from '@/src/utils/registerForPushNotifications';
@@ -39,7 +39,6 @@ export default function RootLayout() {
 
     registerForPushNotificationsAsync().then((token) => {
       if (token) {
-        console.log('Push token:', token);
         store.dispatch(setPushToken(token));
       }
     });

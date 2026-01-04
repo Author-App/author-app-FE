@@ -48,7 +48,6 @@ export const useHomeData = (): UseHomeDataReturn => {
       articles: articlesSection?.data ?? [],
     };
   }, [sections]);
-  console.log("🏠 Home Data - Books:", books);
   const bannerItems = useMemo((): BannerItem[] => {
     const items: BannerItem[] = [];
 

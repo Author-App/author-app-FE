@@ -16,6 +16,14 @@ export interface GetBooksParams {
   pageSize?: number;
 }
 
+export interface BookProgress {
+  currentPositionSec: number;
+  durationSec: number;
+  lastPlayedAt: string;
+  percentage: number;
+  watchedSec: number;
+}
+
 export interface BookResponse {
   id: string;
   title: string;
@@ -38,6 +46,7 @@ export interface BookResponse {
   bookmark: boolean;
   createdAt: string | null;
   updatedAt: string | null;
+  progress?: BookProgress;
 }
 
 export interface BookListResponse {

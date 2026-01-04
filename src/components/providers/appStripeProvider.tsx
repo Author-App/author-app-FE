@@ -5,19 +5,19 @@
  * Required for Payment Sheet and other Stripe functionality.
  */
 
-import React from 'react';
+import React, { type ReactElement } from 'react';
 import { StripeProvider } from '@stripe/stripe-react-native';
 import { ENV } from '@/src/config/env';
 
 interface AppStripeProviderProps {
-  children: React.ReactNode;
+  children: ReactElement;
 }
 
 export function AppStripeProvider({ children }: AppStripeProviderProps) {
   // Don't render StripeProvider if publishable key is missing
   if (!ENV.STRIPE_PUBLISHABLE_KEY) {
     console.warn('Stripe publishable key not configured. Payment features will not work.');
-    return <>{children}</>;
+    return children;
   }
 
   return (

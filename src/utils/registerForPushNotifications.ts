@@ -32,7 +32,6 @@ export async function registerForPushNotificationsAsync() {
     await Notifications.getExpoPushTokenAsync({ projectId })
   ).data;
 
-  console.log('Expo Push Token:', token);
 
   // 👉 Send this token to your backend
   return token;

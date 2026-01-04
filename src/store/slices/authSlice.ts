@@ -7,6 +7,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import Toast from 'react-native-toast-message';
 import { authApi } from '@/src/store/api/authApi';
+import { saveAuthTokens, clearAuthTokens } from '@/src/storage/authStorage';
 import type { User } from '@/src/types/api/auth.types';
 
 export interface AuthState {
@@ -37,6 +38,8 @@ const authSlice = createSlice({
       state.token = null;
       state.refreshToken = null;
       state.isLoggedIn = false;
+      // Clear tokens from AsyncStorage
+      clearAuthTokens();
     },
 
     rememberCredentials: (
@@ -72,23 +75,23 @@ const authSlice = createSlice({
     builder.addMatcher(
       authApi.endpoints.login.matchFulfilled,
       (state, action) => {
-        console.log('🔐 [authSlice] Login response:', JSON.stringify(action.payload, null, 2));
-        
         const payload = action.payload?.data;
         const user = payload?.user;
         const accessToken = payload?.session?.access;
         const refreshToken = payload?.session?.refresh;
 
-        console.log('🔐 [authSlice] Extracted tokens - access:', !!accessToken, 'refresh:', !!refreshToken);
 
         if (user && accessToken) {
           state.user = user;
           state.token = accessToken;
           state.refreshToken = refreshToken ?? null;
           state.isLoggedIn = true;
-          console.log('✅ [authSlice] Login successful - tokens saved');
+          
+          // Save refresh token and userId to AsyncStorage for session recovery
+          if (refreshToken && user.id) {
+            saveAuthTokens(refreshToken, user.id);
+          }
         } else {
-          console.log('❌ [authSlice] Login failed - missing user or token');
           Toast.show({
             type: 'error',
             text2: 'Invalid credentials',

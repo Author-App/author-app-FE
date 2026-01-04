@@ -37,6 +37,11 @@ export interface Session {
 }
 
 /**
+ * Response from token refresh endpoint
+ */
+export type RefreshResponse = Session;
+
+/**
  * Device information sent with auth requests
  */
 export interface DeviceInfo {

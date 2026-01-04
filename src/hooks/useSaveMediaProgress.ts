@@ -1,8 +1,3 @@
-/**
- * Save Media Progress Hook
- * Reusable hook for saving playback progress for any media type (podcast, video, audio)
- */
-
 import { useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'expo-router';
 import { useUpdateMediaProgressMutation } from '@/src/store/api/mediaApi';
@@ -20,7 +15,6 @@ interface UseSaveMediaProgressOptions {
 
 export function useSaveMediaProgress(
   mediaId: string | undefined,
-  progressRef: React.MutableRefObject<ProgressData>,
   options: UseSaveMediaProgressOptions = {}
 ) {
   const { minSecondsThreshold = 5, onBeforeSave } = options;
@@ -28,15 +22,21 @@ export function useSaveMediaProgress(
   const router = useRouter();
   const [updateProgress] = useUpdateMediaProgressMutation();
   const hasSavedRef = useRef(false);
+  const lastPositionRef = useRef(0);
+
+  // Track progress from AudioPlayer callback
+  const handleProgressUpdate = useCallback((data: ProgressData) => {
+    lastPositionRef.current = data.position;
+  }, []);
 
   // Save progress to API
   const saveProgress = useCallback(async () => {
-    // Guard: no mediaId, already saved, or ref not available
-    if (!mediaId || hasSavedRef.current || !progressRef.current) {
+    // Guard: no mediaId, already saved
+    if (!mediaId || hasSavedRef.current) {
       return;
     }
 
-    const currentPositionMs = progressRef.current.position;
+    const currentPositionMs = lastPositionRef.current;
     const currentPositionSec = Math.floor(currentPositionMs / 1000);
 
     // Only save if user consumed past the threshold
@@ -58,7 +58,7 @@ export function useSaveMediaProgress(
       // Reset flag so it can try again if needed
       hasSavedRef.current = false;
     }
-  }, [mediaId, progressRef, minSecondsThreshold, onBeforeSave, updateProgress]);
+  }, [mediaId, minSecondsThreshold, onBeforeSave, updateProgress]);
 
   // Handle back navigation with progress save
   const handleBack = useCallback(async () => {
@@ -78,10 +78,12 @@ export function useSaveMediaProgress(
   // Reset saved flag when mediaId changes
   useEffect(() => {
     hasSavedRef.current = false;
+    lastPositionRef.current = 0;
   }, [mediaId]);
 
   return {
     saveProgress,
     handleBack,
+    handleProgressUpdate,
   };
 }

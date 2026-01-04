@@ -10,14 +10,12 @@ import IconRewind10 from '@/assets/icons/iconRewind10';
 import IconForward10 from '@/assets/icons/iconForward10';
 import UText from '@/src/components/core/text/uText';
 
-interface ProgressData {
-  position: number;
-  duration: number;
-  progress: number;
-}
+import { useAudioPlayer } from './hooks/useAudioPlayer';
+import type { AudioProgressData } from './types/types';
+
 interface ProgressDisplayProps {
   isPlaying: boolean;
-  progressRef: React.MutableRefObject<ProgressData>;
+  progressRef: React.MutableRefObject<AudioProgressData>;
   formatTime: (ms: number) => string;
   onSeek?: (positionMs: number) => void;
 }
@@ -114,9 +112,6 @@ const ProgressDisplay = memo(function ProgressDisplay({
   );
 });
 
-// ============================================
-// Player Controls Component (stable, no re-renders during playback)
-// ============================================
 interface PlayerControlsProps {
   isPlaying: boolean;
   isLoading: boolean;
@@ -134,23 +129,20 @@ const PlayerControls = memo(function PlayerControls({
 }: PlayerControlsProps) {
   return (
     <XStack jc="center" ai="center" gap={40}>
-      {/* Rewind 10s - fixed size container */}
+      {/* Rewind 10s */}
       <YStack
         w={52}
         h={52}
         ai="center"
         jc="center"
         onPress={onRewind}
-        pressStyle={{
-          opacity: 0.7,
-          scale: 0.95,
-        }}
+        pressStyle={{ opacity: 0.7, scale: 0.95 }}
         animation="quick"
       >
         <IconRewind10 dimen={36} />
       </YStack>
 
-      {/* Play/Pause - fixed size container */}
+      {/* Play/Pause */}
       <YStack
         w={72}
         h={72}
@@ -161,10 +153,7 @@ const PlayerControls = memo(function PlayerControls({
         opacity={isLoading ? 0.5 : 1}
         onPress={onPlayPause}
         disabled={isLoading}
-        pressStyle={{
-          opacity: 0.7,
-          scale: 0.95,
-        }}
+        pressStyle={{ opacity: 0.7, scale: 0.95 }}
         animation="quick"
       >
         <LinearGradient
@@ -180,17 +169,14 @@ const PlayerControls = memo(function PlayerControls({
         )}
       </YStack>
 
-      {/* Forward 10s - fixed size container */}
+      {/* Forward 10s */}
       <YStack
         w={52}
         h={52}
         ai="center"
         jc="center"
         onPress={onForward}
-        pressStyle={{
-          opacity: 0.7,
-          scale: 0.95,
-        }}
+        pressStyle={{ opacity: 0.7, scale: 0.95 }}
         animation="quick"
       >
         <IconForward10 dimen={36} />
@@ -199,45 +185,57 @@ const PlayerControls = memo(function PlayerControls({
   );
 });
 
-
-interface PodcastPlayerProps {
-  isPlaying: boolean;
-  isLoading: boolean;
-  progressRef: React.MutableRefObject<ProgressData>;
-  formatTime: (ms: number) => string;
-  onPlayPause: () => void;
-  onRewind: () => void;
-  onForward: () => void;
-  onSeek?: (positionMs: number) => void;
+interface AudioPlayerProps {
+  audioUrl: string | undefined;
+  autoPlay?: boolean;
+  initialPosition?: number;
+  onProgressUpdate?: (data: AudioProgressData) => void;
+  onPlaybackComplete?: () => void;
 }
 
-export const PodcastPlayer = memo(function PodcastPlayer({
-  isPlaying,
-  isLoading,
-  progressRef,
-  formatTime,
-  onPlayPause,
-  onRewind,
-  onForward,
-  onSeek,
-}: PodcastPlayerProps) {
+export const AudioPlayer = memo(function AudioPlayer({
+  audioUrl,
+  autoPlay = false,
+  initialPosition = 0,
+  onProgressUpdate,
+  onPlaybackComplete,
+}: AudioPlayerProps) {
+  const {
+    isPlaying,
+    isLoading,
+    togglePlayPause,
+    seekTo,
+    rewind,
+    forward,
+    progressRef,
+    formatTime,
+  } = useAudioPlayer(audioUrl, {
+    autoPlay,
+    initialPosition,
+    onProgressUpdate,
+    onPlaybackComplete,
+  });
+
+  const handleRewind = useCallback(() => rewind(10), [rewind]);
+  const handleForward = useCallback(() => forward(10), [forward]);
+
   return (
     <YStack gap={24}>
-      {/* Progress Slider - handles its own re-renders */}
+      {/* Progress Slider */}
       <ProgressDisplay
         isPlaying={isPlaying}
         progressRef={progressRef}
         formatTime={formatTime}
-        onSeek={onSeek}
+        onSeek={seekTo}
       />
 
-      {/* Controls - only re-renders on play/pause state change */}
+      {/* Controls */}
       <PlayerControls
         isPlaying={isPlaying}
         isLoading={isLoading}
-        onPlayPause={onPlayPause}
-        onRewind={onRewind}
-        onForward={onForward}
+        onPlayPause={togglePlayPause}
+        onRewind={handleRewind}
+        onForward={handleForward}
       />
     </YStack>
   );

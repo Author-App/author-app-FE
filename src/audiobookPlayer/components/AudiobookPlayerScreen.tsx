@@ -1,7 +1,7 @@
 import React from 'react';
 import { ScrollView } from 'react-native';
-import { YStack } from 'tamagui';
 import { useLocalSearchParams } from 'expo-router';
+import { YStack } from 'tamagui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import UHeader from '@/src/components/core/layout/uHeader';
@@ -11,40 +11,32 @@ import AppLoader from '@/src/components/core/loaders/AppLoader';
 import UScreenError from '@/src/components/core/feedback/UScreenError';
 import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
 
-import { AudioPlayer } from '@/src/components/core/audio';
-import { usePodcastDetail } from '../hooks/usePodcastDetail';
-import { useSaveMediaProgress } from '@/src/hooks/useSaveMediaProgress';
-import { PodcastHero } from './PodcastHero';
-import { PodcastDescription } from './PodcastDescription';
-import { RelatedPodcastList } from './RelatedPodcastList';
+import { AudioPlayer, AudioHero } from '@/src/components/core/audio';
+import { useAudiobookPlayer } from '../hooks/useAudiobookPlayer';
 
-export function PodcastDetailScreen() {
-  const { podcastId } = useLocalSearchParams<{ podcastId: string }>();
+export function AudiobookPlayerScreen() {
+  const { bookId } = useLocalSearchParams<{ bookId: string }>();
   const { bottom } = useSafeAreaInsets();
 
   const {
-    podcast,
-    relatedPodcasts,
+    book,
+    audioUrl,
+    initialPosition,
     formattedDuration,
     isLoading,
+    isAudioReady,
     isError,
+    handleProgressUpdate,
+    handleBack,
     refetch,
-  } = usePodcastDetail(podcastId);
-
-  // Calculate initial position from saved progress
-  const initialPosition = podcast?.progress?.currentPositionSec
-    ? podcast.progress.currentPositionSec * 1000
-    : 0;
-
-  // Handle saving progress when leaving
-  const { handleBack, handleProgressUpdate } = useSaveMediaProgress(podcastId);
+  } = useAudiobookPlayer(bookId);
 
   // Loading state
-  if (isLoading) {
+  if (isLoading || (!isAudioReady && !isError)) {
     return (
       <UScreenLayout>
         <UHeader
-          title="Podcast"
+          title="Audiobook"
           leftControl={<UBackButton variant="glass-md" />}
         />
         <YStack flex={1} ai="center" jc="center">
@@ -55,15 +47,15 @@ export function PodcastDetailScreen() {
   }
 
   // Error state
-  if (isError || !podcast) {
+  if (isError || !book) {
     return (
       <UScreenLayout>
         <UHeader
-          title="Podcast"
+          title="Audiobook"
           leftControl={<UBackButton variant="glass-md" />}
         />
         <UScreenError
-          message="Unable to load podcast. Please try again."
+          message="Unable to load audiobook. Please try again."
           onRetry={refetch}
         />
       </UScreenLayout>
@@ -73,7 +65,7 @@ export function PodcastDetailScreen() {
   return (
     <UScreenLayout>
       <UHeader
-        title="Podcast"
+        title="Now Playing"
         leftControl={<UBackButton variant="glass-md" onPress={handleBack} />}
       />
       <ScrollView
@@ -81,26 +73,23 @@ export function PodcastDetailScreen() {
         contentContainerStyle={{ paddingBottom: bottom + 24 }}
       >
         <YStack px={20}>
-          <PodcastHero
-            title={podcast.name}
+          {/* Hero: Cover, Title, Author, Duration */}
+          <AudioHero
+            title={book.title}
+            subtitle={book.author}
             duration={formattedDuration}
-            thumbnail={podcast.thumbnail}
+            thumbnail={book.thumbnail}
           />
 
+          {/* Audio Player */}
           <UAnimatedView animation="fadeInUp" delay={200}>
             <AudioPlayer
-              audioUrl={podcast.fileUrl}
+              audioUrl={audioUrl}
               autoPlay
               initialPosition={initialPosition}
               onProgressUpdate={handleProgressUpdate}
             />
           </UAnimatedView>
-
-          {podcast.description && (
-            <PodcastDescription description={podcast.description} />
-          )}
-
-          <RelatedPodcastList podcasts={relatedPodcasts} />
         </YStack>
       </ScrollView>
     </UScreenLayout>
