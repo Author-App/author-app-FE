@@ -7,7 +7,9 @@ import { haptics } from '@/src/utils/haptics';
 
 import { useGetMeQuery, useDeleteAccountMutation } from '@/src/store/api/userApi';
 import { logOut } from '@/src/store/slices/authSlice';
+import { clearPushToken } from '@/src/store/slices/pushTokenSlice';
 import { persistor } from '@/src/store';
+import { useNotificationSettings } from '@/src/notifications';
 import type { UserData } from '@/src/types/api/user.types';
 import type { SettingsSection } from '../types/settings.types';
 
@@ -19,8 +21,13 @@ export const useSettingsData = () => {
   const { data, isLoading, isError, refetch } = useGetMeQuery();
   const [deleteAccount, { isLoading: isDeleting }] = useDeleteAccountMutation();
 
+  // Notification settings
+  const { 
+    isEnabled: notificationsEnabled, 
+    toggleNotifications 
+  } = useNotificationSettings();
+
   // Local state
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
 
   // Extract user data - may be undefined if API fails
@@ -30,6 +37,7 @@ export const useSettingsData = () => {
   const handleLogout = useCallback(() => {
     haptics.medium();
     dispatch(logOut());
+    dispatch(clearPushToken());
     persistor.purge();
     router.push('/(public)/login' as Href);
   }, [dispatch, router]);
@@ -88,13 +96,6 @@ export const useSettingsData = () => {
     console.log('Report a bug');
   }, []);
 
-  // Toggle notifications
-  const toggleNotifications = useCallback((enabled: boolean) => {
-    haptics.selection();
-    setNotificationsEnabled(enabled);
-    // TODO: Call API to update notification preference
-  }, []);
-
   // Build settings sections with grouped options
   const settingsSections: SettingsSection[] = [
     {
@@ -130,7 +131,7 @@ export const useSettingsData = () => {
           label: 'Push Notifications',
           subtitle: 'Receive updates and alerts',
           icon: 'notifications-outline',
-          onPress: () => {},
+          onPress: () => toggleNotifications(!notificationsEnabled),
           showArrow: false,
         },
         {

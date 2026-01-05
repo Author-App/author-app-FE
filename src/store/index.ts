@@ -11,6 +11,7 @@ import { mediaApi } from './api/mediaApi';
 import { userApi } from './api/userApi';
 import { libraryApi } from './api/libraryApi';
 import { ordersApi } from './api/ordersApi';
+import { pushTokenApi } from './api/pushTokenApi';
 
 // Slice imports
 import authSlice, { type AuthState } from './slices/authSlice';
@@ -38,9 +39,6 @@ const apiErrorHandler =
     return next(action);
   };
 
-// ============================================================================
-// Persist Configuration
-// ============================================================================
 
 const authPersistConfig = {
   key: 'author_app',
@@ -54,9 +52,6 @@ const pushTokenPersistConfig = {
   whitelist: ['token'],
 };
 
-// ============================================================================
-// Root Reducer
-// ============================================================================
 
 const rootReducer = combineReducers({
   // Persisted slices
@@ -71,11 +66,9 @@ const rootReducer = combineReducers({
   [userApi.reducerPath]: userApi.reducer,
   [libraryApi.reducerPath]: libraryApi.reducer,
   [ordersApi.reducerPath]: ordersApi.reducer,
+  [pushTokenApi.reducerPath]: pushTokenApi.reducer,
 });
 
-// ============================================================================
-// Store Configuration
-// ============================================================================
 
 export const store = configureStore({
   reducer: rootReducer,
@@ -91,6 +84,7 @@ export const store = configureStore({
       .concat(userApi.middleware)
       .concat(libraryApi.middleware)
       .concat(ordersApi.middleware)
+      .concat(pushTokenApi.middleware)
       .concat(apiErrorHandler),
 });
 

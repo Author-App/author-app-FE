@@ -1,9 +1,3 @@
-/**
- * Push Token Slice
- *
- * Manages push notification token state.
- */
-
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 export interface PushTokenState {
