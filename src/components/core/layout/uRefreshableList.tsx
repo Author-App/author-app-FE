@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, forwardRef } from 'react';
 import { FlashList, FlashListProps } from '@shopify/flash-list';
 import { YStack } from 'tamagui';
 import { useURefreshControl } from '@/src/components/core/feedback/URefreshControl';
@@ -7,11 +7,14 @@ interface URefreshableListProps<T> extends Omit<FlashListProps<T>, 'refreshContr
   onRefresh: () => Promise<void> | void;
 }
 
-export function URefreshableList<T>({
-  onRefresh,
-  ListHeaderComponent,
-  ...props
-}: URefreshableListProps<T>) {
+function URefreshableListInner<T>(
+  {
+    onRefresh,
+    ListHeaderComponent,
+    ...props
+  }: URefreshableListProps<T>,
+  ref: React.ForwardedRef<any>
+) {
   const [refreshing, setRefreshing] = useState(false);
 
   const handleRefresh = useCallback(async () => {
@@ -39,10 +42,15 @@ export function URefreshableList<T>({
 
   return (
     <FlashList
+      ref={ref}
       ListHeaderComponent={Header}
       {...props}
       {...refreshProps}
     />
   );
 }
+
+export const URefreshableList = forwardRef(URefreshableListInner) as <T>(
+  props: URefreshableListProps<T> & { ref?: React.ForwardedRef<any> }
+) => React.ReactElement;
 

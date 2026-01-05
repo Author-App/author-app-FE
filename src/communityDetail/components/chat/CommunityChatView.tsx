@@ -1,6 +1,5 @@
-import React from 'react';
+import React, { useRef, useCallback, useState } from 'react';
 import { YStack } from 'tamagui';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CommunityChatHeader } from './CommunityChatHeader';
 import ThreadCard  from './ThreadCard';
@@ -25,11 +24,17 @@ export const CommunityChatView: React.FC<CommunityChatViewProps> = ({
   onHeaderPress,
   onRefresh,
 }) => {
-  const { bottom } = useSafeAreaInsets();
+  const listRef = useRef<any>(null);
 
-  // Calculate bottom padding for scroll content
-  const inputHeight = 80;
-  const scrollPaddingBottom = bottom + inputHeight + 20;
+  const handleSendThread = useCallback(async (message: string) => {
+    await onSendThread(message);
+  }, [onSendThread]);
+
+  const handleContentSizeChange = useCallback(() => {
+      setTimeout(() => {
+        listRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+    }, []);
 
   const renderThread = ({ item }: { item: ThreadResponse }) => (
     <ThreadCard thread={item} />
@@ -65,23 +70,25 @@ export const CommunityChatView: React.FC<CommunityChatViewProps> = ({
 
         {/* Thread list with URefreshableList */}
         <URefreshableList
+          ref={listRef}
           data={community.threads}
           renderItem={renderThread}
           keyExtractor={(item, index) => item.id ?? index.toString()}
           contentContainerStyle={{
-            paddingBottom: scrollPaddingBottom,
+            paddingBottom: 10,
             paddingTop: 10,
-            flex:1
+            flexGrow: 1
           }}
           ListEmptyComponent={renderEmptyState}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
           onRefresh={onRefresh}
+          onContentSizeChange={handleContentSizeChange}
         />
 
         {/* Input */}
         <ThreadInput
-          onSend={onSendThread}
+          onSend={handleSendThread}
           isSending={isSending}
           isJoined={true}
         />

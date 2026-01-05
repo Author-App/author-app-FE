@@ -91,6 +91,7 @@ async function performTokenRefresh(
   );
 
   console.log('🔄 [baseQuery] Refresh response:', refreshResult?.error ? 'FAILED' : 'SUCCESS');
+  console.log('🔄 [baseQuery] Refresh response data:', JSON.stringify(refreshResult?.data));
 
   // Handle refresh failure
   if (refreshResult?.error) {

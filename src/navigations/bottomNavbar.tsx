@@ -70,7 +70,8 @@ const TabItem = React.memo(({ routeName, focused, onPress, onLongPress, accessib
         h={ACTIVE_INDICATOR_SIZE}
         ai="center"
         jc="center"
-        borderRadius={ACTIVE_INDICATOR_SIZE / 2}
+        borderRadius={9999}
+        overflow="hidden"
         bg={focused ? '$brandCrimson' : 'transparent'}
       >
         <Ionicons name={config.icon} size={TAB_ICON_SIZE} color={iconColor} />
