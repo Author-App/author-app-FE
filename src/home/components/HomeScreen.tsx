@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useHomeData } from '@/src/home/hooks/useHomeData';
 import type { HomeArticle, HomeBook, HomeSectionItem, BannerItem } from '../types/home.types';
+import haptics from '@/src/utils/haptics';
 
 import AppLoader from '@/src/components/core/loaders/AppLoader';
 import UScreenError from '@/src/components/core/feedback/UScreenError';
@@ -25,6 +26,7 @@ const HomeScreen: React.FC = () => {
   });
 
   const handleBannerPress = useCallback((item: BannerItem) => {
+    haptics.light();
     const id = item.id.split('-').pop();
     switch (item.type) {
       case 'book':
@@ -38,10 +40,12 @@ const HomeScreen: React.FC = () => {
   }, []);
 
   const handleBookPress = useCallback((book: HomeBook) => {
-      router.push(`/(app)/book/${book.id}` as Href);
+    haptics.light();
+    router.push(`/(app)/book/${book.id}` as Href);
   }, []);
 
   const handleArticlePress = useCallback((article: HomeArticle) => {
+    haptics.light();
     router.push(`/(app)/article/${article.id}`);
   }, []);
 

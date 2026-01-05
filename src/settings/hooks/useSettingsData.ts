@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import { useDispatch } from 'react-redux';
 import Toast from 'react-native-toast-message';
 import type { Href } from 'expo-router';
+import { haptics } from '@/src/utils/haptics';
 
 import { useGetMeQuery, useDeleteAccountMutation } from '@/src/store/api/userApi';
 import { logOut } from '@/src/store/slices/authSlice';
@@ -27,6 +28,7 @@ export const useSettingsData = () => {
 
   // Handle logout - always available
   const handleLogout = useCallback(() => {
+    haptics.medium();
     dispatch(logOut());
     persistor.purge();
     router.push('/(public)/login' as Href);
@@ -34,6 +36,7 @@ export const useSettingsData = () => {
 
   // Show delete account modal
   const showDeleteModal = useCallback(() => {
+    haptics.warning();
     setDeleteModalVisible(true);
   }, []);
 
@@ -87,6 +90,7 @@ export const useSettingsData = () => {
 
   // Toggle notifications
   const toggleNotifications = useCallback((enabled: boolean) => {
+    haptics.selection();
     setNotificationsEnabled(enabled);
     // TODO: Call API to update notification preference
   }, []);

@@ -6,6 +6,7 @@ import UBackButton from '@/src/components/core/buttons/uBackButton';
 import AppLoader from '@/src/components/core/loaders/AppLoader';
 import UScreenError from '@/src/components/core/feedback/UScreenError';
 import RatingModal from '@/src/components/core/modals/ratingModal';
+import { haptics } from '@/src/utils/haptics';
 
 import { useBookDetail } from '@/src/book/hooks/useBookDetail';
 import { BookHero } from './BookHero';
@@ -89,7 +90,10 @@ export function BookDetailScreen() {
           book={book}
           ratingStats={ratingStats ?? undefined}
           hasAccess={hasAccess}
-          onWriteReview={() => setReviewModalVisible(true)}
+          onWriteReview={() => {
+            haptics.medium();
+            setReviewModalVisible(true);
+          }}
         />
 
         {moreBooks.length > 0 && (

@@ -2,6 +2,7 @@ import { useMemo, useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { useGetMeQuery, useUpdateProfileMutation } from '@/src/store/api/userApi';
 import { showSuccessToast, showErrorToast } from '@/src/utils/toast';
+import { haptics } from '@/src/utils/haptics';
 
 interface UseEditProfileDataReturn {
   user: {
@@ -55,6 +56,7 @@ export function useEditProfileData(): UseEditProfileDataReturn {
   };
 
   const handleSubmit = useCallback(async () => {
+    haptics.medium();
     setSubmitted(true);
 
     if (errors.fullName) return;
@@ -65,9 +67,11 @@ export function useEditProfileData(): UseEditProfileDataReturn {
 
     try {
       await updateProfileMutation({ firstName, lastName }).unwrap();
+      haptics.success();
       showSuccessToast('Profile updated successfully');
       router.back();
     } catch (error: any) {
+      haptics.error();
       const message = error?.data?.message || 'Failed to update profile';
       showErrorToast(message);
     }

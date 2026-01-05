@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useExploreData } from '@/src/explore/hooks/useExploreData';
 import UScreenLayout from '@/src/components/core/layout/UScreenLayout';
+import haptics from '@/src/utils/haptics';
 import type {
   ExploreSectionItem,
   ArticleResponse,
@@ -44,10 +45,12 @@ const ExploreScreen: React.FC = () => {
   } = useExploreData();
 
   const handleBlogPress = useCallback((article: ArticleResponse) => {
+    haptics.light();
     router.push(`/(app)/article/${article.id}`);
   }, []);
 
   const handlePodcastPress = useCallback((media: MediaResponse) => {
+    haptics.light();
     router.push({
       pathname: '/(app)/podcast/[podcastId]' as Href,
       params: { podcastId: media.id },
@@ -55,6 +58,7 @@ const ExploreScreen: React.FC = () => {
   }, []);
 
   const handleVideoPress = useCallback((media: MediaResponse) => {
+    haptics.light();
     router.push({
       pathname: '/(app)/video/[videoId]' as Href,
       params: { videoId: media.id },
@@ -62,10 +66,12 @@ const ExploreScreen: React.FC = () => {
   }, []);
 
   const handleEventPress = useCallback((event: EventResponse) => {
+    haptics.light();
     router.push(`/(app)/events/${event.id}`);
   }, []);
 
   const handleCommunityPress = useCallback((community: CommunityResponse) => {
+    haptics.light();
     router.push({
       pathname: '/(app)/community/[communityId]' as Href,
       params: { communityId: community.id },
@@ -74,6 +80,7 @@ const ExploreScreen: React.FC = () => {
 
   const handleCommunityToggle = useCallback(
     async (community: CommunityResponse) => {
+      haptics.light();
       if (community.isJoined) {
         await handleExitCommunity(community.id);
       } else {

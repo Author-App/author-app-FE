@@ -1,9 +1,10 @@
-import React, { memo } from 'react';
+import React, { memo, useCallback } from 'react';
 import { Alert, Linking } from 'react-native';
 import { YStack } from 'tamagui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { NeonButton } from '@/src/components/core/buttons/neonButton';
+import haptics from '@/src/utils/haptics';
 import { EventType } from '@/src/types/api/explore.types';
 import { JoinStatus } from '@/src/eventDetail/hooks/useEventDetail';
 
@@ -43,6 +44,15 @@ export const EventActions = memo(function EventActions({
     }
   };
 
+  const handlePress = useCallback(() => {
+    haptics.medium();
+    if (eventType === 'offline') {
+      openMap();
+    } else {
+      joinMeeting();
+    }
+  }, [eventType, locationGoogleMapLink, googleMeetLink]);
+
   const getJoinButtonText = () => {
     switch (joinStatus) {
       case 'upcoming':
@@ -72,7 +82,7 @@ export const EventActions = memo(function EventActions({
       borderTopColor="rgba(255, 255, 255, 0.1)"
     >
       <NeonButton
-        onPress={eventType === 'offline' ? openMap : joinMeeting}
+        onPress={handlePress}
         disabled={isDisabled}
         opacity={isDisabled ? 0.5 : 1}
         width="100%"

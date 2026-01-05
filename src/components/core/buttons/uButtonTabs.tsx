@@ -9,6 +9,7 @@ import Animated, {
 } from 'react-native-reanimated';
 
 import UText from '@/src/components/core/text/uText';
+import haptics from '@/src/utils/haptics';
 
 type IoniconsName = keyof typeof Ionicons.glyphMap;
 
@@ -127,6 +128,7 @@ const UButtonTabs = <T extends string = string>({
   }, []);
 
   const handleTabPress = useCallback((tab: TabItem<T>) => {
+    haptics.selection();
     onTabChange(tab.label);
 
     // Get the position of the selected tab

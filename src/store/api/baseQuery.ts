@@ -7,16 +7,11 @@ import type { RefreshResponse } from '@/src/types/api/auth.types';
 
 const API_BASE_URL = 'https://api-dev.stanleypaden.com/api/v1';
 
-// ============================================================================
-// Mutex for concurrent refresh prevention
-// ============================================================================
 
 let isRefreshing = false;
 let refreshPromise: Promise<boolean> | null = null;
 
-// ============================================================================
-// Base Query
-// ============================================================================
+
 
 const baseQuery = fetchBaseQuery({
   baseUrl: API_BASE_URL,
@@ -30,9 +25,6 @@ const baseQuery = fetchBaseQuery({
   },
 });
 
-// ============================================================================
-// Token Refresh Logic
-// ============================================================================
 
 async function performTokenRefresh(
   api: Parameters<typeof baseQuery>[1],
@@ -92,10 +84,11 @@ async function performTokenRefresh(
 
   console.log('🔄 [baseQuery] Refresh response:', refreshResult?.error ? 'FAILED' : 'SUCCESS');
   console.log('🔄 [baseQuery] Refresh response data:', JSON.stringify(refreshResult?.data));
+  console.log('🔄 [baseQuery] Full refresh result:', JSON.stringify(refreshResult));
 
   // Handle refresh failure
   if (refreshResult?.error) {
-    console.log('❌ [baseQuery] Refresh failed - logging out');
+    console.log('❌ [baseQuery] Refresh API error:', JSON.stringify(refreshResult.error));
     api.dispatch(logOut());
     Toast.show({
       type: 'error',
@@ -105,10 +98,11 @@ async function performTokenRefresh(
     return false;
   }
 
-  // Parse refresh response
-  const refreshData = refreshResult?.data as RefreshResponse | undefined;
-  const newAccessToken = refreshData?.access;
-  const newRefreshToken = refreshData?.refresh;
+  // Parse refresh response - API wraps response in data.session
+  const apiResponse = refreshResult?.data as { data?: { session?: RefreshResponse } } | undefined;
+  const session = apiResponse?.data?.session;
+  const newAccessToken = session?.access;
+  const newRefreshToken = session?.refresh;
 
   if (newAccessToken && newRefreshToken) {
     console.log('✅ [baseQuery] Got new tokens - updating state');

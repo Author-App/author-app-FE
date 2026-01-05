@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { useChangePasswordMutation } from '@/src/store/api/userApi';
 import { showSuccessToast, showErrorToast } from '@/src/utils/toast';
 import { validatePassword } from '@/src/utils/passwordValidation';
+import { haptics } from '@/src/utils/haptics';
 
 export function useChangePassword() {
   const router = useRouter();
@@ -19,15 +20,18 @@ export function useChangePassword() {
   };
 
   const handleSubmit = useCallback(async () => {
+    haptics.medium();
     setSubmitted(true);
 
     if (errors.oldPassword || errors.newPassword) return;
 
     try {
       await changePassword({ oldPassword, newPassword }).unwrap();
+      haptics.success();
       showSuccessToast('Password changed successfully');
       router.back();
     } catch (error: any) {
+      haptics.error();
       const message = error?.data?.message || 'Failed to change password';
       showErrorToast(message);
     }

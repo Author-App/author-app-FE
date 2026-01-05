@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import UText from '@/src/components/core/text/uText';
 import ULocalImage from '@/src/components/core/image/uLocalImage';
 import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
+import haptics from '@/src/utils/haptics';
 import type { CommunityResponse } from '@/src/explore/types/explore.types';
 
 interface CommunityCardProps extends YStackProps {
@@ -133,7 +134,10 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
             opacity={isToggling ? 0.5 : 1}
             onPress={(e) => {
               e.stopPropagation?.();
-              if (!isToggling) onToggleJoin();
+              if (!isToggling) {
+                haptics.medium();
+                onToggleJoin();
+              }
             }}
             pressStyle={{ opacity: 0.7, scale: 0.98 }}
             animation="quick"

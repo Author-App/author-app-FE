@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { launchImageLibrary, Asset } from 'react-native-image-picker';
 import { useUploadProfileImageMutation } from '@/src/store/api/userApi';
+import { haptics } from '@/src/utils/haptics';
 
 interface UseProfileImageConfig {
   initialImageUrl: string | null;
@@ -23,6 +24,7 @@ export function useProfileImage({ initialImageUrl }: UseProfileImageConfig): Use
   }, [initialImageUrl]);
 
   const pickAndUploadImage = useCallback(async () => {
+    haptics.light();
     const result = await launchImageLibrary({
       mediaType: 'photo',
       quality: 0.8,
@@ -44,6 +46,7 @@ export function useProfileImage({ initialImageUrl }: UseProfileImageConfig): Use
     } as any);
 
     await uploadProfileImage(formData).unwrap();
+    haptics.success();
     setImageUri(asset.uri);
   }, [uploadProfileImage]);
 

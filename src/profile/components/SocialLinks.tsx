@@ -1,9 +1,3 @@
-/**
- * SocialLinks Component
- *
- * Displays author's social media links.
- */
-
 import React, { memo, useCallback } from 'react';
 import { Alert, Linking } from 'react-native';
 import { XStack, YStack, getTokenValue } from 'tamagui';
@@ -12,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import UText from '@/src/components/core/text/uText';
 import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
 import type { SocialLink } from '../types/profile.types';
+import haptics from '@/src/utils/haptics';
 
 interface SocialLinksProps {
   links: SocialLink[];
@@ -29,6 +24,7 @@ const SocialLinks: React.FC<SocialLinksProps> = ({ links }) => {
   const white = getTokenValue('$white', 'color');
 
   const openLink = useCallback(async (url: string) => {
+    haptics.medium();
     try {
       const supported = await Linking.canOpenURL(url);
       if (supported) {

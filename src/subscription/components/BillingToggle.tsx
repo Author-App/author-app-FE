@@ -4,6 +4,7 @@ import Animated, {
   useAnimatedStyle,
   withTiming,
 } from 'react-native-reanimated';
+import { haptics } from '@/src/utils/haptics';
 
 import UText from '@/src/components/core/text/uText';
 import type { BillingPeriod } from '../types/subscription.types';
@@ -57,7 +58,10 @@ export function BillingToggle({
           flex={1}
           py={12}
           ai="center"
-          onPress={() => onToggle('monthly')}
+          onPress={() => {
+            haptics.selection();
+            onToggle('monthly');
+          }}
           pressStyle={{ opacity: 0.8 }}
           zIndex={1}
         >
@@ -74,7 +78,10 @@ export function BillingToggle({
           flex={1}
           py={12}
           ai="center"
-          onPress={() => onToggle('annually')}
+          onPress={() => {
+            haptics.selection();
+            onToggle('annually');
+          }}
           pressStyle={{ opacity: 0.8 }}
           zIndex={1}
         >

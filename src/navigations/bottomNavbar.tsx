@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { XStack, YStack, getTokenValue } from 'tamagui';
 import { Ionicons } from '@expo/vector-icons';
 import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
+import haptics from '@/src/utils/haptics';
 
 type IoniconsName = keyof typeof Ionicons.glyphMap;
 
@@ -87,6 +88,8 @@ const BottomNavbar = React.memo(({ state, navigation }: BottomTabBarProps) => {
 
   const handleTabPress = useCallback(
     (route: (typeof state.routes)[number], isFocused: boolean) => {
+      haptics.selection();
+      
       const event = navigation.emit({
         type: 'tabPress',
         target: route.key,

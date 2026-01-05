@@ -1,16 +1,10 @@
-/**
- * Signup Form Hook
- *
- * Complete form management for the signup screen.
- * Returns everything the UI needs - screen becomes pure presentation.
- */
-
 import { useRef, useCallback } from 'react';
 import { TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFormik } from 'formik';
 import { useSignup } from '@/src/auth/hooks/useAuth';
 import { signupValidationSchema } from '@/src/utils/validator';
+import { haptics } from '@/src/utils/haptics';
 import type { SignupFormValues } from '@/src/types/api/auth.types';
 
 const initialValues: SignupFormValues = {
@@ -62,6 +56,7 @@ export const useSignupForm = () => {
 
   // Submit handler
   const handleSubmit = useCallback(() => {
+    haptics.medium();
     formik.handleSubmit();
   }, [formik.handleSubmit]);
 
@@ -76,6 +71,7 @@ export const useSignupForm = () => {
 
   // Navigation handlers
   const navigateToLogin = useCallback(() => {
+    haptics.light();
     router.push('/(public)/login');
   }, [router]);
 

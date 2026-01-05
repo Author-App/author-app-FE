@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import UBackButton from '@/src/components/core/buttons/uBackButton';
 import AppLoader from '@/src/components/core/loaders/AppLoader';
 import UScreenError from '@/src/components/core/feedback/UScreenError';
+import haptics from '@/src/utils/haptics';
 
 import { useCommunityDetail } from '@/src/communityDetail/hooks/useCommunityDetail';
 import { CommunityChatView } from './chat/CommunityChatView';
@@ -31,16 +32,19 @@ export function CommunityDetailScreen() {
   const [viewMode, setViewMode] = useState<ViewMode>('chat');
 
   const handleShowAbout = useCallback(() => {
+    haptics.light();
     setViewMode('about');
   }, []);
 
   const handleJoin = useCallback(async () => {
+    haptics.medium();
     await joinCommunity();
     // After joining, switch to chat view
     setViewMode('chat');
   }, [joinCommunity]);
 
   const handleRefresh = useCallback(async () => {
+    haptics.light();
     await refetch();
   }, [refetch]);
 

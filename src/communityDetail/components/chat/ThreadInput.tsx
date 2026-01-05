@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import UText from '@/src/components/core/text/uText';
 import UInput from '@/src/components/core/inputs/uInput';
 import IconArrowUp from '@/assets/icons/iconArrowUp';
+import haptics from '@/src/utils/haptics';
 
 interface ThreadInputProps {
   onSend: (message: string) => Promise<void>;
@@ -24,6 +25,7 @@ export const ThreadInput: React.FC<ThreadInputProps> = ({
   const handleSend = useCallback(async () => {
     if (!message.trim() || isSending) return;
 
+    haptics.medium();
     try {
       await onSend(message);
       setMessage('');
@@ -86,7 +88,7 @@ export const ThreadInput: React.FC<ThreadInputProps> = ({
             textAlignVertical="center"
             maxHeight={100}
             py={Platform.OS === 'ios' ? 4 : 2}
-            returnKeyType='send'
+            returnKeyType="done"
           />
         </YStack>
 

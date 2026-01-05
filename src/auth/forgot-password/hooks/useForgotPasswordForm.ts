@@ -1,15 +1,9 @@
-/**
- * Forgot Password Form Hook
- *
- * Complete form management for the forgot password screen.
- * Returns everything the UI needs - screen becomes pure presentation.
- */
-
 import { useCallback } from 'react';
 import { useRouter } from 'expo-router';
 import { useFormik } from 'formik';
 import { useForgotPassword } from '@/src/auth/hooks/useAuth';
 import { forgotPasswordFormValidator } from '@/src/utils/validator';
+import { haptics } from '@/src/utils/haptics';
 import type { ForgotPasswordFormValues } from '@/src/types/api/auth.types';
 
 const initialValues: ForgotPasswordFormValues = {
@@ -43,11 +37,13 @@ export const useForgotPasswordForm = () => {
 
   // Submit handler
   const handleSubmit = useCallback(() => {
+    haptics.medium();
     formik.handleSubmit();
   }, [formik.handleSubmit]);
 
   // Navigation handlers
   const navigateToLogin = useCallback(() => {
+    haptics.light();
     router.push('/(public)/login');
   }, [router]);
 

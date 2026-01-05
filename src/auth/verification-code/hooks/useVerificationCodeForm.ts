@@ -1,15 +1,9 @@
-/**
- * Verification Code Form Hook
- *
- * Complete form management for the verification code screen.
- * Returns everything the UI needs - screen becomes pure presentation.
- */
-
 import { useCallback } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useFormik } from 'formik';
 import { useVerifyCode } from '@/src/auth/hooks/useAuth';
 import { codeValidationSchema } from '@/src/utils/validator';
+import { haptics } from '@/src/utils/haptics';
 import type { VerifyCodeFormValues } from '@/src/types/api/auth.types';
 
 const initialValues: VerifyCodeFormValues = {
@@ -39,6 +33,7 @@ export const useVerificationCodeForm = () => {
     (text: string) => {
       formik.setFieldValue('code', text);
       if (text.length === 6) {
+        haptics.medium();
         formik.handleSubmit();
       }
     },
@@ -47,11 +42,13 @@ export const useVerificationCodeForm = () => {
 
   // Submit handler
   const handleSubmit = useCallback(() => {
+    haptics.medium();
     formik.handleSubmit();
   }, [formik.handleSubmit]);
 
   // Navigation handlers
   const navigateToLogin = useCallback(() => {
+    haptics.light();
     router.push('/(public)/login');
   }, [router]);
 

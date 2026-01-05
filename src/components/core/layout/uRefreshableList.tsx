@@ -2,6 +2,7 @@ import React, { useCallback, useState, forwardRef } from 'react';
 import { FlashList, FlashListProps } from '@shopify/flash-list';
 import { YStack } from 'tamagui';
 import { useURefreshControl } from '@/src/components/core/feedback/URefreshControl';
+import haptics from '@/src/utils/haptics';
 
 interface URefreshableListProps<T> extends Omit<FlashListProps<T>, 'refreshControl'> {
   onRefresh: () => Promise<void> | void;
@@ -18,6 +19,7 @@ function URefreshableListInner<T>(
   const [refreshing, setRefreshing] = useState(false);
 
   const handleRefresh = useCallback(async () => {
+    haptics.medium();
     setRefreshing(true);
     try {
       await onRefresh();

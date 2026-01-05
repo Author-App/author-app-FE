@@ -3,6 +3,7 @@ import { YStack, XStack, getTokenValue } from 'tamagui';
 import { Rating } from 'react-native-ratings';
 import { Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { haptics } from '@/src/utils/haptics';
 
 import UText from '@/src/components/core/text/uText';
 import UInput from '@/src/components/core/inputs/uInput';
@@ -35,12 +36,14 @@ const RatingModal = ({
   const brandNavy = getTokenValue('$brandNavy', 'color') as string;
 
   const handleSubmit = useCallback(() => {
+    haptics.medium();
     onSubmit(rating, review);
     onClose();
   }, [onSubmit, rating, review, onClose]);
 
   const handleRatingChange = useCallback((value: number) => {
     const roundedValue = Math.round(value * 2) / 2;
+    haptics.selection();
     setRating(roundedValue);
   }, []);
 
@@ -75,7 +78,10 @@ const RatingModal = ({
                 borderColor="rgba(255,255,255,0.1)"
               >
                 <YStack
-                  onPress={onClose}
+                  onPress={() => {
+                    haptics.light();
+                    onClose();
+                  }}
                   bg="rgba(255,255,255,0.1)"
                   w={32}
                   h={32}

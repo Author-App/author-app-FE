@@ -1,16 +1,10 @@
-/**
- * Login Form Hook
- *
- * Complete form management for the login screen.
- * Returns everything the UI needs - screen becomes pure presentation.
- */
-
 import { useRef, useCallback } from 'react';
 import { TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFormik } from 'formik';
 import { useLogin } from '@/src/auth/hooks/useAuth';
 import { loginValidationSchema } from '@/src/utils/validator';
+import { haptics } from '@/src/utils/haptics';
 import type { LoginFormValues } from '@/src/types/api/auth.types';
 
 const initialValues: LoginFormValues = {
@@ -53,6 +47,7 @@ export const useLoginForm = () => {
 
   // Submit handler
   const handleSubmit = useCallback(() => {
+    haptics.medium();
     formik.handleSubmit();
   }, [formik.handleSubmit]);
 
@@ -63,10 +58,12 @@ export const useLoginForm = () => {
 
   // Navigation handlers
   const navigateToForgotPassword = useCallback(() => {
+    haptics.light();
     router.push('/(public)/forgotpassword');
   }, [router]);
 
   const navigateToSignup = useCallback(() => {
+    haptics.light();
     router.push('/(public)/signup');
   }, [router]);
 

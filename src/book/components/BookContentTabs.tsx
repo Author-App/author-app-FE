@@ -2,7 +2,8 @@ import React from 'react';
 import { YStack } from 'tamagui';
 
 import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
-import { TabBar, useTabBar, Tab } from '@/src/components/core/tabs/TabBar';
+import { TabBar } from '@/src/components/core/tabs/TabBar';
+import { useTabBar, Tab } from '@/src/components/core/tabs/hooks/useTabBar';
 import { AboutTabContent } from './tabs/AboutTabContent';
 import { SynopsisTabContent } from './tabs/SynopsisTabContent';
 import { ReviewsTabContent } from './tabs/ReviewsTabContent';

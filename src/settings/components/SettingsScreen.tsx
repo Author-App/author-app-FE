@@ -87,8 +87,6 @@ const SettingsScreen = () => {
                   <SettingsOptionItem
                     option={option}
                     rightComponent={renderOptionRightComponent(option.id)}
-                    isFirst={optionIndex === 0}
-                    isLast={optionIndex === section.options.length - 1}
                   />
                   {/* Divider between items */}
                   {optionIndex < section.options.length - 1 && (

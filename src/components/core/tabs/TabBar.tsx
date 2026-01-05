@@ -1,25 +1,13 @@
-import React, { useCallback, useState } from 'react';
+import React from 'react';
 import { YStack, XStack, Token, getTokenValue } from 'tamagui';
 import Animated, {
   SharedValue,
-  useSharedValue,
   useAnimatedStyle,
-  withTiming,
-  Easing,
 } from 'react-native-reanimated';
 import { LayoutChangeEvent, Pressable } from 'react-native';
 
 import UText from '@/src/components/core/text/uText';
-
-export interface Tab<T extends string> {
-  key: T;
-  label: string;
-}
-
-interface TabMeasurement {
-  x: number;
-  width: number;
-}
+import { Tab, TabMeasurement } from './hooks/useTabBar';
 
 interface TabBarProps<T extends string> {
   tabs: Tab<T>[];
@@ -86,55 +74,4 @@ export function TabBar<T extends string>({
       </YStack>
     </YStack>
   );
-}
-
-export function useTabBar<T extends string>(
-  tabs: Tab<T>[],
-  defaultTab: T
-) {
-  const [activeTab, setActiveTab] = useState<T>(defaultTab);
-  const [tabMeasurements, setTabMeasurements] = useState<Record<T, TabMeasurement>>(
-    () => tabs.reduce((acc, tab) => ({ ...acc, [tab.key]: { x: 0, width: 0 } }), {} as Record<T, TabMeasurement>)
-  );
-
-  const indicatorX = useSharedValue(0);
-  const indicatorWidth = useSharedValue(0);
-
-  const handleTabLayout = useCallback((key: T, event: LayoutChangeEvent) => {
-    const { x, width } = event.nativeEvent.layout;
-    setTabMeasurements((prev) => ({
-      ...prev,
-      [key]: { x, width },
-    }));
-
-    // Set initial indicator position for default tab
-    if (key === defaultTab && indicatorWidth.value === 0) {
-      indicatorX.value = x;
-      indicatorWidth.value = width;
-    }
-  }, [defaultTab, indicatorX, indicatorWidth]);
-
-  const handleTabPress = useCallback((key: T) => {
-    setActiveTab(key);
-    const measurement = tabMeasurements[key];
-    if (measurement && measurement.width > 0) {
-      indicatorX.value = withTiming(measurement.x, {
-        duration: 250,
-        easing: Easing.bezier(0.4, 0, 0.2, 1),
-      });
-      indicatorWidth.value = withTiming(measurement.width, {
-        duration: 250,
-        easing: Easing.bezier(0.4, 0, 0.2, 1),
-      });
-    }
-  }, [tabMeasurements, indicatorX, indicatorWidth]);
-
-  return {
-    activeTab,
-    tabMeasurements,
-    indicatorX,
-    indicatorWidth,
-    handleTabLayout,
-    handleTabPress,
-  };
 }

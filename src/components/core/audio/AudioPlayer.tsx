@@ -9,6 +9,7 @@ import IconPauseCircle from '@/assets/icons/iconPauseCircle';
 import IconRewind10 from '@/assets/icons/iconRewind10';
 import IconForward10 from '@/assets/icons/iconForward10';
 import UText from '@/src/components/core/text/uText';
+import haptics from '@/src/utils/haptics';
 
 import { useAudioPlayer } from './hooks/useAudioPlayer';
 import type { AudioProgressData } from './types/types';
@@ -77,6 +78,7 @@ const ProgressDisplay = memo(function ProgressDisplay({
 
   const handleSliderComplete = useCallback(
     (value: number) => {
+      haptics.selection();
       setIsSeeking(false);
       const newPosition = (value / 100) * progressRef.current.duration;
       onSeek?.(newPosition);
@@ -216,8 +218,20 @@ export const AudioPlayer = memo(function AudioPlayer({
     onPlaybackComplete,
   });
 
-  const handleRewind = useCallback(() => rewind(10), [rewind]);
-  const handleForward = useCallback(() => forward(10), [forward]);
+  const handleRewind = useCallback(() => {
+    haptics.light();
+    rewind(10);
+  }, [rewind]);
+
+  const handleForward = useCallback(() => {
+    haptics.light();
+    forward(10);
+  }, [forward]);
+
+  const handlePlayPause = useCallback(() => {
+    haptics.medium();
+    togglePlayPause();
+  }, [togglePlayPause]);
 
   return (
     <YStack gap={24}>
@@ -233,7 +247,7 @@ export const AudioPlayer = memo(function AudioPlayer({
       <PlayerControls
         isPlaying={isPlaying}
         isLoading={isLoading}
-        onPlayPause={togglePlayPause}
+        onPlayPause={handlePlayPause}
         onRewind={handleRewind}
         onForward={handleForward}
       />

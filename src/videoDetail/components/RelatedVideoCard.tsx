@@ -7,6 +7,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import IconPlay2 from '@/assets/icons/iconPlay2';
 import UText from '@/src/components/core/text/uText';
 import ULocalImage from '@/src/components/core/image/uLocalImage';
+import haptics from '@/src/utils/haptics';
 import { formatDuration } from '@/src/utils/helper';
 import type { MediaResponse } from '@/src/videoDetail/types/videoDetail.types';
 
@@ -20,6 +21,7 @@ export const RelatedVideoCard = memo(function RelatedVideoCard({
   const router = useRouter();
 
   const handlePress = () => {
+    haptics.light();
     router.push({
       pathname: '/(app)/video/[videoId]' as Href,
       params: { videoId: video.id },

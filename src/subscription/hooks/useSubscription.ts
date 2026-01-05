@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useLocalSearchParams } from 'expo-router';
+import { haptics } from '@/src/utils/haptics';
 import {
   FREE_PLAN_BENEFITS,
   PREMIUM_BENEFITS,
@@ -37,6 +38,7 @@ export function useSubscription() {
   }, []);
 
   const handleSubscribe = useCallback(async () => {
+    haptics.medium();
     // TODO: RevenueCat purchase flow
     // const packages = await Purchases.getOfferings();
     // const packageToPurchase = billingPeriod === 'monthly' 
@@ -49,6 +51,7 @@ export function useSubscription() {
 }, [billingPeriod]);
 
   const handleManageSubscription = useCallback(async () => {
+    haptics.light();
     // TODO: Open subscription management via RevenueCat
     // await Purchases.showManageSubscriptions();
     console.log('Manage subscription pressed - RevenueCat integration pending');

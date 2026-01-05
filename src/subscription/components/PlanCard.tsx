@@ -5,6 +5,7 @@ import Animated, {
   useAnimatedStyle,
   withSpring,
 } from 'react-native-reanimated';
+import { haptics } from '@/src/utils/haptics';
 
 import IconStar from '@/assets/icons/iconStar';
 import IconBook from '@/assets/icons/iconBook';
@@ -158,7 +159,13 @@ export function PlanCard({
 
   if (isPro) {
     return (
-      <AnimatedView onPress={onSelect} style={animatedStyle}>
+      <AnimatedView
+        onPress={() => {
+          haptics.light();
+          onSelect();
+        }}
+        style={animatedStyle}
+      >
         <LinearGradient
           colors={
             isSelected
@@ -178,7 +185,13 @@ export function PlanCard({
   }
 
   return (
-    <AnimatedView onPress={onSelect} style={animatedStyle}>
+    <AnimatedView
+      onPress={() => {
+        haptics.light();
+        onSelect();
+      }}
+      style={animatedStyle}
+    >
       <YStack
         backgroundColor="$brandNavy"
         borderWidth={2}

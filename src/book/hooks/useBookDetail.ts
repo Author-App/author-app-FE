@@ -1,6 +1,7 @@
 import { useCallback, useState, useMemo } from 'react';
 import { useRouter } from 'expo-router';
 import type { Href } from 'expo-router';
+import { haptics } from '@/src/utils/haptics';
 import {
   useGetBookDetailQuery,
   useRateBookMutation,
@@ -67,6 +68,7 @@ export function useBookDetail(bookId: string | undefined) {
   // Navigate to reader/player
   const startReading = useCallback(() => {
     if (!book) return;
+    haptics.medium();
 
     if (book.type === 'audiobook') {
       router.push(`/(app)/audiobookPlayer?bookId=${book.id}`);
@@ -78,6 +80,7 @@ export function useBookDetail(bookId: string | undefined) {
   // Purchase book
   const purchaseBook = useCallback(() => {
     if (!bookId) return;
+    haptics.medium();
     purchase(bookId);
   }, [bookId, purchase]);
 
@@ -100,6 +103,7 @@ export function useBookDetail(bookId: string | undefined) {
           body: payload,
         }).unwrap();
 
+        haptics.success();
         alert('Review submitted successfully');
         setReviewModalVisible(false);
         refetch();
@@ -114,6 +118,7 @@ export function useBookDetail(bookId: string | undefined) {
   // Navigate to related book
   const openRelatedBook = useCallback(
     (relatedBookId: string) => {
+      haptics.light();
       router.push(`/(app)/book/${relatedBookId}` as Href);
     },
     [router]

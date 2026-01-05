@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import AppLoader from '@/src/components/core/loaders/AppLoader';
 import { URefreshableList } from '@/src/components/core/layout/uRefreshableList';
 import UScreenLayout from '@/src/components/core/layout/UScreenLayout';
+import haptics from '@/src/utils/haptics';
 import LibraryHeader from './LibraryHeader';
 import LibraryFilters from './LibraryFilters';
 import LibraryBookCard from './LibraryBookCard';
@@ -34,7 +35,10 @@ const LibraryScreen: React.FC = () => {
         book={item}
         index={index}
         numColumns={numColumns}
-        onPress={() => navigateToBook(item.id)}
+        onPress={() => {
+          haptics.light();
+          navigateToBook(item.id);
+        }}
       />
     ),
     [numColumns, navigateToBook]

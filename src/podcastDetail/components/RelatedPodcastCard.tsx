@@ -6,6 +6,7 @@ import IconHeadphone from '@/assets/icons/iconHeadphone';
 import IconPlay from '@/assets/icons/iconPlay';
 import UText from '@/src/components/core/text/uText';
 import ULocalImage from '@/src/components/core/image/uLocalImage';
+import haptics from '@/src/utils/haptics';
 import type { MediaResponse } from '@/src/types/api/explore.types';
 
 interface RelatedPodcastCardProps {
@@ -19,6 +20,7 @@ export const RelatedPodcastCard = memo(function RelatedPodcastCard({
   const router = useRouter();
 
   const handlePress = useCallback(() => {
+    haptics.light();
     router.push({
       pathname: '/(app)/podcast/[podcastId]' as Href,
       params: { podcastId: podcast.id },
