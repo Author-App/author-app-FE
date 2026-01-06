@@ -11,13 +11,11 @@ import { createLoginPayload, createSignupPayload } from '@/src/services/payload.
 import { handleApiError } from '@/src/services/error.service';
 import { showSuccessToast } from '@/src/utils/toast';
 import { haptics } from '@/src/utils/haptics';
-import { usePushNotifications } from '@/src/notifications';
 
 
 export const useLogin = () => {
   const [loginMutation, { isLoading, error }] = useLoginMutation();
   const router = useRouter();
-  const { registerForPushNotifications } = usePushNotifications();
 
   const login = useCallback(
     async (email: string, password: string): Promise<boolean> => {
@@ -28,8 +26,7 @@ export const useLogin = () => {
         haptics.success();
         showSuccessToast("You've logged in successfully");
         
-        // Register for push notifications after successful login
-        registerForPushNotifications();
+        // Push notification registration happens in (app)/_layout.tsx
         
         router.replace('/(app)/(tabs)/(home)');
         return true;
@@ -39,7 +36,7 @@ export const useLogin = () => {
         return false;
       }
     },
-    [loginMutation, router, registerForPushNotifications]
+    [loginMutation, router]
   );
 
   return { login, isLoading, error };

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
@@ -24,6 +24,10 @@ interface UsePushNotificationsReturn {
   expoPushToken: string | null;
   isRegistered: boolean;
   registerForPushNotifications: () => Promise<void>;
+  /** DEV: Show token modal after registration */
+  showDevTokenModal: boolean;
+  /** DEV: Close the token modal */
+  closeDevTokenModal: () => void;
 }
 
 /**
@@ -36,8 +40,16 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
   const expoPushToken = useAppSelector(selectPushToken);
   const [registerPushToken] = useRegisterPushTokenMutation();
   
+  // DEV: State for showing token modal
+  const [showDevTokenModal, setShowDevTokenModal] = useState(false);
+  
   const notificationListener = useRef<Notifications.EventSubscription | null>(null);
   const responseListener = useRef<Notifications.EventSubscription | null>(null);
+
+  // DEV: Close token modal
+  const closeDevTokenModal = useCallback(() => {
+    setShowDevTokenModal(false);
+  }, []);
 
   /**
    * Request permissions and get push token
@@ -80,6 +92,10 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
       // Register token with backend via RTK Query
       const platform = Platform.OS as 'ios' | 'android';
       await registerPushToken({ pushToken: token, platform });
+
+      // DEV: Show token modal for testing
+      // TODO: Remove this when backend is ready
+      setShowDevTokenModal(true);
 
       // Android: Setup notification channel
       if (Platform.OS === 'android') {
@@ -168,5 +184,8 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
     expoPushToken,
     isRegistered: !!expoPushToken,
     registerForPushNotifications,
+    // DEV: Token modal controls - remove when backend is ready
+    showDevTokenModal,
+    closeDevTokenModal,
   };
 };
