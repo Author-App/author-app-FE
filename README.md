@@ -130,4 +130,4 @@ author-app/
 
 ---
 
-Built with Expo and Tamagui
+Built by [Swift Reflex](https://swiftreflex.com/) with Expo and Tamagui
