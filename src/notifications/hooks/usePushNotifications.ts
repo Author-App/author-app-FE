@@ -9,7 +9,6 @@ import { selectPushToken } from '@/src/store/selectors/pushTokenSelectors';
 import { useRegisterPushTokenMutation } from '@/src/store/api/pushTokenApi';
 import { handleNotificationNavigation, NotificationData } from '../utils/notificationHandler';
 
-// Configure how notifications are handled when app is in foreground
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -24,36 +23,16 @@ interface UsePushNotificationsReturn {
   expoPushToken: string | null;
   isRegistered: boolean;
   registerForPushNotifications: () => Promise<void>;
-  /** DEV: Show token modal after registration */
-  showDevTokenModal: boolean;
-  /** DEV: Close the token modal */
-  closeDevTokenModal: () => void;
 }
 
-/**
- * Hook to manage push notifications
- * 
- * @returns Push notification state and registration function
- */
 export const usePushNotifications = (): UsePushNotificationsReturn => {
   const dispatch = useAppDispatch();
   const expoPushToken = useAppSelector(selectPushToken);
   const [registerPushToken] = useRegisterPushTokenMutation();
   
-  // DEV: State for showing token modal
-  const [showDevTokenModal, setShowDevTokenModal] = useState(false);
-  
   const notificationListener = useRef<Notifications.EventSubscription | null>(null);
   const responseListener = useRef<Notifications.EventSubscription | null>(null);
 
-  // DEV: Close token modal
-  const closeDevTokenModal = useCallback(() => {
-    setShowDevTokenModal(false);
-  }, []);
-
-  /**
-   * Request permissions and get push token
-   */
   const registerForPushNotifications = useCallback(async (): Promise<void> => {
     try {
       // Check if running on a physical device
@@ -91,18 +70,10 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
       const platform = Platform.OS as 'ios' | 'android';
       await registerPushToken({ pushToken: token, platform });
 
-      // DEV: Show token modal after app loads
-      // TODO: Remove this when backend is ready
-      setTimeout(() => {
-        setShowDevTokenModal(true);
-      }, 400);
-
-      // Android: Setup notification channel
       if (Platform.OS === 'android') {
         await setupAndroidChannels();
       }
     } catch (error) {
-      // Silent fail - push notifications are optional
     }
   }, [dispatch, registerPushToken]);
 
@@ -146,9 +117,7 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
     });
   };
 
-  /**
-   * Setup notification listeners
-   */
+
   useEffect(() => {
     // Listener for notifications received while app is in foreground
     notificationListener.current = Notifications.addNotificationReceivedListener(
@@ -184,8 +153,5 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
     expoPushToken,
     isRegistered: !!expoPushToken,
     registerForPushNotifications,
-    // DEV: Token modal controls - remove when backend is ready
-    showDevTokenModal,
-    closeDevTokenModal,
   };
 };

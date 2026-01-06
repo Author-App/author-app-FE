@@ -1,114 +1,83 @@
 import React, { useState, useCallback, useEffect } from 'react';
-import { Platform, Share } from 'react-native';
 import { Sheet } from '@tamagui/sheet';
 import { YStack, XStack } from 'tamagui';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
-import Constants from 'expo-constants';
-import { Ionicons } from '@expo/vector-icons';
 import LottieView from 'lottie-react-native';
 
 import UText from '@/src/components/core/text/uText';
-import { useAppDispatch } from '@/src/store/hooks';
-import { setPushToken } from '@/src/store/slices/pushTokenSlice';
-import { useRegisterPushTokenMutation } from '@/src/store/api/pushTokenApi';
+import { usePushNotifications } from '../hooks/usePushNotifications';
+import DevPushTokenView from './DevPushTokenView';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-interface NotificationPermissionSheetProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}
+type SheetView = 'permission' | 'token';
 
-type SheetState = 'permission' | 'token';
-
-const NotificationPermissionSheet: React.FC<NotificationPermissionSheetProps> = ({
-  open,
-  onOpenChange,
-}) => {
-  const dispatch = useAppDispatch();
-  const [registerPushToken] = useRegisterPushTokenMutation();
+const NotificationPermissionSheet: React.FC = () => {
+  const { expoPushToken, registerForPushNotifications } = usePushNotifications();
   
-  const [sheetState, setSheetState] = useState<SheetState>('permission');
-  const [deviceToken, setDeviceToken] = useState<string>('');
+  const { bottom } = useSafeAreaInsets(); 
+  
+  const [isOpen, setIsOpen] = useState(false);
+  const [currentView, setCurrentView] = useState<SheetView>('permission');
   const [isLoading, setIsLoading] = useState(false);
 
-  // Reset state when sheet opens
   useEffect(() => {
-    if (open) {
-      setSheetState('permission');
-      setDeviceToken('');
-    }
-  }, [open]);
+    const checkAndShowSheet = async () => {
+      // Skip if not physical device
+      if (!Device.isDevice) return;
 
-  
+      // Check permission status
+      const { status } = await Notifications.getPermissionsAsync();
+
+      if (status === 'undetermined') {
+        // Small delay for better UX after app loads
+        setTimeout(() => {
+          setIsOpen(true);
+        }, 500);
+      }
+    };
+
+    checkAndShowSheet();
+  }, []);
+
   const handleDeny = useCallback(() => {
-    onOpenChange(false);
-  }, [onOpenChange]);
-
-
+    setIsOpen(false);
+  }, []);
+  
   const handleAllow = useCallback(async () => {
-    if (!Device.isDevice) {
-      onOpenChange(false);
-      return;
-    }
-
     setIsLoading(true);
 
     try {
-      // Request permission
-      const { status } = await Notifications.requestPermissionsAsync();
+      await registerForPushNotifications();
+
+      // Check if permission was actually granted
+      const { status } = await Notifications.getPermissionsAsync();
 
       if (status !== 'granted') {
-        onOpenChange(false);
+        // User denied in native popup
+        setIsOpen(false);
         return;
       }
 
-      // Get Expo push token
-      const projectId = Constants.expoConfig?.extra?.eas?.projectId;
-      const tokenData = await Notifications.getExpoPushTokenAsync({
-        projectId,
-      });
-
-      const token = tokenData.data;
-
-      // Store in Redux
-      dispatch(setPushToken(token));
-
-      // Register with backend
-      const platform = Platform.OS as 'ios' | 'android';
-      await registerPushToken({ pushToken: token, platform });
-
-      // Setup Android channels
-      if (Platform.OS === 'android') {
-        await setupAndroidChannels();
-      }
-
-      // DEV: Show token in sheet
-      // TODO: Remove this block when backend is ready
-      setDeviceToken(token);
-      setSheetState('token');
+      // Show token view after permission granted
+      setCurrentView('token');
     } catch (error) {
-      onOpenChange(false);
+      setIsOpen(false);
     } finally {
       setIsLoading(false);
     }
-  }, [dispatch, registerPushToken, onOpenChange]);
-
-
-  const handleCopyToken = useCallback(async () => {
-    await Share.share({ message: deviceToken });
-  }, [deviceToken]);
-
+  }, [registerForPushNotifications]);
 
   const handleDone = useCallback(() => {
-    onOpenChange(false);
-  }, [onOpenChange]);
+    setIsOpen(false);
+  }, []);
 
   return (
     <Sheet
       modal
-      open={open}
-      onOpenChange={onOpenChange}
-      snapPoints={[45]}
+      open={isOpen}
+      onOpenChange={setIsOpen}
+      snapPoints={[50]}
       dismissOnSnapToBottom
       zIndex={100_000}
       animation="medium"
@@ -125,20 +94,19 @@ const NotificationPermissionSheet: React.FC<NotificationPermissionSheetProps> = 
         borderTopRightRadius={24}
         paddingHorizontal={24}
         paddingTop={16}
-        paddingBottom={40}
+        paddingBottom={bottom}
       >
         <Sheet.Handle backgroundColor="$neutral6" opacity={0.5} />
 
-        {sheetState === 'permission' ? (
+        {currentView === 'permission' ? (
           <PermissionContent
             isLoading={isLoading}
             onAllow={handleAllow}
             onDeny={handleDeny}
           />
         ) : (
-          <TokenContent
-            token={deviceToken}
-            onCopy={handleCopyToken}
+          <DevPushTokenView
+            token={expoPushToken ?? ''}
             onDone={handleDone}
           />
         )}
@@ -147,9 +115,7 @@ const NotificationPermissionSheet: React.FC<NotificationPermissionSheetProps> = 
   );
 };
 
-/**
- * Permission request content
- */
+
 interface PermissionContentProps {
   isLoading: boolean;
   onAllow: () => void;
@@ -217,140 +183,5 @@ const PermissionContent: React.FC<PermissionContentProps> = ({
     </XStack>
   </YStack>
 );
-
-/**
- * DEV: Token display content
- * TODO: Remove this component when backend is ready
- */
-interface TokenContentProps {
-  token: string;
-  onCopy: () => void;
-  onDone: () => void;
-}
-
-const TokenContent: React.FC<TokenContentProps> = ({
-  token,
-  onCopy,
-  onDone,
-}) => (
-  <YStack ai="center" gap={16} pt={20}>
-    {/* Success Icon */}
-    <YStack
-      w={60}
-      h={60}
-      borderRadius={30}
-      bg="rgba(20, 184, 166, 0.15)"
-      ai="center"
-      jc="center"
-    >
-      <Ionicons name="checkmark-circle" size={36} color="#14B8A6" />
-    </YStack>
-
-    {/* Title */}
-    <UText variant="heading-h2" color="$white" textAlign="center">
-      Notifications Enabled
-    </UText>
-
-    {/* DEV Label */}
-    <XStack
-      bg="rgba(214, 64, 69, 0.2)"
-      px={12}
-      py={4}
-      borderRadius={8}
-    >
-      <UText variant="text-2xs" color="$brandCrimson">
-        DEV MODE - Token for Testing
-      </UText>
-    </XStack>
-
-    {/* Token Display with Copy */}
-    <XStack
-      w="100%"
-      bg="rgba(0, 0, 0, 0.3)"
-      borderRadius={12}
-      p={12}
-      ai="center"
-      gap={10}
-      borderWidth={1}
-      borderColor="rgba(255, 255, 255, 0.05)"
-      pressStyle={{ opacity: 0.8 }}
-      onPress={onCopy}
-    >
-      <YStack f={1}>
-        <UText
-          variant="text-xs"
-          color="$brandTeal"
-          numberOfLines={2}
-          selectable
-        >
-          {token}
-        </UText>
-      </YStack>
-      <YStack
-        bg="rgba(255, 255, 255, 0.1)"
-        p={8}
-        borderRadius={8}
-      >
-        <Ionicons name="copy-outline" size={18} color="#9CA3AF" />
-      </YStack>
-    </XStack>
-
-    {/* Hint */}
-    <UText variant="text-2xs" color="$neutral5" textAlign="center">
-      Tap to share token • Use with Expo push notification tool
-    </UText>
-
-    {/* Done Button */}
-    <YStack
-      w="100%"
-      bg="$brandCrimson"
-      py={14}
-      borderRadius={12}
-      ai="center"
-      pressStyle={{ opacity: 0.7 }}
-      onPress={onDone}
-    >
-      <UText variant="label-md" color="$white">
-        Done
-      </UText>
-    </YStack>
-  </YStack>
-);
-
-/**
- * Setup Android notification channels
- */
-const setupAndroidChannels = async (): Promise<void> => {
-  await Notifications.setNotificationChannelAsync('default', {
-    name: 'Default',
-    importance: Notifications.AndroidImportance.HIGH,
-    vibrationPattern: [0, 250, 250, 250],
-    lightColor: '#D64045',
-  });
-
-  await Notifications.setNotificationChannelAsync('content', {
-    name: 'New Content',
-    description: 'Notifications for new books, podcasts, and videos',
-    importance: Notifications.AndroidImportance.HIGH,
-    vibrationPattern: [0, 250, 250, 250],
-    lightColor: '#D64045',
-  });
-
-  await Notifications.setNotificationChannelAsync('community', {
-    name: 'Community',
-    description: 'Notifications for community messages',
-    importance: Notifications.AndroidImportance.HIGH,
-    vibrationPattern: [0, 250, 250, 250],
-    lightColor: '#D64045',
-  });
-
-  await Notifications.setNotificationChannelAsync('events', {
-    name: 'Events',
-    description: 'Event reminders and updates',
-    importance: Notifications.AndroidImportance.HIGH,
-    vibrationPattern: [0, 250, 250, 250],
-    lightColor: '#D64045',
-  });
-};
 
 export default NotificationPermissionSheet;
