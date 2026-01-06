@@ -31,35 +31,25 @@ async function performTokenRefresh(
   extraOptions: Parameters<typeof baseQuery>[2]
 ): Promise<boolean> {
   const authState = (api.getState() as RootState).auth;
-  console.log('🔐 [baseQuery] Full auth state:', JSON.stringify({
-    hasToken: !!authState.token,
-    hasRefreshToken: !!authState.refreshToken,
-    isLoggedIn: authState.isLoggedIn,
-    hasUser: !!authState.user,
-  }));
 
   // Try Redux state first, then fallback to AsyncStorage
   let refreshToken = authState.refreshToken;
   let userId = authState.user?.id;
 
   if (!refreshToken) {
-    console.log('🔍 [baseQuery] No refresh token in Redux, checking AsyncStorage...');
     try {
       const storedTokens = await getAuthTokens();
       if (storedTokens) {
         refreshToken = storedTokens.refreshToken;
         userId = storedTokens.userId;
-        console.log('✅ [baseQuery] Found refresh token in AsyncStorage');
       }
     } catch (error) {
       console.error('❌ [baseQuery] Failed to read from AsyncStorage:', error);
     }
   }
 
-  console.log('🔑 [baseQuery] Refresh token exists:', !!refreshToken);
 
   if (!refreshToken) {
-    console.log('❌ [baseQuery] No refresh token - logging out');
     api.dispatch(logOut());
     Toast.show({
       type: 'error',
@@ -70,7 +60,6 @@ async function performTokenRefresh(
   }
 
   // Attempt refresh
-  console.log('🔄 [baseQuery] Attempting token refresh...');
   const refreshResult = await baseQuery(
     {
       url: '/auth/refresh',
@@ -82,13 +71,9 @@ async function performTokenRefresh(
     extraOptions
   );
 
-  console.log('🔄 [baseQuery] Refresh response:', refreshResult?.error ? 'FAILED' : 'SUCCESS');
-  console.log('🔄 [baseQuery] Refresh response data:', JSON.stringify(refreshResult?.data));
-  console.log('🔄 [baseQuery] Full refresh result:', JSON.stringify(refreshResult));
 
   // Handle refresh failure
   if (refreshResult?.error) {
-    console.log('❌ [baseQuery] Refresh API error:', JSON.stringify(refreshResult.error));
     api.dispatch(logOut());
     Toast.show({
       type: 'error',
@@ -105,7 +90,6 @@ async function performTokenRefresh(
   const newRefreshToken = session?.refresh;
 
   if (newAccessToken && newRefreshToken) {
-    console.log('✅ [baseQuery] Got new tokens - updating state');
 
     api.dispatch(
       updateTokens({
@@ -118,7 +102,6 @@ async function performTokenRefresh(
     if (userId) {
       try {
         await saveAuthTokens(newRefreshToken, userId);
-        console.log('💾 [baseQuery] Tokens saved to AsyncStorage');
       } catch (error) {
         console.error('❌ [baseQuery] Failed to save tokens to AsyncStorage:', error);
       }
@@ -126,7 +109,6 @@ async function performTokenRefresh(
 
     return true;
   } else {
-    console.log('❌ [baseQuery] Invalid refresh response - logging out');
     api.dispatch(logOut());
     Toast.show({
       type: 'error',
@@ -155,15 +137,12 @@ export const baseQueryWithReauth = async (
 
   // Handle 401 - try refresh
   if (result?.error?.status === 401) {
-    console.log('⚠️ [baseQuery] Access token expired. Trying refresh...');
 
     // If already refreshing, wait for that to complete
     if (isRefreshing && refreshPromise) {
-      console.log('⏳ [baseQuery] Already refreshing, waiting...');
       const success = await refreshPromise;
       if (success) {
         // Retry original request with new token
-        console.log('🔄 [baseQuery] Retrying original request after refresh');
         return baseQuery(args, api, extraOptions);
       }
       return result;
@@ -177,7 +156,6 @@ export const baseQueryWithReauth = async (
       const success = await refreshPromise;
 
       if (success) {
-        console.log('✅ [baseQuery] Refresh successful - retrying request');
         result = await baseQuery(args, api, extraOptions);
       } else {
         console.log('❌ [baseQuery] Refresh failed - returning error');

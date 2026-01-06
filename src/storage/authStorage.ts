@@ -15,7 +15,6 @@ export const saveAuthTokens = async (
   try {
     const data: StoredAuthTokens = { refreshToken, userId };
     await AsyncStorage.setItem(AUTH_TOKENS_KEY, JSON.stringify(data));
-    console.log('✅ [authStorage] Saved auth tokens to storage');
   } catch (error) {
     console.error('❌ [authStorage] Failed to save auth tokens:', error);
   }
@@ -37,7 +36,6 @@ export const getAuthTokens = async (): Promise<StoredAuthTokens | null> => {
 export const clearAuthTokens = async (): Promise<void> => {
   try {
     await AsyncStorage.removeItem(AUTH_TOKENS_KEY);
-    console.log('✅ [authStorage] Cleared auth tokens from storage');
   } catch (error) {
     console.error('❌ [authStorage] Failed to clear auth tokens:', error);
   }
