@@ -58,7 +58,6 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
     try {
       // Check if running on a physical device
       if (!Device.isDevice) {
-        console.log('📱 [Push] Must use physical device for push notifications');
         return;
       }
 
@@ -73,18 +72,17 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
       }
 
       if (finalStatus !== 'granted') {
-        console.log('📱 [Push] Permission not granted');
         return;
       }
 
       // Get the Expo push token
       const projectId = Constants.expoConfig?.extra?.eas?.projectId;
+      
       const tokenData = await Notifications.getExpoPushTokenAsync({
         projectId,
       });
       
       const token = tokenData.data;
-      console.log('📱 [Push] Expo Push Token:', token);
       
       // Store token in Redux
       dispatch(setPushToken(token));
@@ -93,16 +91,18 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
       const platform = Platform.OS as 'ios' | 'android';
       await registerPushToken({ pushToken: token, platform });
 
-      // DEV: Show token modal for testing
+      // DEV: Show token modal after app loads
       // TODO: Remove this when backend is ready
-      setShowDevTokenModal(true);
+      setTimeout(() => {
+        setShowDevTokenModal(true);
+      }, 400);
 
       // Android: Setup notification channel
       if (Platform.OS === 'android') {
         await setupAndroidChannels();
       }
     } catch (error) {
-      console.error('📱 [Push] Error registering for push notifications:', error);
+      // Silent fail - push notifications are optional
     }
   }, [dispatch, registerPushToken]);
 
