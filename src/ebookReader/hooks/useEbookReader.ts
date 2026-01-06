@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import * as FileSystem from 'expo-file-system/legacy';
+import { useRouter } from 'expo-router';
 
-import { useLazyGetBookDetailQuery } from '@/src/store/api/libraryApi';
+import { useLazyGetBookDetailQuery, useUpdateBookProgressMutation } from '@/src/store/api/libraryApi';
+import type { BookResponse } from '@/src/types/api/library.types';
 import { 
   getPdfProgress, 
   savePdfProgress,
@@ -40,12 +42,15 @@ interface UseEbookReaderReturn {
   // Actions
   onPageChanged: (page: number, pages: number) => void;
   onPdfError: (error: object) => void;
+  saveProgressAndGoBack: () => void;
   refetch: () => void;
 }
 
 export function useEbookReader({ bookId }: UseEbookReaderOptions): UseEbookReaderReturn {
 
-  const [fetchBookDetail, { data, isLoading: isFetchingBook }] = useLazyGetBookDetailQuery();
+  const router = useRouter();
+  const [fetchBookDetail] = useLazyGetBookDetailQuery();
+  const [updateBookProgress] = useUpdateBookProgressMutation();
 
   const [status, setStatus] = useState<ReaderStatus>('loading');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -59,6 +64,21 @@ export function useEbookReader({ bookId }: UseEbookReaderOptions): UseEbookReade
   const lastSavedPage = useRef(1);
   const isInitialized = useRef(false);
 
+  const syncServerProgress = useCallback((bookData: Pick<BookResponse, 'progress' | 'totalPages'>) => {
+    const serverPage = bookData.progress?.currentPage;
+    
+    if (!serverPage || serverPage <= 0) return;
+    
+    setInitialPage(serverPage);
+    setCurrentPage(serverPage);
+    lastSavedPage.current = serverPage;
+    
+    // Persist to local storage for offline access
+    if (bookId && bookData.totalPages) {
+      savePdfProgress(bookId, serverPage, bookData.totalPages);
+    }
+  }, [bookId]);
+
   useEffect(() => {
     if (!bookId || isInitialized.current) return;
     isInitialized.current = true;
@@ -67,12 +87,12 @@ export function useEbookReader({ bookId }: UseEbookReaderOptions): UseEbookReade
       try {
         setStatus('loading');
 
-        // 1. Load reading progress
-        const progress: ReadingProgress | null = await getPdfProgress(bookId);
-        if (progress?.page) {
-          setInitialPage(progress.page);
-          setCurrentPage(progress.page);
-          lastSavedPage.current = progress.page;
+        // 1. Load reading progress from local storage (fallback)
+        const localProgress: ReadingProgress | null = await getPdfProgress(bookId);
+        if (localProgress?.page) {
+          setInitialPage(localProgress.page);
+          setCurrentPage(localProgress.page);
+          lastSavedPage.current = localProgress.page;
         }
 
         // 2. Check for cached signed URL (valid for ~55 min)
@@ -90,7 +110,7 @@ export function useEbookReader({ bookId }: UseEbookReaderOptions): UseEbookReade
           setLocalPdfUri(fileUri);
           setStatus('ready');
           
-          // Fetch book details in background for title/author (but don't wait)
+          // Fetch book details in background for title/author and server progress
           fetchBookDetail(bookId).then((result) => {
             if (result.data?.data?.book) {
               const b = result.data.data.book;
@@ -102,6 +122,8 @@ export function useEbookReader({ bookId }: UseEbookReaderOptions): UseEbookReade
                 hasAccess: b.hasAccess,
                 totalPages: b.totalPages,
               });
+              // Sync server progress (takes priority over local)
+              syncServerProgress(b);
             }
           });
           return;
@@ -125,6 +147,9 @@ export function useEbookReader({ bookId }: UseEbookReaderOptions): UseEbookReade
           hasAccess: bookData.hasAccess,
           totalPages: bookData.totalPages,
         });
+
+        // Sync server progress (takes priority over local)
+        syncServerProgress(bookData);
 
         // 6. Check access
         if (!bookData.master) {
@@ -180,6 +205,27 @@ export function useEbookReader({ bookId }: UseEbookReaderOptions): UseEbookReade
     }
   }, [bookId]);
 
+  // Save progress to server and navigate back
+  const saveProgressAndGoBack = useCallback(async () => {
+    if (bookId) {
+      try {
+        // Get progress from local storage
+        const progress = await getPdfProgress(bookId);
+        
+        if (progress?.page && progress.page > 0) {
+          // Save to server
+          await updateBookProgress({
+            bookId,
+            currentPage: progress.page,
+          }).unwrap();
+        }
+      } catch (error) {
+        console.warn('[useEbookReader] Failed to save progress to server:', error);
+      }
+    }
+    router.back();
+  }, [bookId, updateBookProgress, router]);
+
   const onPdfError = useCallback((error: object) => {
     console.error('[useEbookReader] PDF error:', error);
     setStatus('error');
@@ -208,6 +254,7 @@ export function useEbookReader({ bookId }: UseEbookReaderOptions): UseEbookReade
     // Actions
     onPageChanged,
     onPdfError,
+    saveProgressAndGoBack,
     refetch,
   };
 }

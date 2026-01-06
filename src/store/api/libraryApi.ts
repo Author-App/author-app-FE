@@ -6,6 +6,8 @@ import type {
   GetBookReviewsApiResponse,
   RateBookRequest,
   RateBookApiResponse,
+  UpdateEbookProgressRequest,
+  UpdateEbookProgressApiResponse,
 } from '@/src/types/api/library.types';
 import baseQueryWithReauth from './baseQuery';
 
@@ -74,6 +76,22 @@ export const libraryApi = createApi({
       ],
     }),
 
+ 
+    updateBookProgress: builder.mutation<
+      UpdateEbookProgressApiResponse,
+      { bookId: string; currentPage: number }
+    >({
+      query: ({ bookId, currentPage }) => ({
+        url: `/books/${bookId}/progress`,
+        method: 'PUT',
+        body: { currentPage },
+      }),
+      // Invalidate book detail to reflect updated progress
+      invalidatesTags: (result, error, { bookId }) => [
+        { type: 'BookDetail', id: bookId },
+      ],
+    }),
+
     /**
      * Toggle bookmark status for a book
      * TODO: Implement when endpoint is available
@@ -97,4 +115,5 @@ export const {
   useLazyGetBookDetailQuery,
   useGetBookReviewsQuery,
   useRateBookMutation,
+  useUpdateBookProgressMutation,
 } = libraryApi;

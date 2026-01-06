@@ -27,6 +27,7 @@ export function EbookReaderScreen() {
     progressPercent,
     onPageChanged,
     onPdfError,
+    saveProgressAndGoBack,
   } = useEbookReader({ bookId });
 
 
@@ -103,6 +104,7 @@ export function EbookReaderScreen() {
         title={book?.title ?? 'Untitled'}
         author={book?.author ?? 'Unknown Author'}
         paddingTop={top}
+        onBack={saveProgressAndGoBack}
       />
 
       {/* Footer */}

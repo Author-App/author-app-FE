@@ -1,20 +1,25 @@
 import React from 'react';
-import { XStack, YStack } from 'tamagui';
+import { XStack, YStack, getTokenValue } from 'tamagui';
 
 import UText from '@/src/components/core/text/uText';
-import UBackButton from '@/src/components/core/buttons/uBackButton';
+import UIconButton from '@/src/components/core/buttons/uIconButtonVariants';
+import IconArrowLeft from '@/assets/icons/iconArrowLeft';
+import { haptics } from '@/src/utils/haptics';
 
 interface ReaderHeaderProps {
   title: string;
   author: string;
   paddingTop: number;
+  onBack: () => void;
 }
 
 export function ReaderHeader({
   title,
   author,
   paddingTop,
+  onBack,
 }: ReaderHeaderProps) {
+  
   return (
     <XStack
       position="absolute"
@@ -27,7 +32,11 @@ export function ReaderHeader({
       bg="$brandNavy"
       pt={paddingTop + 8}
     >
-      <UBackButton variant="glass-md" />
+      <UIconButton
+        variant="glass-md"
+        icon={IconArrowLeft}
+        onPress={onBack}
+      />
       <YStack flex={1} mx={16}>
         <UText
           variant="text-sm"
