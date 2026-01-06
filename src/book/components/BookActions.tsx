@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import UText from '@/src/components/core/text/uText';
 import { NeonButton } from '@/src/components/core/buttons/neonButton';
+import { formatPrice } from '@/src/utils/currency';
 import IconBook from '@/assets/icons/iconBook';
 import IconHeadphone from '@/assets/icons/iconHeadphone';
 import type { BookResponse } from '@/src/types/api/library.types';
@@ -28,7 +29,7 @@ export function BookActions({
   const TypeIcon = isAudiobook ? IconHeadphone : IconBook;
   const actionLabel = isAudiobook ? 'Start Listening' : 'Start Reading';
 
-  const priceLabel = `Purchase – $${book.price} ${book.currency}`;
+  const priceLabel = `Purchase – ${formatPrice(book.price, book.currency)}`;
 
   return (
     <YStack

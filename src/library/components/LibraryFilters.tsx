@@ -2,42 +2,45 @@ import React, { memo } from 'react';
 import { YStack, YStackProps } from 'tamagui';
 import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
 import UButtonTabs, { TabItem } from '@/src/components/core/buttons/uButtonTabs';
-import type { BookType } from '@/src/library/types/library.types';
+import type { LibraryTab } from '@/src/library/types/library.types';
 
 const LIBRARY_TABS: TabItem<string>[] = [
   { label: 'All Books', icon: 'library-outline' },
+  { label: 'My Books', icon: 'bookmark-outline' },
   { label: 'E-Books', icon: 'book-outline' },
   { label: 'Audiobooks', icon: 'headset-outline' },
 ];
 
-const TAB_TO_TYPE: Record<string, BookType> = {
-  'All Books': '',
+const TAB_TO_TYPE: Record<string, LibraryTab> = {
+  'All Books': 'all',
+  'My Books': 'owned',
   'E-Books': 'ebook',
   'Audiobooks': 'audiobook',
 };
 
-const TYPE_TO_TAB: Record<BookType, string> = {
-  '': 'All Books',
+const TYPE_TO_TAB: Record<LibraryTab, string> = {
+  'all': 'All Books',
+  'owned': 'My Books',
   ebook: 'E-Books',
   audiobook: 'Audiobooks',
 };
 
 interface LibraryFiltersProps extends YStackProps {
-  activeType: BookType;
-  onTypeChange: (value: string) => void;
+  activeTab: LibraryTab;
+  onTabChange: (value: LibraryTab) => void;
 }
 
 const LibraryFilters: React.FC<LibraryFiltersProps> = ({
-  activeType,
-  onTypeChange,
+  activeTab,
+  onTabChange,
   ...props
 }) => {
 
-  const activeTab = TYPE_TO_TAB[activeType];
+  const activeTabLabel = TYPE_TO_TAB[activeTab];
 
   const handleTabChange = (tabLabel: string) => {
-    const typeValue = TAB_TO_TYPE[tabLabel] ?? '';
-    onTypeChange(typeValue);
+    const tabValue = TAB_TO_TYPE[tabLabel] ?? 'all';
+    onTabChange(tabValue);
   };
 
   return (
@@ -45,7 +48,7 @@ const LibraryFilters: React.FC<LibraryFiltersProps> = ({
       <UAnimatedView animation="fadeInUp" duration={400} delay={100}>
         <UButtonTabs
           tabs={LIBRARY_TABS}
-          activeTab={activeTab}
+          activeTab={activeTabLabel}
           onTabChange={handleTabChange}
         />
       </UAnimatedView>

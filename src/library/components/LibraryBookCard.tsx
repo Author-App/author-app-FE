@@ -6,6 +6,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import UText from '@/src/components/core/text/uText';
 import ULocalImage from '@/src/components/core/image/uLocalImage';
 import { formatDurationCompact } from '@/src/utils/helper';
+import { formatPrice } from '@/src/utils/currency';
 import type { BookResponse } from '@/src/types/api/library.types';
 
 interface LibraryBookCardProps {
@@ -101,16 +102,21 @@ const LibraryBookCard: React.FC<LibraryBookCardProps> = ({
             position="absolute"
             bottom={5}
             left={10}
-            bg="$brandTeal"
+            bg="#FFD700"
             px={8}
             py={4}
             br={6}
             ai="center"
             gap={4}
             zIndex={22}
+            shadowColor="#000"
+            shadowOffset={{ width: 0, height: 2 }}
+            shadowOpacity={0.4}
+            shadowRadius={3}
+            elevation={4}
           >
-            <Ionicons name="checkmark-circle" size={12} color="white" />
-            <UText variant="text-xs" color="$white" fontWeight="600">
+            <Ionicons name="checkmark-circle" size={12} color="#132440" />
+            <UText variant="text-xs" color="$brandNavy" fontWeight="700">
               Owned
             </UText>
           </XStack>
@@ -167,7 +173,7 @@ const LibraryBookCard: React.FC<LibraryBookCardProps> = ({
           </YStack>
         ) : (
           <UText variant="text-sm" color="$brandTeal" fontWeight="700">
-            ${book.price}
+            {formatPrice(book.price, book.currency)}
           </UText>
         )}
 

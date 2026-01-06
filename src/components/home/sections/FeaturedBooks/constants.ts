@@ -2,7 +2,6 @@ import { Dimensions } from 'react-native';
 
 export const ITEM_GAP = 16;
 export const HORIZONTAL_PADDING = 20;
-export const MOCK_PRICES = ['$9.99', '$12.99', '$14.99', '$7.99', '$19.99', '$11.99'];
 
 // Responsive card sizing based on screen width
 // Shows: 2 cards on phones, 3 on small tablets, 4 on large tablets

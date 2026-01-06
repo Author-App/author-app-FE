@@ -22,8 +22,8 @@ const LibraryScreen: React.FC = () => {
     isLoading,
     isError,
     refetch,
-    activeType,
-    handleTypeChange,
+    activeTab,
+    handleTabChange,
     numColumns,
     navigateToBook,
   } = useLibraryData();
@@ -46,8 +46,8 @@ const LibraryScreen: React.FC = () => {
 
   const renderEmpty = useCallback(() => {
     if (isLoading) return null;
-    return <LibraryEmptyState isFiltered={!!activeType} />;
-  }, [activeType, isLoading]);
+    return <LibraryEmptyState isFiltered={activeTab !== 'all'} />;
+  }, [activeTab, isLoading]);
 
 
   const handleRefresh = useCallback(async () => {
@@ -74,7 +74,7 @@ const LibraryScreen: React.FC = () => {
         renderItem={renderBookItem}
         keyExtractor={(item) => item.id}
         numColumns={numColumns}
-        key={`${numColumns}-${activeType}`}
+        key={`${numColumns}-${activeTab}`}
         ListEmptyComponent={renderEmpty}
         showsVerticalScrollIndicator={false}
         onRefresh={handleRefresh}
@@ -91,8 +91,8 @@ const LibraryScreen: React.FC = () => {
     <UScreenLayout pt={top}>
       <LibraryHeader />
       <LibraryFilters
-        activeType={activeType}
-        onTypeChange={handleTypeChange}
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
         mb={8}
         px={20}
       />

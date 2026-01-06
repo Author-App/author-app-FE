@@ -24,6 +24,8 @@ export interface HomeBook {
   title: string;
   image?: string;
   hasAccess?: boolean;
+  price: number;
+  currency: string;
 }
 
 /**

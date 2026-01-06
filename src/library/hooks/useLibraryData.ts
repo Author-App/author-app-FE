@@ -5,12 +5,12 @@ import type { Href } from 'expo-router';
 
 import { useGetBooksQuery } from '@/src/store/api/libraryApi';
 import type { BookResponse } from '@/src/types/api/library.types';
-import type { BookType } from '../types/library.types';
+import type { LibraryTab } from '../types/library.types';
 
 export const useLibraryData = () => {
   const router = useRouter();
 
-  const [activeType, setActiveType] = useState<BookType>('');
+  const [activeTab, setActiveTab] = useState<LibraryTab>('all');
 
   const { data, isLoading, isError, refetch } = useGetBooksQuery({});
 
@@ -19,8 +19,21 @@ export const useLibraryData = () => {
 
     let booksList = [...data.data.books];
 
-    if (activeType) {
-      booksList = booksList.filter((book) => book.type === activeType);
+    // Filter based on active tab
+    switch (activeTab) {
+      case 'owned':
+        booksList = booksList.filter((book) => book.hasAccess || book.isFree);
+        break;
+      case 'ebook':
+        booksList = booksList.filter((book) => book.type === 'ebook');
+        break;
+      case 'audiobook':
+        booksList = booksList.filter((book) => book.type === 'audiobook');
+        break;
+      case 'all':
+      default:
+        // No filter for all books
+        break;
     }
 
     return booksList.sort(
@@ -28,7 +41,7 @@ export const useLibraryData = () => {
         new Date(b.publishedAt ?? b.createdAt ?? 0).getTime() -
         new Date(a.publishedAt ?? a.createdAt ?? 0).getTime()
     );
-  }, [data, activeType]);
+  }, [data, activeTab]);
 
   const screenWidth = Dimensions.get('window').width;
   const numColumns = useMemo(() => {
@@ -38,10 +51,8 @@ export const useLibraryData = () => {
   }, [screenWidth]);
 
   // Handlers
-  const handleTypeChange = useCallback((value: string) => {
-    if (value === 'ebook' || value === 'audiobook' || value === '') {
-      setActiveType(value);
-    }
+  const handleTabChange = useCallback((value: LibraryTab) => {
+    setActiveTab(value);
   }, []);
 
   const navigateToBook = useCallback(
@@ -59,8 +70,8 @@ export const useLibraryData = () => {
     refetch,
 
     // Filters
-    activeType,
-    handleTypeChange,
+    activeTab,
+    handleTabChange,
 
     // Layout
     numColumns,
