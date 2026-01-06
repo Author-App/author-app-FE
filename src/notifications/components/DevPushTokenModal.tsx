@@ -1,12 +1,9 @@
-import React, { memo, useCallback } from 'react';
-import { Modal, Pressable, TouchableOpacity } from 'react-native';
-import * as Clipboard from 'expo-clipboard';
+import React, { memo } from 'react';
+import { Modal, Pressable, Share } from 'react-native';
 import { YStack, XStack } from 'tamagui';
 import { Ionicons } from '@expo/vector-icons';
 
 import UText from '@/src/components/core/text/uText';
-import { haptics } from '@/src/utils/haptics';
-import { showSuccessToast } from '@/src/utils/toast';
 
 interface DevPushTokenModalProps {
   visible: boolean;
@@ -19,11 +16,9 @@ const DevPushTokenModal: React.FC<DevPushTokenModalProps> = ({
   token,
   onClose,
 }) => {
-  const handleCopyToken = useCallback(async () => {
-    await Clipboard.setStringAsync(token);
-    haptics.success();
-    showSuccessToast('Token copied to clipboard!');
-  }, [token]);
+  const handleShare = async () => {
+    await Share.share({ message: token });
+  };
 
   return (
     <Modal
@@ -67,7 +62,7 @@ const DevPushTokenModal: React.FC<DevPushTokenModalProps> = ({
 
             {/* Description */}
             <UText variant="text-sm" color="$neutral4">
-              Push notification token for testing. Copy and use with Expo push notification tool.
+              Long press the token to copy, or use Share button.
             </UText>
 
             {/* Token Display */}
@@ -81,16 +76,14 @@ const DevPushTokenModal: React.FC<DevPushTokenModalProps> = ({
               <UText
                 variant="text-xs"
                 color="$brandTeal"
+                selectable
               >
                 {token}
               </UText>
             </YStack>
 
-            {/* Copy Button */}
-            <TouchableOpacity
-              onPress={handleCopyToken}
-              activeOpacity={0.8}
-            >
+            {/* Share Button */}
+            <Pressable onPress={handleShare}>
               <XStack
                 bg="$brandCrimson"
                 py={14}
@@ -100,12 +93,12 @@ const DevPushTokenModal: React.FC<DevPushTokenModalProps> = ({
                 jc="center"
                 gap={8}
               >
-                <Ionicons name="copy-outline" size={18} color="#FFFFFF" />
+                <Ionicons name="share-outline" size={18} color="#FFFFFF" />
                 <UText variant="label-md" color="$white">
-                  Copy Token
+                  Share Token
                 </UText>
               </XStack>
-            </TouchableOpacity>
+            </Pressable>
 
             {/* Note */}
             <UText variant="text-2xs" color="$neutral5" textAlign="center">
