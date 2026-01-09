@@ -231,7 +231,7 @@ const SettingsScreen = () => {
           {expoPushToken && (
             <Card
               marginHorizontal={20}
-              borderRadius={16}
+              borderRadius={16} 
               backgroundColor="#ffffff"
               shadowColor="#000"
               shadowOffset={{ width: 0, height: 2 }}

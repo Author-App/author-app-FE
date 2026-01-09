@@ -21,6 +21,8 @@ import * as Notifications from 'expo-notifications';
 import { setupNotificationChannel } from '@/src/utils/notifications';
 import { registerForPushNotificationsAsync } from '@/src/utils/registerForPushNotifications';
 import { setPushToken } from '@/src/redux2/Slice/PushTokenSlice';
+import Purchases from 'react-native-purchases';
+
 
 // const dispatch = useDispatch();
 
@@ -36,6 +38,18 @@ export default function RootLayout() {
       shouldSetBadge: false,
     }),
   });
+
+  useEffect(() => {
+    // 🔹 Initialize RevenueCat (RUNS ONCE)
+    Purchases.setDebugLogsEnabled(true);
+
+    Purchases.configure({
+      apiKey: 'test_YWthJruMYIBepmIvWeGddXFFSPH',
+    });
+
+    console.log('RevenueCat configured');
+  }, []);
+
 
   useEffect(() => {
     // 1️⃣ Setup Android notification channel

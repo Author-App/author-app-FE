@@ -26,7 +26,8 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./public/brand/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#ffffff",
+        "googleServicesFile": "@env:GOOGLE_SERVICES_JSON"
       },
       "useNextNotificationsApi": true,
       "edgeToEdgeEnabled": true,
@@ -35,8 +36,7 @@
         "android.permission.RECORD_AUDIO",
         "android.permission.MODIFY_AUDIO_SETTINGS"
       ],
-      "package": "com.laibaair.stanleypaden",
-      "googleServicesFile": "./android/google-services.json"
+      "package": "com.laibaair.stanleypaden"
     },
     "web": {
       "bundler": "metro",
