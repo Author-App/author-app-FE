@@ -52,8 +52,7 @@ const HomeScreen: React.FC = () => {
 
   const handleContinueReadingPress = useCallback((book: ContinueReadingBook) => {
     haptics.light();
-    // Navigate directly to the reader since these are ebooks with progress
-    router.push(`/(app)/bookDetail/${book.id}/read` as Href);
+    router.push(`/(app)/book/${book.id}` as Href);
   }, []);
   
 

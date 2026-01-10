@@ -49,7 +49,7 @@ export const useHomeData = (): UseHomeDataReturn => {
       continueReading: continueReadingSection?.data ?? [],
     };
   }, [sections]);
-
+  
   const bannerItems = useMemo((): BannerItem[] => {
     const items: BannerItem[] = [];
 
