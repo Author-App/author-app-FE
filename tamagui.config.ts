@@ -124,6 +124,7 @@ const playfairFont = createFont({
   },
   weight: {
     4: '400',
+    7: '700',
   },
   letterSpacing: {
     1: 0.5,
@@ -131,6 +132,7 @@ const playfairFont = createFont({
   },
   face: {
     400: { normal: 'PlayfairDisplay', italic: 'PlayfairDisplay-Italic' },
+    700: { normal: 'PlayfairDisplay-Bold' },
   },
 });
 

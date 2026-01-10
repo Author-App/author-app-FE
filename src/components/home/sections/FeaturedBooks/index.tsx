@@ -5,14 +5,13 @@ import { YStack } from 'tamagui';
 import type { HomeBook } from '@/src/home/types/home.types';
 import { HORIZONTAL_PADDING, getCardDimensions } from './constants';
 import BookCard from './BookCard';
-import SectionHeader from './SectionHeader';
+import SectionHeader from '../SectionHeader';
 
 interface FeaturedBooksProps {
   title: string;
   subtitle?: string;
   data: HomeBook[];
   onPressItem: (item: HomeBook) => void;
-  onPressSeeAll?: () => void;
   isAudiobook?: boolean;
 }
 
@@ -21,7 +20,6 @@ const FeaturedBooks: React.FC<FeaturedBooksProps> = ({
   subtitle,
   data,
   onPressItem,
-  onPressSeeAll,
   isAudiobook,
 }) => {
   // Responsive card dimensions
@@ -50,7 +48,6 @@ const FeaturedBooks: React.FC<FeaturedBooksProps> = ({
       <SectionHeader
         title={title}
         subtitle={subtitle}
-        onPressSeeAll={onPressSeeAll}
       />
 
       <FlatList

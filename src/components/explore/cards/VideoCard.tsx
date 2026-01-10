@@ -5,7 +5,8 @@ import { Ionicons } from '@expo/vector-icons';
 import UText from '@/src/components/core/text/uText';
 import ULocalImage from '@/src/components/core/image/uLocalImage';
 import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
-import { formatDuration } from '@/src/utils/helper';
+import UProgressBar from '@/src/components/core/display/uProgressBar';
+import { formatDuration, formatTimeLeft, formatLastRead } from '@/src/utils/helper';
 import type { MediaResponse } from '@/src/explore/types/explore.types';
 
 interface VideoCardProps extends YStackProps {
@@ -16,6 +17,15 @@ interface VideoCardProps extends YStackProps {
 const VideoCard: React.FC<VideoCardProps> = ({ data, onPress, ...props }) => {
   const white = getTokenValue('$white', 'color');
   const neutral = getTokenValue('$neutral1', 'color');
+  const secondary = getTokenValue('$secondary', 'color');
+
+  const hasProgress = data.progress && data.progress.percentage > 0;
+  const timeLeft = hasProgress 
+    ? formatTimeLeft(data.progress!.currentPositionSec, data.progress!.durationSec)
+    : null;
+  const lastPlayed = hasProgress && data.progress!.lastPlayedAt
+    ? formatLastRead(data.progress!.lastPlayedAt)
+    : null;
 
   return (
     <UAnimatedView animation="fadeInUp" duration={400}>
@@ -41,6 +51,19 @@ const VideoCard: React.FC<VideoCardProps> = ({ data, onPress, ...props }) => {
             contentFit="cover"
           />
 
+          {/* Progress bar overlay at bottom of thumbnail */}
+          {hasProgress && (
+            <YStack position="absolute" bottom={0} left={0} right={0}>
+              <UProgressBar
+                percentage={data.progress!.percentage}
+                foregroundColor="$secondary"
+                backgroundColor="rgba(0,0,0,0.5)"
+                h={4}
+                borderRadius={0}
+              />
+            </YStack>
+          )}
+
           {/* Play button - centered */}
           <YStack
             position="absolute"
@@ -51,7 +74,7 @@ const VideoCard: React.FC<VideoCardProps> = ({ data, onPress, ...props }) => {
             w={56}
             h={56}
             borderRadius={28}
-            bg="$brandCrimson"
+            bg={hasProgress ? secondary : '$brandCrimson'}
             jc="center"
             ai="center"
             shadowColor="$black"
@@ -65,7 +88,7 @@ const VideoCard: React.FC<VideoCardProps> = ({ data, onPress, ...props }) => {
           {/* Duration badge */}
           <XStack
             position="absolute"
-            bottom={12}
+            bottom={hasProgress ? 16 : 12}
             right={12}
             bg="rgba(0,0,0,0.6)"
             px={10}
@@ -112,8 +135,28 @@ const VideoCard: React.FC<VideoCardProps> = ({ data, onPress, ...props }) => {
             {data.name}
           </UText>
 
-          {/* Description */}
-          {data.description && (
+          {/* Progress info row */}
+          {hasProgress && (
+            <XStack ai="center" gap={8}>
+              <XStack ai="center" gap={4}>
+                <Ionicons name="play-circle" size={14} color={secondary} />
+                <UText variant="text-sm" color="$secondary" fontWeight="600">
+                  {timeLeft}
+                </UText>
+              </XStack>
+              {lastPlayed && (
+                <>
+                  <UText variant="text-sm" color="$neutral2">•</UText>
+                  <UText variant="text-sm" color="$neutral2">
+                    Watched {lastPlayed}
+                  </UText>
+                </>
+              )}
+            </XStack>
+          )}
+
+          {/* Description - hide if we have progress */}
+          {data.description && !hasProgress && (
             <UText
               variant="text-sm"
               color="$neutral1"

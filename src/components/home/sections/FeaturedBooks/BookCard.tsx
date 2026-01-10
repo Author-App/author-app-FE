@@ -5,7 +5,7 @@ import { Feather, Ionicons } from '@expo/vector-icons';
 import UText from '@/src/components/core/text/uText';
 import ULocalImage from '@/src/components/core/image/uLocalImage';
 import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
-import { formatPrice } from '@/src/utils/currency';
+import { formatPriceOrFree } from '@/src/utils/currency';
 import type { HomeBook } from '@/src/home/types/home.types';
 import { ITEM_GAP } from './constants';
 
@@ -112,7 +112,7 @@ const BookCard = memo(({ item, onPress, index, isAudiobook, cardWidth, imageHeig
             alignSelf="flex-start"
           >
             <UText variant="text-sm" color="$brandTeal" fontWeight="600">
-              {formatPrice(item.price, item.currency)}
+              {formatPriceOrFree(item.price, item.currency)}
             </UText>
           </XStack>
         </YStack>

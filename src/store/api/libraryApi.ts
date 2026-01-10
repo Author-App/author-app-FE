@@ -6,10 +6,12 @@ import type {
   GetBookReviewsApiResponse,
   RateBookRequest,
   RateBookApiResponse,
+  UpdateBookProgressApiResponse,
   UpdateEbookProgressRequest,
-  UpdateEbookProgressApiResponse,
+  UpdateAudiobookProgressRequest,
 } from '@/src/types/api/library.types';
 import baseQueryWithReauth from './baseQuery';
+import { homeApi } from './homeApi';
 
 export const libraryApi = createApi({
   reducerPath: 'libraryApi',
@@ -76,20 +78,58 @@ export const libraryApi = createApi({
       ],
     }),
 
- 
-    updateBookProgress: builder.mutation<
-      UpdateEbookProgressApiResponse,
-      { bookId: string; currentPage: number }
+    /**
+     * PUT /books/:bookId/progress
+     * Update ebook reading progress (tracked by page number)
+     */
+    updateEbookProgress: builder.mutation<
+      UpdateBookProgressApiResponse,
+      UpdateEbookProgressRequest
     >({
       query: ({ bookId, currentPage }) => ({
         url: `/books/${bookId}/progress`,
         method: 'PUT',
         body: { currentPage },
       }),
-      // Invalidate book detail to reflect updated progress
       invalidatesTags: (result, error, { bookId }) => [
         { type: 'BookDetail', id: bookId },
       ],
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          // Invalidate home feed to update continue reading section
+          dispatch(homeApi.util.invalidateTags(['HomeFeed']));
+        } catch {
+          // Mutation failed, no need to invalidate
+        }
+      },
+    }),
+
+    /**
+     * PUT /books/:bookId/progress
+     * Update audiobook listening progress (tracked by position in seconds)
+     */
+    updateAudiobookProgress: builder.mutation<
+      UpdateBookProgressApiResponse,
+      UpdateAudiobookProgressRequest
+    >({
+      query: ({ bookId, currentPositionSec }) => ({
+        url: `/books/${bookId}/progress`,
+        method: 'PUT',
+        body: { currentPositionSec },
+      }),
+      invalidatesTags: (result, error, { bookId }) => [
+        { type: 'BookDetail', id: bookId },
+      ],
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          // Invalidate home feed to update continue reading section
+          dispatch(homeApi.util.invalidateTags(['HomeFeed']));
+        } catch {
+          // Mutation failed, no need to invalidate
+        }
+      },
     }),
 
     /**
@@ -115,5 +155,6 @@ export const {
   useLazyGetBookDetailQuery,
   useGetBookReviewsQuery,
   useRateBookMutation,
-  useUpdateBookProgressMutation,
+  useUpdateEbookProgressMutation,
+  useUpdateAudiobookProgressMutation,
 } = libraryApi;

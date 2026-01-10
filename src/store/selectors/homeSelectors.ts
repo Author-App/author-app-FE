@@ -26,6 +26,9 @@ const buildSections = (data: HomeFeedResponse): HomeSection[] => {
   if (data.audioBooks?.length) {
     sections.push({ type: 'audiobooks', data: data.audioBooks });
   }
+  if (data.continueReading?.length) {
+    sections.push({ type: 'continueReading', data: data.continueReading });
+  }
 
   return sections;
 };

@@ -1,3 +1,5 @@
+import { HomeArticle, HomeBook, ContinueReadingBook } from '@/src/types/api/home.types';
+
 export type {
   HomeBanner,
   HomeBook,
@@ -5,6 +7,8 @@ export type {
   HomeFeedResponse,
   HomeSectionType,
   HomeSection,
+  ContinueReadingBook,
+  ContinueReadingProgress,
 } from '@/src/types/api/home.types';
 
 export type BannerType = 'book' | 'audiobook' | 'event' | 'article';
@@ -20,6 +24,7 @@ export interface BannerItem {
 
 export type HomeSectionItem =
   | { type: 'banner'; data: BannerItem[] }
-  | { type: 'books'; title: string; subtitle: string; data: import('@/src/types/api/home.types').HomeBook[] }
-  | { type: 'audiobooks'; title: string; subtitle: string; data: import('@/src/types/api/home.types').HomeBook[] }
-  | { type: 'articles'; title: string; subtitle: string; data: import('@/src/types/api/home.types').HomeArticle[] };
+  | { type: 'books'; title: string; subtitle: string; data: HomeBook[] }
+  | { type: 'audiobooks'; title: string; subtitle: string; data: HomeBook[] }
+  | { type: 'articles'; title: string; subtitle: string; data: HomeArticle[] }
+  | { type: 'continueReading'; title: string; subtitle: string; data: ContinueReadingBook[] };

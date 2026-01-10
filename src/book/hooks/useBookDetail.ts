@@ -13,7 +13,6 @@ import type {
   RatingStats,
   RateBookRequest,
 } from '@/src/types/api/library.types';
-import { DUMMY_RATING_STATS } from '@/src/book/data/dummyReviews';
 
 export function useBookDetail(bookId: string | undefined) {
   const router = useRouter();
@@ -45,12 +44,10 @@ export function useBookDetail(bookId: string | undefined) {
   const book: BookResponse | undefined = data?.data?.book;
   const moreBooks: RelatedBookCardResponse[] = data?.data?.moreBooks ?? [];
   const reviews = data?.data?.reviews;
-
   // Computed rating stats - use dummy data if no reviews from API
   const ratingStats: RatingStats | null = useMemo(() => {
-    if (!reviews?.userReviews.length) {
-      // Use dummy data for development/testing
-      return DUMMY_RATING_STATS;
+    if (!reviews) {
+      return null;
     }
     return {
       average: reviews.averageRating,

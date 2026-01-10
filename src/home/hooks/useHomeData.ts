@@ -31,23 +31,25 @@ const getErrorMessage = (error: unknown): string | null => {
 };
 
 export const useHomeData = (): UseHomeDataReturn => {
-  const { isLoading, isFetching, refetch } = useGetHomeFeedQuery();
+  const { data, isLoading, isFetching, refetch } = useGetHomeFeedQuery();
 
   const banner = useAppSelector(selectHomeBanner);
   const sections = useAppSelector(selectHomeSections);
   const error = useAppSelector(selectHomeFeedError);
 
-  const { books, audiobooks, articles } = useMemo(() => {
+  const { books, audiobooks, articles, continueReading } = useMemo(() => {
     const booksSection = sections.find((s) => s.type === 'books');
+    const continueReadingSection = sections.find((s) => s.type === 'continueReading');
     const audiobooksSection = sections.find((s) => s.type === 'audiobooks');
     const articlesSection = sections.find((s) => s.type === 'articles');
     return {
       books: booksSection?.data ?? [],
       audiobooks: audiobooksSection?.data ?? [],
       articles: articlesSection?.data ?? [],
+      continueReading: continueReadingSection?.data ?? [],
     };
   }, [sections]);
-  
+
   const bannerItems = useMemo((): BannerItem[] => {
     const items: BannerItem[] = [];
 
@@ -94,6 +96,15 @@ export const useHomeData = (): UseHomeDataReturn => {
       items.push({ type: 'banner', data: bannerItems });
     }
 
+    if (continueReading.length > 0) {
+      items.push({
+        type: 'continueReading',
+        title: 'Continue Reading',
+        subtitle: 'Pick up where you left off',
+        data: continueReading,
+      });
+    }
+
     if (books.length > 0) {
       items.push({
         type: 'books',
@@ -120,7 +131,7 @@ export const useHomeData = (): UseHomeDataReturn => {
         data: articles,
       });
     }
-
+    
     return items;
   }, [bannerItems, books, audiobooks, articles]);
 

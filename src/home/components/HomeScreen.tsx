@@ -4,7 +4,7 @@ import { Href, router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useHomeData } from '@/src/home/hooks/useHomeData';
-import type { HomeArticle, HomeBook, HomeSectionItem, BannerItem } from '../types/home.types';
+import type { HomeArticle, HomeBook, HomeSectionItem, BannerItem, ContinueReadingBook } from '../types/home.types';
 import haptics from '@/src/utils/haptics';
 
 import AppLoader from '@/src/components/core/loaders/AppLoader';
@@ -14,6 +14,7 @@ import { useURefreshControl } from '@/src/components/core/feedback/URefreshContr
 import HeroBanner from '@/src/components/home/hero/HeroBanner';
 import FeaturedBooks from '@/src/components/home/sections/FeaturedBooks';
 import FeaturedArticles from '@/src/components/home/sections/FeaturedArticles';
+import ContinueReading from '@/src/components/home/sections/ContinueReading';
 
 
 const HomeScreen: React.FC = () => {
@@ -49,6 +50,13 @@ const HomeScreen: React.FC = () => {
     router.push(`/(app)/article/${article.id}`);
   }, []);
 
+  const handleContinueReadingPress = useCallback((book: ContinueReadingBook) => {
+    haptics.light();
+    // Navigate directly to the reader since these are ebooks with progress
+    router.push(`/(app)/bookDetail/${book.id}/read` as Href);
+  }, []);
+  
+
   // Render section by type (type-safe switch)
   const renderSection = useCallback(
     (section: HomeSectionItem, index: number) => {
@@ -61,10 +69,19 @@ const HomeScreen: React.FC = () => {
               onPressItem={handleBannerPress}
             />
           );
-
+        case 'continueReading':
+          return (
+            <ContinueReading
+              key={`continueReading-${index}`}
+              title={section.title}
+              subtitle={section.subtitle}
+              data={section.data}
+              onPressItem={handleContinueReadingPress}
+            />
+          );
         case 'books':
           return (
-            <FeaturedBooks
+          <FeaturedBooks
               key={`books-${index}`}
               title={section.title}
               subtitle={section.subtitle}
@@ -100,7 +117,7 @@ const HomeScreen: React.FC = () => {
           return null;
       }
     },
-    [handleBannerPress, handleBookPress, handleArticlePress]
+    [handleBannerPress, handleBookPress, handleArticlePress, handleContinueReadingPress]
   );
 
   if (isLoading) {

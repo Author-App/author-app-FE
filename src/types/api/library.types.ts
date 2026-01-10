@@ -17,11 +17,12 @@ export interface GetBooksParams {
 }
 
 export interface BookProgress {
-  // Ebook fields
+  // Ebook fields (null for audiobooks)
   currentPage: number | null;
-  // Audiobook fields
-  currentPositionSec: number;
-  durationSec: number;
+  totalPages?: number | null;
+  // Audiobook fields (null for ebooks)
+  currentPositionSec: number | null;
+  durationSec: number | null;
   // Shared fields
   percentage: number;
   lastReadAt: string;
@@ -135,23 +136,31 @@ export interface RateBookApiResponse {
 }
 
 export interface UpdateEbookProgressRequest {
+  bookId: string;
   currentPage: number;
 }
 
-export interface EbookProgressData {
-  currentPage: number;
-  currentPositionSec: null;
+export interface UpdateAudiobookProgressRequest {
+  bookId: string;
+  currentPositionSec: number;
+}
+
+export type UpdateBookProgressRequest = UpdateEbookProgressRequest | UpdateAudiobookProgressRequest;
+
+export interface BookProgressData {
+  currentPage: number | null;
+  currentPositionSec: number | null;
   percentage: number;
   totalPages: number | null;
-  durationSec: null;
+  durationSec: number | null;
   lastReadAt: string;
 }
 
-export interface UpdateEbookProgressApiResponse {
+export interface UpdateBookProgressApiResponse {
   success: true;
   statusCode: 200;
   message: string;
-  data: EbookProgressData;
+  data: BookProgressData;
 }
 
 // ============================================================================

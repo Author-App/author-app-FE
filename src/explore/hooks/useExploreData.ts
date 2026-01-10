@@ -67,7 +67,7 @@ export const useExploreData = (): UseExploreDataReturn => {
     { mediaType: 'video' },
     { skip: activeTab !== 'Videos' }
   );
-
+  
   const eventsQuery = useGetEventsQuery(undefined, {
     skip: activeTab !== 'Events',
   });
@@ -96,14 +96,32 @@ export const useExploreData = (): UseExploreDataReturn => {
     }
   }, [activeTab, articlesQuery, podcastsQuery, videosQuery, eventsQuery, communitiesQuery]);
 
+  // Sort media by lastPlayedAt (recently played first), then by createdAt
+  const sortMediaByLastPlayed = useCallback((media: MediaResponse[]): MediaResponse[] => {
+    return [...media].sort((a, b) => {
+      // Items with progress (listened/watched) come first
+      const aLastPlayed = a.progress?.lastPlayedAt;
+      const bLastPlayed = b.progress?.lastPlayedAt;
+      
+      if (aLastPlayed && bLastPlayed) {
+        return new Date(bLastPlayed).getTime() - new Date(aLastPlayed).getTime();
+      }
+      if (aLastPlayed) return -1;
+      if (bLastPlayed) return 1;
+      
+      // Fall back to createdAt
+      return new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime();
+    });
+  }, []);
+
   const rawData = useMemo(() => {
     switch (activeTab) {
       case 'Blogs':
         return articlesQuery.data?.data?.articles ?? [];
       case 'Podcasts':
-        return podcastsQuery.data?.data?.media ?? [];
+        return sortMediaByLastPlayed(podcastsQuery.data?.data?.media ?? []);
       case 'Videos':
-        return videosQuery.data?.data?.media ?? [];
+        return sortMediaByLastPlayed(videosQuery.data?.data?.media ?? []);
       case 'Events':
         return eventsQuery.data?.data?.events ?? [];
       case 'Community':

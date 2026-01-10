@@ -1,17 +1,27 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import * as FileSystem from 'expo-file-system/legacy';
+import { useRouter } from 'expo-router';
 
-import { useGetBookDetailQuery } from '@/src/store/api/libraryApi';
-import { useSaveMediaProgress } from '@/src/hooks/useSaveMediaProgress';
+import { useGetBookDetailQuery, useUpdateAudiobookProgressMutation } from '@/src/store/api/libraryApi';
+
+interface ProgressData {
+  position: number;
+  duration: number;
+  progress: number;
+}
 
 export function useAudiobookPlayer(bookId: string | undefined) {
+  const router = useRouter();
+  const [updateAudiobookProgress] = useUpdateAudiobookProgressMutation();
+  
   // Audio state
   const [audioUrl, setAudioUrl] = useState<string | undefined>();
   const [initialPosition, setInitialPosition] = useState(0);
   const [isDownloading, setIsDownloading] = useState(false);
 
-  // Use shared media progress hook (same as podcast/video)
-  const { handleBack, handleProgressUpdate } = useSaveMediaProgress(bookId);
+  // Progress tracking
+  const hasSavedRef = useRef(false);
+  const lastPositionRef = useRef(0);
 
   // API query
   const {
@@ -26,6 +36,55 @@ export function useAudiobookPlayer(bookId: string | undefined) {
 
   const book = data?.data?.book;
   const masterUrl = book?.master;
+
+  // Track progress from AudioPlayer callback
+  const handleProgressUpdate = useCallback((progressData: ProgressData) => {
+    lastPositionRef.current = progressData.position;
+  }, []);
+
+  // Save audiobook progress to server
+  const saveProgress = useCallback(async () => {
+    if (!bookId || hasSavedRef.current) return;
+
+    const currentPositionMs = lastPositionRef.current;
+    const currentPositionSec = Math.floor(currentPositionMs / 1000);
+
+    // Only save if user listened past 5 seconds
+    if (currentPositionSec < 5) return;
+
+    hasSavedRef.current = true;
+
+    try {
+      await updateAudiobookProgress({
+        bookId,
+        currentPositionSec,
+      }).unwrap();
+    } catch (error) {
+      console.warn('[useAudiobookPlayer] Failed to save progress:', error);
+      hasSavedRef.current = false;
+    }
+  }, [bookId, updateAudiobookProgress]);
+
+  // Handle back navigation with progress save
+  const handleBack = useCallback(async () => {
+    await saveProgress();
+    router.back();
+  }, [saveProgress, router]);
+
+  // Reset refs when bookId changes
+  useEffect(() => {
+    hasSavedRef.current = false;
+    lastPositionRef.current = 0;
+  }, [bookId]);
+
+  // Save on unmount
+  useEffect(() => {
+    return () => {
+      if (!hasSavedRef.current) {
+        saveProgress();
+      }
+    };
+  }, [saveProgress]);
 
   // Calculate initial position from saved progress (backend returns seconds)
   useEffect(() => {

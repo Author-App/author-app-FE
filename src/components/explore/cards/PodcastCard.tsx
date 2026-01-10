@@ -4,6 +4,8 @@ import { Ionicons } from '@expo/vector-icons';
 
 import UText from '@/src/components/core/text/uText';
 import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
+import UProgressBar from '@/src/components/core/display/uProgressBar';
+import { formatLastRead, formatTimeLeft } from '@/src/utils/helper';
 import type { MediaResponse } from '@/src/explore/types/explore.types';
 
 interface PodcastCardProps extends YStackProps {
@@ -15,6 +17,7 @@ const PodcastCard: React.FC<PodcastCardProps> = ({ data, onPress, ...props }) =>
   const white = getTokenValue('$white', 'color');
   const teal = getTokenValue('$brandTeal', 'color');
   const neutral = getTokenValue('$neutral1', 'color');
+  const secondary = getTokenValue('$secondary', 'color');
 
   const minutes = Math.floor(data.durationSec / 60);
   const seconds = data.durationSec % 60;
@@ -23,9 +26,17 @@ const PodcastCard: React.FC<PodcastCardProps> = ({ data, onPress, ...props }) =>
       ? `${minutes}:${seconds.toString().padStart(2, '0')}`
       : `${minutes} min`;
 
+  const hasProgress = data.progress && data.progress.percentage > 0;
+  const timeLeft = hasProgress 
+    ? formatTimeLeft(data.progress!.currentPositionSec, data.progress!.durationSec)
+    : null;
+  const lastPlayed = hasProgress && data.progress!.lastPlayedAt
+    ? formatLastRead(data.progress!.lastPlayedAt)
+    : null;
+
   return (
     <UAnimatedView animation="fadeInUp" duration={400}>
-      <XStack
+      <YStack
         mx={20}
         mb={16}
         bg="$searchbarBg"
@@ -36,83 +47,113 @@ const PodcastCard: React.FC<PodcastCardProps> = ({ data, onPress, ...props }) =>
         animation="quick"
         borderWidth={1}
         borderColor="$searchbarBorder"
-        p={16}
-        gap={16}
-        ai="center"
         {...props}
       >
-        {/* Play button with icon */}
-        <YStack
-          w={64}
-          h={64}
-          borderRadius={32}
-          bg="$brandOcean"
-          jc="center"
-          ai="center"
-          position="relative"
-        >
-          {/* Mic icon background */}
-          <Ionicons name="mic" size={28} color={teal} style={{ opacity: 0.3 }} />
-
-          {/* Play button overlay */}
+        <XStack p={16} gap={16} ai="center">
+          {/* Play button with icon */}
           <YStack
-            position="absolute"
-            w={40}
-            h={40}
-            borderRadius={20}
-            bg="$brandCrimson"
+            w={64}
+            h={64}
+            borderRadius={32}
+            bg="$brandOcean"
             jc="center"
             ai="center"
+            position="relative"
           >
-            <Ionicons name="play" size={18} color={white} style={{ marginLeft: 2 }} />
-          </YStack>
-        </YStack>
+            {/* Mic icon background */}
+            <Ionicons name="mic" size={28} color={teal} style={{ opacity: 0.3 }} />
 
-        {/* Content */}
-        <YStack flex={1} gap={6}>
-          {/* Title */}
-          <UText
-            variant="text-md"
-            color="$white"
-            fontWeight="600"
-            numberOfLines={2}
-            lineHeight={22}
-          >
-            {data.name}
-          </UText>
-
-          {/* Description */}
-          {data.description && (
-            <UText
-              variant="text-sm"
-              color="$neutral1"
-              numberOfLines={1}
-              opacity={0.7}
+            {/* Play button overlay */}
+            <YStack
+              position="absolute"
+              w={40}
+              h={40}
+              borderRadius={20}
+              bg={teal}
+              jc="center"
+              ai="center"
             >
-              {data.description}
+              <Ionicons name="play" size={18} color={white} style={{ marginLeft: 2 }} />
+            </YStack>
+          </YStack>
+
+          {/* Content */}
+          <YStack flex={1} gap={6}>
+            {/* Title */}
+            <UText
+              variant="text-md"
+              color="$white"
+              fontWeight="600"
+              numberOfLines={2}
+              lineHeight={22}
+            >
+              {data.name}
             </UText>
-          )}
 
-          {/* Meta row */}
-          <XStack ai="center" gap={12} mt={2}>
-            <XStack ai="center" gap={4}>
-              <Ionicons name="time-outline" size={12} color={teal} />
-              <UText variant="text-xs" color="$brandTeal" fontWeight="500">
-                {duration}
+            {/* Description - hide if we have progress info to show */}
+            {data.description && !hasProgress && (
+              <UText
+                variant="text-sm"
+                color="$neutral1"
+                numberOfLines={1}
+                opacity={0.7}
+              >
+                {data.description}
               </UText>
-            </XStack>
+            )}
 
-            <YStack w={4} h={4} br={2} bg="$searchbarBorder" />
+            {/* Progress info row */}
+            {hasProgress && (
+              <XStack ai="center" gap={8}>
+                <XStack ai="center" gap={4}>
+                  <Ionicons name="play-circle" size={12} color={secondary} />
+                  <UText variant="text-xs" color="$secondary" fontWeight="600">
+                    {timeLeft}
+                  </UText>
+                </XStack>
+                {lastPlayed && (
+                  <>
+                    <UText variant="text-xs" color="$neutral2">•</UText>
+                    <UText variant="text-xs" color="$neutral2">
+                      Played {lastPlayed}
+                    </UText>
+                  </>
+                )}
+              </XStack>
+            )}
 
-            <XStack ai="center" gap={4}>
-              <Ionicons name="mic" size={12} color={neutral} />
-              <UText variant="text-xs" color="$neutral1">
-                Podcast
-              </UText>
+            {/* Meta row */}
+            <XStack ai="center" gap={12} mt={hasProgress ? 0 : 2}>
+              <XStack ai="center" gap={4}>
+                <Ionicons name="time-outline" size={12} color={teal} />
+                <UText variant="text-xs" color="$brandTeal" fontWeight="500">
+                  {duration}
+                </UText>
+              </XStack>
+
+              <YStack w={4} h={4} br={2} bg="$searchbarBorder" />
+
+              <XStack ai="center" gap={4}>
+                <Ionicons name="mic" size={12} color={neutral} />
+                <UText variant="text-xs" color="$neutral1">
+                  Podcast
+                </UText>
+              </XStack>
             </XStack>
-          </XStack>
-        </YStack>
-      </XStack>
+          </YStack>
+        </XStack>
+
+        {/* YouTube-style progress bar at bottom */}
+        {hasProgress && (
+          <UProgressBar
+            percentage={data.progress!.percentage}
+            foregroundColor="$secondary"
+            backgroundColor="$neutralAlphaLight2"
+            h={3}
+            borderRadius={0}
+          />
+        )}
+      </YStack>
     </UAnimatedView>
   );
 };

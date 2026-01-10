@@ -16,7 +16,6 @@ export const useLibraryData = () => {
 
   const books: BookResponse[] = useMemo(() => {
     if (!data?.data?.books) return [];
-
     let booksList = [...data.data.books];
 
     // Filter based on active tab

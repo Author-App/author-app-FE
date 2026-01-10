@@ -14,7 +14,7 @@ interface UseSaveMediaProgressOptions {
 }
 
 export function useSaveMediaProgress(
-  mediaId: string | undefined,
+mediaId: string | undefined,
   options: UseSaveMediaProgressOptions = {}
 ) {
   const { minSecondsThreshold = 5, onBeforeSave } = options;

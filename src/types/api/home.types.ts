@@ -38,6 +38,30 @@ export interface HomeArticle {
   readTime?: { value: number; unit: string };
 }
 
+/**
+ * Progress info for continue reading items
+ */
+export interface ContinueReadingProgress {
+  currentPage: number;
+  currentPositionSec: number;
+  lastReadAt: string;
+  percentage: number;
+  totalPages: number;
+}
+
+/**
+ * Book item in continue reading section (lighter than full BookResponse)
+ */
+export interface ContinueReadingBook {
+  id: string;
+  title: string;
+  image?: string;
+  price: number;
+  currency: string;
+  hasAccess: boolean;
+  progress: ContinueReadingProgress;
+}
+
 // ============================================================================
 // HOME FEED
 // ============================================================================
@@ -51,6 +75,7 @@ export interface HomeFeedResponse {
   trendingBooks: HomeBook[];
   articles: HomeArticle[];
   audioBooks: HomeBook[];
+  continueReading: ContinueReadingBook[];
 }
 
 // ============================================================================
@@ -60,7 +85,7 @@ export interface HomeFeedResponse {
 /**
  * Section type identifiers
  */
-export type HomeSectionType = 'books' | 'audiobooks' | 'articles';
+export type HomeSectionType = 'books' | 'audiobooks' | 'articles' | 'continueReading';
 
 /**
  * Section titles mapped by type
@@ -69,6 +94,7 @@ export const HOME_SECTION_TITLES: Record<HomeSectionType, string> = {
   books: 'Trending Books',
   audiobooks: 'New Audiobooks',
   articles: 'Featured Articles',
+  continueReading: 'Continue Reading',
 };
 
 /**
@@ -78,4 +104,5 @@ export const HOME_SECTION_TITLES: Record<HomeSectionType, string> = {
 export type HomeSection =
   | { type: 'books'; data: HomeBook[] }
   | { type: 'audiobooks'; data: HomeBook[] }
-  | { type: 'articles'; data: HomeArticle[] };
+  | { type: 'articles'; data: HomeArticle[] }
+  | { type: 'continueReading'; data: ContinueReadingBook[] };

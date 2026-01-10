@@ -19,7 +19,7 @@ const AppLoader: React.FC<AppLoaderProps> = ({
       {...props}
     >
       <LottieView
-        source={require('@/assets/animations/loader.json')}
+        source={require('@/assets/animations/loaderBomb.json')}
         autoPlay
         loop
         style={{ width: size, height: size }}

@@ -14,7 +14,7 @@ interface AudioHeroProps {
   duration?: string;
   thumbnail?: string | null;
   subtitle?: string;
-  artworkSize?: number;
+  size?: number;
 }
 
 export const AudioHero = memo(function AudioHero({
@@ -22,11 +22,10 @@ export const AudioHero = memo(function AudioHero({
   duration,
   thumbnail,
   subtitle,
-  artworkSize = 140,
+  size = 200,
 }: AudioHeroProps) {
-  const borderRadius = Math.round(artworkSize * 0.17); // ~24 for 140
-  const iconContainerSize = Math.round(artworkSize * 0.5);
-  const iconSize = Math.round(artworkSize * 0.26);
+  const iconContainerSize = Math.round(size * 0.5);
+  const iconSize = Math.round(size * 0.26);
 
   return (
     <UAnimatedView animation="fadeInUp" delay={100}>
@@ -34,26 +33,25 @@ export const AudioHero = memo(function AudioHero({
         {/* Artwork Container with Glow Effect */}
         <YStack ai="center" jc="center" mb={24}>
           <YStack
-            w={artworkSize}
-            h={artworkSize}
-            br={borderRadius}
+            w={size}
+            h={size}
             overflow="hidden"
-            bg="$color4"
             shadowColor="$brandCrimson"
             shadowOffset={{ width: 0, height: 8 }}
             shadowOpacity={0.4}
             shadowRadius={20}
             elevation={10}
+            borderRadius={thumbnail?0:30}
           >
             {thumbnail ? (
               <ULocalImage
                 source={thumbnail}
                 w="100%"
                 h="100%"
-                borderRadius={borderRadius}
+                contentFit='contain'
               />
             ) : (
-              <YStack flex={1} ai="center" jc="center">
+              <YStack flex={1} ai="center" jc="center" >
                 <LinearGradient
                   colors={['#8B1538', '#5C0E25', '#3D0918']}
                   start={{ x: 0, y: 0 }}

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import * as FileSystem from 'expo-file-system/legacy';
 import { useRouter } from 'expo-router';
 
-import { useLazyGetBookDetailQuery, useUpdateBookProgressMutation } from '@/src/store/api/libraryApi';
+import { useLazyGetBookDetailQuery, useUpdateEbookProgressMutation } from '@/src/store/api/libraryApi';
 import type { BookResponse } from '@/src/types/api/library.types';
 import { 
   getPdfProgress, 
@@ -50,7 +50,7 @@ export function useEbookReader({ bookId }: UseEbookReaderOptions): UseEbookReade
 
   const router = useRouter();
   const [fetchBookDetail] = useLazyGetBookDetailQuery();
-  const [updateBookProgress] = useUpdateBookProgressMutation();
+  const [updateEbookProgress] = useUpdateEbookProgressMutation();
 
   const [status, setStatus] = useState<ReaderStatus>('loading');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -214,7 +214,7 @@ export function useEbookReader({ bookId }: UseEbookReaderOptions): UseEbookReade
         
         if (progress?.page && progress.page > 0) {
           // Save to server
-          await updateBookProgress({
+          await updateEbookProgress({
             bookId,
             currentPage: progress.page,
           }).unwrap();
@@ -224,7 +224,7 @@ export function useEbookReader({ bookId }: UseEbookReaderOptions): UseEbookReade
       }
     }
     router.back();
-  }, [bookId, updateBookProgress, router]);
+  }, [bookId, updateEbookProgress, router]);
 
   const onPdfError = useCallback((error: object) => {
     console.error('[useEbookReader] PDF error:', error);

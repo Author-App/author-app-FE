@@ -50,6 +50,14 @@ export interface ArticleListResponse {
 
 export type MediaType = 'video' | 'podcast';
 
+export interface MediaProgress {
+  currentPositionSec: number;
+  durationSec: number;
+  lastPlayedAt: string;
+  percentage: number;
+  watchedSec: number;
+}
+
 export interface MediaResponse {
   id: string;
   name: string;
@@ -60,6 +68,7 @@ export interface MediaResponse {
   thumbnail?: string;
   createdAt: string | null;
   updatedAt: string | null;
+  progress?: MediaProgress;
 }
 
 export interface MediaListResponse {
