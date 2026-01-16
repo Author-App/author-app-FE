@@ -23,7 +23,7 @@ export function BookHero({ book, averageRating, totalRatings }: BookHeroProps) {
   return (
   
       <UAnimatedView animation="fadeInUp" delay={100}>
-        <YStack ai="center" mb={20}>
+        <YStack ai="center" mb={20} px={20}>
           <YStack
             shadowColor="$brandCrimson"
             shadowOffset={{ width: 0, height: 8 }}

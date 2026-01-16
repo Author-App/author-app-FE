@@ -39,7 +39,7 @@ export function BookTags({ book }: BookInfoProps) {
 
   return (
     <UAnimatedView animation="fadeInUp" delay={200}>
-      <XStack gap={8} mt={24} flexWrap="wrap" jc="center">
+      <XStack gap={8} mt={24} px={20} flexWrap="wrap" jc="center">
         {book.tags.map((tag, index) => (
           <BookTag key={tag.id || index} tag={tag} index={index} />
         ))}

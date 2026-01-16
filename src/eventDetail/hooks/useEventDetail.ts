@@ -1,8 +1,11 @@
 import { useGetEventDetailQuery } from '@/src/store/api/exploreApi';
-import { EventResponse } from '@/src/types/api/explore.types';
-import { getJoinStatus } from '@/src/utils/helper';
-
-export type JoinStatus = 'upcoming' | 'live' | 'ended';
+import { useAppSelector } from '@/src/store/hooks';
+import {
+  selectEvent,
+  selectJoinStatus,
+  type JoinStatus,
+} from '@/src/store/selectors/eventSelectors';
+import type { EventResponse } from '@/src/types/api/explore.types';
 
 interface UseEventDetailReturn {
   event: EventResponse | undefined;
@@ -12,17 +15,16 @@ interface UseEventDetailReturn {
   refetch: () => void;
 }
 
-export const useEventDetail = (eventId: string | undefined): UseEventDetailReturn => {
-  const { data, isLoading, isError, refetch } = useGetEventDetailQuery(eventId!, {
+export const useEventDetail = (
+  eventId: string | undefined
+): UseEventDetailReturn => {
+  const { isLoading, isError, refetch } = useGetEventDetailQuery(eventId!, {
     skip: !eventId,
   });
 
-  const event = data?.data;
-
-  const joinStatus: JoinStatus | null =
-    event?.eventType === 'online' && event.eventDate && event.eventTime
-      ? getJoinStatus(event.eventDate, event.eventTime)
-      : null;
+  // Select data from cache using memoized selectors
+  const event = useAppSelector(selectEvent(eventId ?? ''));
+  const joinStatus = useAppSelector(selectJoinStatus(eventId ?? ''));
 
   return {
     event,

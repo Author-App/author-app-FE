@@ -9,7 +9,7 @@ import type { CommunityDetailResponse } from '@/src/types/api/community.types';
 // Polling interval for fresh messages (30 seconds)
 const POLLING_INTERVAL_MS = 30 * 1000;
 
-export function useCommunityDetail(communityId: string | undefined) {
+export const useCommunityDetail = (communityId: string | undefined) => {
   const {
     data,
     isLoading,

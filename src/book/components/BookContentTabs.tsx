@@ -7,29 +7,38 @@ import { useTabBar, Tab } from '@/src/components/core/tabs/hooks/useTabBar';
 import { AboutTabContent } from './tabs/AboutTabContent';
 import { SynopsisTabContent } from './tabs/SynopsisTabContent';
 import { ReviewsTabContent } from './tabs/ReviewsTabContent';
-import type { BookResponse, RatingStats } from '@/src/types/api/library.types';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { MoreBooksTabContent } from './tabs/MoreBooksTabContent';
+import type {
+  BookResponse,
+  RatingStats,
+  RelatedBookCardResponse,
+} from '@/src/types/api/library.types';
 
-type BookTabKey = 'about' | 'synopsis' | 'reviews';
+type BookTabKey = 'about' | 'synopsis' | 'reviews' | 'more';
 
 const BOOK_TABS: Tab<BookTabKey>[] = [
   { key: 'about', label: 'About' },
   { key: 'synopsis', label: 'Synopsis' },
   { key: 'reviews', label: 'Reviews' },
+  { key: 'more', label: 'More Books' },
 ];
 
 interface BookContentTabsProps {
   book: BookResponse;
+  moreBooks: RelatedBookCardResponse[];
   ratingStats?: RatingStats;
   hasAccess?: boolean;
   onWriteReview: () => void;
+  onBookPress: (bookId: string) => void;
 }
 
 export function BookContentTabs({
   book,
+  moreBooks,
   ratingStats,
   hasAccess,
   onWriteReview,
+  onBookPress,
 }: BookContentTabsProps) {
   const {
     activeTab,
@@ -39,7 +48,6 @@ export function BookContentTabs({
     handleTabLayout,
     handleTabPress,
   } = useTabBar(BOOK_TABS, 'about');
-  const {bottom} = useSafeAreaInsets()
 
   const renderContent = () => {
     switch (activeTab) {
@@ -55,6 +63,8 @@ export function BookContentTabs({
             onWriteReview={onWriteReview}
           />
         );
+      case 'more':
+        return <MoreBooksTabContent books={moreBooks} onBookPress={onBookPress} />;
       default:
         return null;
     }
@@ -62,7 +72,7 @@ export function BookContentTabs({
 
   return (
     <UAnimatedView animation="fadeInUp" delay={300}>
-      <YStack mt={24} pb={bottom+20}>
+      <YStack mt={24}>
         <TabBar
           tabs={BOOK_TABS}
           activeTab={activeTab}
@@ -74,7 +84,7 @@ export function BookContentTabs({
           indicatorColor="$brandCrimson"
         />
 
-        <YStack mt={20}>{renderContent()}</YStack>
+        <YStack mt={20} px={20}>{renderContent()}</YStack>
       </YStack>
     </UAnimatedView>
   );

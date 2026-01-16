@@ -13,12 +13,11 @@ import { BookHero } from './BookHero';
 import { BookTags } from './BookInfo';
 import { BookActions } from './BookActions';
 import { BookContentTabs } from './BookContentTabs';
-import { MoreBooksSection } from './MoreBooksSection';
 import UScreenLayout from '@/src/components/core/layout/UScreenLayout';
 
 export function BookDetailScreen() {
   const { bookId } = useLocalSearchParams<{ bookId: string }>();
-  const { top } = useSafeAreaInsets();
+  const { top,bottom } = useSafeAreaInsets();
 
   const {
     book,
@@ -74,8 +73,7 @@ export function BookDetailScreen() {
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingBottom: 120,
-          paddingHorizontal: 20,
+          paddingBottom: bottom + 120,
         }}
       >
         <BookHero
@@ -88,20 +86,15 @@ export function BookDetailScreen() {
 
         <BookContentTabs
           book={book}
+          moreBooks={moreBooks}
           ratingStats={ratingStats ?? undefined}
           hasAccess={hasAccess}
           onWriteReview={() => {
             haptics.medium();
             setReviewModalVisible(true);
           }}
+          onBookPress={openRelatedBook}
         />
-
-        {moreBooks.length > 0 && (
-          <MoreBooksSection
-            books={moreBooks}
-            onBookPress={openRelatedBook}
-          />
-        )}
       </ScrollView>
 
       {/* Fixed bottom action button */}

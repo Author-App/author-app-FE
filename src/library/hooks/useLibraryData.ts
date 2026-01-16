@@ -4,6 +4,13 @@ import { useRouter } from 'expo-router';
 import type { Href } from 'expo-router';
 
 import { useGetBooksQuery } from '@/src/store/api/libraryApi';
+import { useAppSelector } from '@/src/store/hooks';
+import {
+  selectBooksSortedByDate,
+  selectOwnedBooks,
+  selectEbooks,
+  selectAudiobooks,
+} from '@/src/store/selectors/librarySelectors';
 import type { BookResponse } from '@/src/types/api/library.types';
 import type { LibraryTab } from '../types/library.types';
 
@@ -12,35 +19,27 @@ export const useLibraryData = () => {
 
   const [activeTab, setActiveTab] = useState<LibraryTab>('all');
 
-  const { data, isLoading, isError, refetch } = useGetBooksQuery({});
+  const { isLoading, isError, refetch } = useGetBooksQuery({});
+
+  // Select data from cache using memoized selectors
+  const allBooks = useAppSelector(selectBooksSortedByDate);
+  const ownedBooks = useAppSelector(selectOwnedBooks);
+  const ebooks = useAppSelector(selectEbooks);
+  const audiobooks = useAppSelector(selectAudiobooks);
 
   const books: BookResponse[] = useMemo(() => {
-    if (!data?.data?.books) return [];
-    let booksList = [...data.data.books];
-
-    // Filter based on active tab
     switch (activeTab) {
       case 'owned':
-        booksList = booksList.filter((book) => book.hasAccess || book.isFree);
-        break;
+        return ownedBooks;
       case 'ebook':
-        booksList = booksList.filter((book) => book.type === 'ebook');
-        break;
+        return ebooks;
       case 'audiobook':
-        booksList = booksList.filter((book) => book.type === 'audiobook');
-        break;
+        return audiobooks;
       case 'all':
       default:
-        // No filter for all books
-        break;
+        return allBooks;
     }
-
-    return booksList.sort(
-      (a, b) =>
-        new Date(b.publishedAt ?? b.createdAt ?? 0).getTime() -
-        new Date(a.publishedAt ?? a.createdAt ?? 0).getTime()
-    );
-  }, [data, activeTab]);
+  }, [activeTab, allBooks, ownedBooks, ebooks, audiobooks]);
 
   const screenWidth = Dimensions.get('window').width;
   const numColumns = useMemo(() => {

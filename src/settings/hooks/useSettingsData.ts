@@ -6,11 +6,12 @@ import type { Href } from 'expo-router';
 import { haptics } from '@/src/utils/haptics';
 
 import { useGetMeQuery, useDeleteAccountMutation } from '@/src/store/api/userApi';
+import { useAppSelector } from '@/src/store/hooks';
+import { selectCurrentUser } from '@/src/store/selectors/userSelectors';
 import { logOut } from '@/src/store/slices/authSlice';
 import { clearPushToken } from '@/src/store/slices/pushTokenSlice';
 import { persistor } from '@/src/store';
 import { useNotificationSettings } from '@/src/notifications';
-import type { UserData } from '@/src/types/api/user.types';
 import type { SettingsSection } from '../types/settings.types';
 
 export const useSettingsData = () => {
@@ -18,8 +19,11 @@ export const useSettingsData = () => {
   const dispatch = useDispatch();
 
   // API hooks
-  const { data, isLoading, isError, refetch } = useGetMeQuery();
+  const { isLoading, isError, refetch } = useGetMeQuery();
   const [deleteAccount, { isLoading: isDeleting }] = useDeleteAccountMutation();
+
+  // Select data from cache using memoized selector
+  const user = useAppSelector(selectCurrentUser);
 
   // Notification settings
   const { 
@@ -29,9 +33,6 @@ export const useSettingsData = () => {
 
   // Local state
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
-
-  // Extract user data - may be undefined if API fails
-  const user: UserData | undefined = data?.data?.user;
 
   // Handle logout - always available
   const handleLogout = useCallback(() => {

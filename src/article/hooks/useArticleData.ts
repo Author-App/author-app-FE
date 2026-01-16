@@ -1,18 +1,15 @@
 import { useGetArticleDetailQuery } from '@/src/store/api/exploreApi';
+import { useAppSelector } from '@/src/store/hooks';
+import { selectArticle } from '@/src/store/selectors/articleSelectors';
 
 export function useArticleData(id: string | undefined) {
-  const {
-    data,
-    isLoading,
-    isFetching,
-    isError,
-    error,
-    refetch,
-  } = useGetArticleDetailQuery(id!, {
-    skip: !id,
-  });
+  const { isLoading, isFetching, isError, error, refetch } =
+    useGetArticleDetailQuery(id!, {
+      skip: !id,
+    });
 
-  const article = data?.data ?? null;
+  // Select data from cache using memoized selector
+  const article = useAppSelector(selectArticle(id ?? ''));
 
   return {
     // Data

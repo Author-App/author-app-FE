@@ -1,4 +1,4 @@
-import { useCallback, useState, useMemo } from 'react';
+import { useCallback, useState } from 'react';
 import { useRouter } from 'expo-router';
 import type { Href } from 'expo-router';
 import { haptics } from '@/src/utils/haptics';
@@ -6,30 +6,34 @@ import {
   useGetBookDetailQuery,
   useRateBookMutation,
 } from '@/src/store/api/libraryApi';
+import { useAppSelector } from '@/src/store/hooks';
+import {
+  selectBook,
+  selectMoreBooks,
+  selectRatingStats,
+  selectHasAccess,
+} from '@/src/store/selectors/bookSelectors';
 import { useBookPurchase } from '@/src/hooks/useBookPurchase';
-import type {
-  BookResponse,
-  RelatedBookCardResponse,
-  RatingStats,
-  RateBookRequest,
-} from '@/src/types/api/library.types';
+import type { RateBookRequest } from '@/src/types/api/library.types';
 
 export function useBookDetail(bookId: string | undefined) {
   const router = useRouter();
 
-  // API queries
-  const {
-    data,
-    isLoading,
-    isFetching,
-    isError,
-    refetch,
-  } = useGetBookDetailQuery(bookId!, {
-    skip: !bookId,
-  });
+  // API queries - trigger the fetch
+  const { isLoading, isFetching, isError, refetch } = useGetBookDetailQuery(
+    bookId!,
+    { skip: !bookId }
+  );
+
+  // Select data from cache using memoized selectors
+  const book = useAppSelector(selectBook(bookId ?? ''));
+  const moreBooks = useAppSelector(selectMoreBooks(bookId ?? ''));
+  const ratingStats = useAppSelector(selectRatingStats(bookId ?? ''));
+  const hasAccess = useAppSelector(selectHasAccess(bookId ?? ''));
 
   // Mutations
-  const [rateBookMutation, { isLoading: isSubmittingReview }] = useRateBookMutation();
+  const [rateBookMutation, { isLoading: isSubmittingReview }] =
+    useRateBookMutation();
 
   // Review modal state
   const [isReviewModalVisible, setReviewModalVisible] = useState(false);
@@ -39,28 +43,6 @@ export function useBookDetail(bookId: string | undefined) {
     onSuccess: refetch,
     onError: (message) => alert(message),
   });
-
-  // Extract data
-  const book: BookResponse | undefined = data?.data?.book;
-  const moreBooks: RelatedBookCardResponse[] = data?.data?.moreBooks ?? [];
-  const reviews = data?.data?.reviews;
-  // Computed rating stats - use dummy data if no reviews from API
-  const ratingStats: RatingStats | null = useMemo(() => {
-    if (!reviews) {
-      return null;
-    }
-    return {
-      average: reviews.averageRating,
-      total: reviews.totalRating,
-      recommended: reviews.recommendedPercentage,
-      breakdown: reviews.ratingsBreakdown,
-      userReviews: reviews.userReviews,
-      currentUserReview: reviews.currentUserReview,
-    };
-  }, [reviews]);
-
-  // Check if user has access (free book or purchased)
-  const hasAccess = book?.isFree || book?.hasAccess;
 
   // Navigate to reader/player
   const startReading = useCallback(() => {

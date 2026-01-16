@@ -13,6 +13,14 @@ import {
   useJoinCommunityMutation,
   useExitCommunityMutation,
 } from '@/src/store/api/exploreApi';
+import { useAppSelector } from '@/src/store/hooks';
+import {
+  selectArticles,
+  selectPodcasts,
+  selectVideos,
+  selectEvents,
+  selectCommunities,
+} from '@/src/store/selectors/exploreSelectors';
 import type {
   ExploreTabType,
   ExploreSectionItem,
@@ -79,6 +87,13 @@ export const useExploreData = (): UseExploreDataReturn => {
   const [joinCommunity, { isLoading: isJoining }] = useJoinCommunityMutation();
   const [exitCommunity, { isLoading: isExiting }] = useExitCommunityMutation();
 
+  // Select data from cache using memoized selectors
+  const articles = useAppSelector(selectArticles);
+  const podcasts = useAppSelector(selectPodcasts);
+  const videos = useAppSelector(selectVideos);
+  const events = useAppSelector(selectEvents);
+  const communities = useAppSelector(selectCommunities);
+
   const currentQuery = useMemo(() => {
     switch (activeTab) {
       case 'Blogs':
@@ -117,19 +132,19 @@ export const useExploreData = (): UseExploreDataReturn => {
   const rawData = useMemo(() => {
     switch (activeTab) {
       case 'Blogs':
-        return articlesQuery.data?.data?.articles ?? [];
+        return articles;
       case 'Podcasts':
-        return sortMediaByLastPlayed(podcastsQuery.data?.data?.media ?? []);
+        return sortMediaByLastPlayed(podcasts);
       case 'Videos':
-        return sortMediaByLastPlayed(videosQuery.data?.data?.media ?? []);
+        return sortMediaByLastPlayed(videos);
       case 'Events':
-        return eventsQuery.data?.data?.events ?? [];
+        return events;
       case 'Community':
-        return communitiesQuery.data?.data?.communities ?? [];
+        return communities;
       default:
         return [];
     }
-  }, [activeTab, articlesQuery.data, podcastsQuery.data, videosQuery.data, eventsQuery.data, communitiesQuery.data]);
+  }, [activeTab, articles, podcasts, videos, events, communities, sortMediaByLastPlayed]);
 
   const filteredData = useMemo(() => {
     const query = search.trim().toLowerCase();
