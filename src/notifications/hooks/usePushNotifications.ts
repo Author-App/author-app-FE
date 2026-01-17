@@ -8,6 +8,7 @@ import { setPushToken } from '@/src/store/slices/pushTokenSlice';
 import { selectPushToken } from '@/src/store/selectors/pushTokenSelectors';
 import { useRegisterPushTokenMutation } from '@/src/store/api/pushTokenApi';
 import { handleNotificationNavigation, NotificationData } from '../utils/notificationHandler';
+import { sentryService } from '@/src/services/sentry';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -34,9 +35,21 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
   const responseListener = useRef<Notifications.EventSubscription | null>(null);
 
   const registerForPushNotifications = useCallback(async (): Promise<void> => {
+    sentryService.addBreadcrumb({
+      category: 'notification',
+      message: 'registerForPushNotifications called',
+      data: { isDevice: Device.isDevice, platform: Platform.OS },
+      level: 'info',
+    });
+
     try {
       // Check if running on a physical device
       if (!Device.isDevice) {
+        sentryService.addBreadcrumb({
+          category: 'notification',
+          message: 'Skipped registration - not physical device',
+          level: 'info',
+        });
         return;
       }
 
@@ -44,24 +57,69 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
       const { status: existingStatus } = await Notifications.getPermissionsAsync();
       let finalStatus = existingStatus;
 
+      sentryService.addBreadcrumb({
+        category: 'notification',
+        message: `Existing permission status: ${existingStatus}`,
+        data: { existingStatus },
+        level: 'info',
+      });
+
       // Request permissions if not granted
       if (existingStatus !== 'granted') {
         const { status } = await Notifications.requestPermissionsAsync();
         finalStatus = status;
+
+        sentryService.addBreadcrumb({
+          category: 'notification',
+          message: `Permission requested, new status: ${status}`,
+          data: { requestedStatus: status },
+          level: 'info',
+        });
       }
 
       if (finalStatus !== 'granted') {
+        sentryService.addBreadcrumb({
+          category: 'notification',
+          message: 'Permission not granted, aborting registration',
+          data: { finalStatus },
+          level: 'warning',
+        });
         return;
       }
 
       // Get the Expo push token
       const projectId = Constants.expoConfig?.extra?.eas?.projectId;
+
+      sentryService.addBreadcrumb({
+        category: 'notification',
+        message: 'Fetching Expo push token',
+        data: { projectId },
+        level: 'info',
+      });
       
       const tokenData = await Notifications.getExpoPushTokenAsync({
         projectId,
       });
       
       const token = tokenData.data;
+
+      // Log token to Sentry for debugging
+      sentryService.addBreadcrumb({
+        category: 'notification',
+        message: 'Push token obtained',
+        data: { 
+          token,
+          tokenLength: token?.length,
+        },
+        level: 'info',
+      });
+
+      // Also set as context for future errors
+      sentryService.setContext('push_notification', {
+        token,
+        platform: Platform.OS,
+        isDevice: Device.isDevice,
+      });
       
       // Store token in Redux
       dispatch(setPushToken(token));
@@ -70,10 +128,21 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
       const platform = Platform.OS as 'ios' | 'android';
       await registerPushToken({ pushToken: token, platform });
 
+      sentryService.addBreadcrumb({
+        category: 'notification',
+        message: 'Push token registered with backend',
+        data: { platform },
+        level: 'info',
+      });
+
       if (Platform.OS === 'android') {
         await setupAndroidChannels();
       }
     } catch (error) {
+      sentryService.captureError(error, {
+        tags: { type: 'notification_error' },
+        extra: { action: 'registerForPushNotifications' },
+      });
     }
   }, [dispatch, registerPushToken]);
 

@@ -9,6 +9,7 @@ import UText from '@/src/components/core/text/uText';
 import { usePushNotifications } from '../hooks/usePushNotifications';
 import DevPushTokenView from './DevPushTokenView';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { sentryService } from '@/src/services/sentry';
 
 type SheetView = 'permission' | 'token';
 
@@ -23,17 +24,49 @@ const NotificationPermissionSheet: React.FC = () => {
 
   useEffect(() => {
     const checkAndShowSheet = async () => {
+      sentryService.addBreadcrumb({
+        category: 'notification',
+        message: 'Checking notification permission status',
+        data: { isDevice: Device.isDevice },
+        level: 'info',
+      });
+
       // Skip if not physical device
-      if (!Device.isDevice) return;
+      if (!Device.isDevice) {
+        sentryService.addBreadcrumb({
+          category: 'notification',
+          message: 'Skipped - not a physical device',
+          level: 'info',
+        });
+        return;
+      }
 
       // Check permission status
       const { status } = await Notifications.getPermissionsAsync();
 
+      sentryService.addBreadcrumb({
+        category: 'notification',
+        message: `Permission status: ${status}`,
+        data: { status },
+        level: 'info',
+      });
+
       if (status === 'undetermined') {
+        sentryService.addBreadcrumb({
+          category: 'notification',
+          message: 'Opening permission sheet',
+          level: 'info',
+        });
         // Small delay for better UX after app loads
         setTimeout(() => {
           setIsOpen(true);
         }, 500);
+      } else {
+        sentryService.addBreadcrumb({
+          category: 'notification',
+          message: `Sheet not shown - status already: ${status}`,
+          level: 'info',
+        });
       }
     };
 
@@ -46,6 +79,11 @@ const NotificationPermissionSheet: React.FC = () => {
   
   const handleAllow = useCallback(async () => {
     setIsLoading(true);
+    sentryService.addBreadcrumb({
+      category: 'notification',
+      message: 'User tapped Allow button',
+      level: 'info',
+    });
 
     try {
       await registerForPushNotifications();
@@ -53,15 +91,36 @@ const NotificationPermissionSheet: React.FC = () => {
       // Check if permission was actually granted
       const { status } = await Notifications.getPermissionsAsync();
 
+      sentryService.addBreadcrumb({
+        category: 'notification',
+        message: `Permission result after Allow: ${status}`,
+        data: { status },
+        level: 'info',
+      });
+
       if (status !== 'granted') {
         // User denied in native popup
+        sentryService.addBreadcrumb({
+          category: 'notification',
+          message: 'User denied in native popup',
+          level: 'info',
+        });
         setIsOpen(false);
         return;
       }
 
       // Show token view after permission granted
+      sentryService.addBreadcrumb({
+        category: 'notification',
+        message: 'Permission granted - showing token view',
+        level: 'info',
+      });
       setCurrentView('token');
     } catch (error) {
+      sentryService.captureError(error, {
+        tags: { type: 'notification_error' },
+        extra: { action: 'handleAllow' },
+      });
       setIsOpen(false);
     } finally {
       setIsLoading(false);

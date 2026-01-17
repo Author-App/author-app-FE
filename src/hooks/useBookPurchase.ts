@@ -1,6 +1,7 @@
 import { useCallback, useRef, useEffect } from 'react';
 import { useStripe } from '@stripe/stripe-react-native';
 import { useLazyVerifyPaymentQuery, useCreateOrderMutation } from '@/src/store/api/ordersApi';
+import { sentryService } from '@/src/services/sentry';
 import type { PaymentStatus } from '@/src/types/api/orders.types';
 
 const VERIFICATION_POLL_INTERVAL = 2000;
@@ -70,8 +71,12 @@ export function useBookPurchase(options: UseBookPurchaseOptions = {}): UseBookPu
 
   // Main purchase function
   const purchase = useCallback(async (bookId: string) => {
+    // Track payment start
+    sentryService.trackPaymentStep('start', { bookId });
+
     try {
       // 1. Create order
+      sentryService.trackPaymentStep('create_order', { bookId });
       const { data } = await createOrder({ bookId }).unwrap();
       const { id: orderId, clientSecret } = data;
 
@@ -80,31 +85,41 @@ export function useBookPurchase(options: UseBookPurchaseOptions = {}): UseBookPu
       }
 
       // 2. Initialize Payment Sheet
+      sentryService.trackPaymentStep('init_payment_sheet', { bookId, orderId });
       const { error: initError } = await initPaymentSheet({
         paymentIntentClientSecret: clientSecret,
         merchantDisplayName: 'Stanley Paden',
       });
 
       if (initError) {
+        sentryService.captureStripeError(initError, 'init_payment_sheet', { bookId, orderId });
         throw new Error(initError.message);
       }
 
       // 3. Present Payment Sheet
+      sentryService.trackPaymentStep('present_payment_sheet', { bookId, orderId });
       const { error: paymentError } = await presentPaymentSheet();
 
       if (paymentError) {
         // User cancelled - not an error
-        if (paymentError.code === 'Canceled') return;
+        if (paymentError.code === 'Canceled') {
+          sentryService.trackPaymentStep('cancelled', { bookId, orderId });
+          return;
+        }
+        sentryService.captureStripeError(paymentError, 'present_payment_sheet', { bookId, orderId });
         throw new Error(paymentError.message);
       }
 
       // 4. Verify payment on backend
+      sentryService.trackPaymentStep('verify_payment', { bookId, orderId });
       await pollPaymentVerification(orderId);
 
       // 5. Success!
+      sentryService.trackPaymentStep('success', { bookId, orderId });
       onSuccessRef.current?.();
 
     } catch (error) {
+      sentryService.capturePaymentError(error, 'error', { bookId });
       const message = error instanceof Error ? error.message : 'Purchase failed';
       onErrorRef.current?.(message);
     }

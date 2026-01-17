@@ -40,6 +40,7 @@ const authSlice = createSlice({
       state.isLoggedIn = false;
       // Clear tokens from AsyncStorage
       clearAuthTokens();
+      // Note: SentryUserSync handles clearing Sentry user
     },
 
     rememberCredentials: (
@@ -91,6 +92,7 @@ const authSlice = createSlice({
           if (refreshToken && user.id) {
             saveAuthTokens(refreshToken, user.id);
           }
+          // Note: SentryUserSync handles setting Sentry user
         } else {
           Toast.show({
             type: 'error',
