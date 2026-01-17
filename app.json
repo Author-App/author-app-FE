@@ -61,7 +61,7 @@
           "url": "https://sentry.io/",
           "project": "stanley-paden",
           "organization": "swift-reflex",
-          "uploadSourceMaps": false
+          "uploadSourceMaps": true
         }
       ]
     ],
