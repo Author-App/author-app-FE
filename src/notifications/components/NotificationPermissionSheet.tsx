@@ -3,6 +3,7 @@ import { Sheet } from '@tamagui/sheet';
 import { YStack, XStack } from 'tamagui';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
+import { Linking, Platform } from 'react-native';
 import LottieView from 'lottie-react-native';
 
 import UText from '@/src/components/core/text/uText';
@@ -11,7 +12,7 @@ import DevPushTokenView from './DevPushTokenView';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { sentryService } from '@/src/services/sentry';
 
-type SheetView = 'permission' | 'token';
+type SheetView = 'permission' | 'settings' | 'token';
 
 const NotificationPermissionSheet: React.FC = () => {
   const { expoPushToken, registerForPushNotifications } = usePushNotifications();
@@ -59,6 +60,19 @@ const NotificationPermissionSheet: React.FC = () => {
         });
         // Small delay for better UX after app loads
         setTimeout(() => {
+          setCurrentView('permission');
+          setIsOpen(true);
+        }, 500);
+      } else if (status === 'denied') {
+        // On Android 13+, if user previously denied, we need to redirect to settings
+        // Show a sheet prompting them to enable in settings
+        sentryService.addBreadcrumb({
+          category: 'notification',
+          message: 'Permission denied - showing settings prompt',
+          level: 'info',
+        });
+        setTimeout(() => {
+          setCurrentView('settings');
           setIsOpen(true);
         }, 500);
       } else {
@@ -131,6 +145,29 @@ const NotificationPermissionSheet: React.FC = () => {
     setIsOpen(false);
   }, []);
 
+  const handleOpenSettings = useCallback(async () => {
+    sentryService.addBreadcrumb({
+      category: 'notification',
+      message: 'User tapped Open Settings button',
+      level: 'info',
+    });
+    
+    try {
+      if (Platform.OS === 'ios') {
+        await Linking.openURL('app-settings:');
+      } else {
+        await Linking.openSettings();
+      }
+    } catch (error) {
+      sentryService.captureError(error, {
+        tags: { type: 'notification_error' },
+        extra: { action: 'handleOpenSettings' },
+      });
+    }
+    
+    setIsOpen(false);
+  }, []);
+
   return (
     <Sheet
       modal
@@ -161,6 +198,11 @@ const NotificationPermissionSheet: React.FC = () => {
           <PermissionContent
             isLoading={isLoading}
             onAllow={handleAllow}
+            onDeny={handleDeny}
+          />
+        ) : currentView === 'settings' ? (
+          <SettingsPromptContent
+            onOpenSettings={handleOpenSettings}
             onDeny={handleDeny}
           />
         ) : (
@@ -237,6 +279,70 @@ const PermissionContent: React.FC<PermissionContentProps> = ({
       >
         <UText variant="label-md" color="$white">
           {isLoading ? 'Loading...' : 'Allow'}
+        </UText>
+      </YStack>
+    </XStack>
+  </YStack>
+);
+
+
+interface SettingsPromptContentProps {
+  onOpenSettings: () => void;
+  onDeny: () => void;
+}
+
+const SettingsPromptContent: React.FC<SettingsPromptContentProps> = ({
+  onOpenSettings,
+  onDeny,
+}) => (
+  <YStack ai="center" gap={20} pt={20}>
+    {/* Notification Bell Animation */}
+    <LottieView
+      source={require('@/assets/animations/notificationBell.json')}
+      autoPlay
+      loop
+      style={{ width: 100, height: 100 }}
+    />
+
+    {/* Title */}
+    <UText variant="heading-h2" color="$white" textAlign="center">
+      Enable Notifications
+    </UText>
+
+    {/* Description */}
+    <UText variant="text-sm" color="$neutral4" textAlign="center" px={20}>
+      Notifications are currently disabled. Enable them in Settings to receive updates about new content, community messages, and event reminders.
+    </UText>
+
+    {/* Buttons */}
+    <XStack gap={12} w="100%" pt={8}>
+      {/* Deny Button */}
+      <YStack
+        f={1}
+        bg="rgba(255, 255, 255, 0.1)"
+        py={14}
+        borderRadius={12}
+        ai="center"
+        pressStyle={{ opacity: 0.7 }}
+        onPress={onDeny}
+      >
+        <UText variant="label-md" color="$neutral3">
+          Not Now
+        </UText>
+      </YStack>
+
+      {/* Open Settings Button */}
+      <YStack
+        f={1}
+        bg="$brandCrimson"
+        py={14}
+        borderRadius={12}
+        ai="center"
+        pressStyle={{ opacity: 0.7 }}
+        onPress={onOpenSettings}
+      >
+        <UText variant="label-md" color="$white">
+          Open Settings
         </UText>
       </YStack>
     </XStack>

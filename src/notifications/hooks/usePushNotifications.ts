@@ -34,6 +34,47 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
   const notificationListener = useRef<Notifications.EventSubscription | null>(null);
   const responseListener = useRef<Notifications.EventSubscription | null>(null);
 
+  /**
+   * Setup Android notification channels
+   * MUST be called before requesting permissions on Android 13+
+   */
+  const setupAndroidChannels = async (): Promise<void> => {
+    // Default channel for general notifications
+    await Notifications.setNotificationChannelAsync('default', {
+      name: 'Default',
+      importance: Notifications.AndroidImportance.HIGH,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: '#D64045', // brandCrimson
+    });
+
+    // Channel for content updates (books, podcasts, etc.)
+    await Notifications.setNotificationChannelAsync('content', {
+      name: 'New Content',
+      description: 'Notifications for new books, podcasts, and videos',
+      importance: Notifications.AndroidImportance.HIGH,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: '#D64045',
+    });
+
+    // Channel for community messages
+    await Notifications.setNotificationChannelAsync('community', {
+      name: 'Community',
+      description: 'Notifications for community messages',
+      importance: Notifications.AndroidImportance.HIGH,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: '#D64045',
+    });
+
+    // Channel for events
+    await Notifications.setNotificationChannelAsync('events', {
+      name: 'Events',
+      description: 'Event reminders and updates',
+      importance: Notifications.AndroidImportance.HIGH,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: '#D64045',
+    });
+  };
+
   const registerForPushNotifications = useCallback(async (): Promise<void> => {
     sentryService.addBreadcrumb({
       category: 'notification',
@@ -53,6 +94,12 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
         return;
       }
 
+      // CRITICAL: Create Android notification channels BEFORE requesting permission
+      // This is required for Android 13+ (API 33+)
+      if (Platform.OS === 'android') {
+        await setupAndroidChannels();
+      }
+
       // Check existing permissions
       const { status: existingStatus } = await Notifications.getPermissionsAsync();
       let finalStatus = existingStatus;
@@ -66,6 +113,8 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
 
       // Request permissions if not granted
       if (existingStatus !== 'granted') {
+        // On Android, if previously denied, requestPermissionsAsync won't show dialog
+        // User must be redirected to settings (handled by caller/UI)
         const { status } = await Notifications.requestPermissionsAsync();
         finalStatus = status;
 
@@ -134,10 +183,6 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
         data: { platform },
         level: 'info',
       });
-
-      if (Platform.OS === 'android') {
-        await setupAndroidChannels();
-      }
     } catch (error) {
       sentryService.captureError(error, {
         tags: { type: 'notification_error' },
@@ -145,47 +190,6 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
       });
     }
   }, [dispatch, registerPushToken]);
-
-  /**
-   * Setup Android notification channels
-   */
-  const setupAndroidChannels = async (): Promise<void> => {
-    // Default channel for general notifications
-    await Notifications.setNotificationChannelAsync('default', {
-      name: 'Default',
-      importance: Notifications.AndroidImportance.HIGH,
-      vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#D64045', // brandCrimson
-    });
-
-    // Channel for content updates (books, podcasts, etc.)
-    await Notifications.setNotificationChannelAsync('content', {
-      name: 'New Content',
-      description: 'Notifications for new books, podcasts, and videos',
-      importance: Notifications.AndroidImportance.HIGH,
-      vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#D64045',
-    });
-
-    // Channel for community messages
-    await Notifications.setNotificationChannelAsync('community', {
-      name: 'Community',
-      description: 'Notifications for community messages',
-      importance: Notifications.AndroidImportance.HIGH,
-      vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#D64045',
-    });
-
-    // Channel for events
-    await Notifications.setNotificationChannelAsync('events', {
-      name: 'Events',
-      description: 'Event reminders and updates',
-      importance: Notifications.AndroidImportance.HIGH,
-      vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#D64045',
-    });
-  };
-
 
   useEffect(() => {
     // Listener for notifications received while app is in foreground
