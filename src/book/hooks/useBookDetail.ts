@@ -31,7 +31,7 @@ export function useBookDetail(bookId: string | undefined) {
   const ratingStats = useAppSelector(selectRatingStats(bookId ?? ''));
   const hasAccess = useAppSelector(selectHasAccess(bookId ?? ''));
 
-  // Mutations
+
   const [rateBookMutation, { isLoading: isSubmittingReview }] =
     useRateBookMutation();
 

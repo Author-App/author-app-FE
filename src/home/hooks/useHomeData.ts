@@ -31,7 +31,7 @@ const getErrorMessage = (error: unknown): string | null => {
 };
 
 export const useHomeData = (): UseHomeDataReturn => {
-  const { data, isLoading, isFetching, refetch } = useGetHomeFeedQuery();
+  const  { isLoading, isFetching, refetch } = useGetHomeFeedQuery();
 
   const banner = useAppSelector(selectHomeBanner);
   const sections = useAppSelector(selectHomeSections);
@@ -49,7 +49,7 @@ export const useHomeData = (): UseHomeDataReturn => {
       continueReading: continueReadingSection?.data ?? [],
     };
   }, [sections]);
-  
+
   const bannerItems = useMemo((): BannerItem[] => {
     const items: BannerItem[] = [];
 
