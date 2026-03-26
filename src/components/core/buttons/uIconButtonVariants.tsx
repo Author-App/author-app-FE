@@ -1,0 +1,287 @@
+import { forwardRef, memo, useMemo } from 'react';
+import { Button as TamaguiButton, Token } from 'tamagui';
+
+import IconPlus from '@/assets/icons/iconPlus';
+import UIcon from '@/src/components/core/icons/uIcon';
+import ButtonVariantStylesType from '@/src/components/core/types/button/buttonStylesType';
+import { ButtonVariant } from '@/src/components/core/types/button/buttonVariant';
+import { IconButtonType } from '@/src/components/core/types/button/iconButtonType';
+import { ActivityIndicator } from 'react-native';
+
+interface UIconButtonProps extends IconButtonType {
+  loading?: boolean;
+}
+
+interface StylesType extends ButtonVariantStylesType {
+  iconSize?: number;
+  iconColor?: Token;
+}
+
+const getVariantStyle = (variant: ButtonVariant = 'primary-md'): StylesType => {
+  const baseStyles: StylesType = {
+    backgroundColor: '$primary7',
+    // width: 36,
+    // height: 36,
+    width: 46,
+    height: 46,
+    borderRadius: 9999,
+    justifyContent: 'center',
+    alignItems: 'center',
+    pressBackgroundColor: '$primary9',
+    hoverBackgroundColor: '$primary8',
+    iconSize: 24,
+    padding: 6,
+  };
+
+  switch (variant) {
+    case 'primary-sm':
+      return {
+        ...baseStyles,
+        width: 28,
+        height: 28,
+        iconSize: 20,
+        padding: 4,
+      };
+    case 'primary-md':
+      return {
+        ...baseStyles,
+      };
+    case 'secondary-xs':
+      return {
+        ...baseStyles,
+        backgroundColor: '$secondary5',
+        pressBackgroundColor: '$secondary7',
+        hoverBackgroundColor: '$secondary6',
+        width: 20,
+        height: 20,
+        iconSize: 14,
+        padding: 2,
+      };
+    case 'secondary-sm':
+      return {
+        ...baseStyles,
+        backgroundColor: '$secondary5',
+        pressBackgroundColor: '$secondary7',
+        hoverBackgroundColor: '$secondary6',
+        width: 28,
+        height: 28,
+        padding: 4,
+        iconSize: 20,
+      };
+    case 'secondary-md':
+      return {
+        ...baseStyles,
+        backgroundColor: '$secondary5',
+        pressBackgroundColor: '$secondary7',
+        hoverBackgroundColor: '$secondary6',
+      };
+    case 'tertiary-sm':
+      return {
+        ...baseStyles,
+        backgroundColor: '$neutral0',
+        pressBackgroundColor: '$neutral2',
+        hoverBackgroundColor: '$neutral1',
+        borderColor: '$primary7',
+        pressBorderColor: '$primary7',
+        hoverBorderColor: '$primary7',
+        iconColor: '$primary7',
+        borderWidth: 1,
+        width: 28,
+        height: 28,
+        padding: 4,
+        iconSize: 20,
+      };
+    case 'tertiary-md':   //white
+      return {
+        ...baseStyles,
+        backgroundColor: '$neutral0',
+        pressBackgroundColor: '$neutral2',
+        hoverBackgroundColor: '$neutral1',
+        // borderColor: '$primary7',
+        borderColor: '$primary2',
+        pressBorderColor: '$primary7',
+        hoverBorderColor: '$primary7',
+        iconColor: '$primary7',
+        borderWidth: 1,
+      };
+    case 'tertiary-lg':   //white
+      return {
+        ...baseStyles,
+        backgroundColor: '$neutral0',
+        pressBackgroundColor: '$neutral2',
+        hoverBackgroundColor: '$neutral1',
+        // borderColor: '$primary7',
+        borderColor: '$primary2',
+        pressBorderColor: '$primary7',
+        hoverBorderColor: '$primary7',
+        iconColor: '$primary7',
+        borderWidth: 1,
+        iconSize: 32,         
+        padding: 10,
+        width: 60,           
+        height: 60,
+      };
+    case 'quaternary-sm':
+      return {
+        ...baseStyles,
+        backgroundColor: '$transparent',
+        pressBackgroundColor: '$primaryAlpha2',
+        hoverBackgroundColor: '$primaryAlpha1',
+        iconColor: '$primary7',
+        width: 28,
+        height: 28,
+        padding: 4,
+        iconSize: 20,
+      };
+    case 'quaternary-md':  //transparent bg with silver outline
+      return {
+        ...baseStyles,
+        backgroundColor: '$transparent',
+        pressBackgroundColor: '$primaryAlpha2',
+        hoverBackgroundColor: '$primaryAlpha1',
+        iconColor: '$primary7',
+      };
+
+    case 'quaternary-xxs':
+      return {
+        ...baseStyles,
+        backgroundColor: '$transparent',
+        pressBackgroundColor: '$primaryAlpha2',
+        hoverBackgroundColor: '$primaryAlpha1',
+        iconColor: '$primary7',
+        width: 20,
+        height: 20,
+        padding: 3,
+        iconSize: 18,
+      };
+
+    case 'quinary-md':   //transparent
+      return {
+        ...baseStyles,
+        backgroundColor: '$transparent',
+        pressBackgroundColor: '$transparent',
+        hoverBackgroundColor: '$transparent',
+        pressBorderColor: '$transparent',
+        hoverBorderColor: '$transparent',
+
+        // backgroundColor: '$secondary',
+        // pressBackgroundColor: '$neutral2',
+        // hoverBackgroundColor: '$neutral1',
+        // pressBorderColor: '$primary7',
+        // hoverBorderColor: '$primary7',
+      };
+    case 'quinary-sm':
+      return {
+        ...baseStyles,
+        backgroundColor: '$neutral0',
+        pressBackgroundColor: '$neutral2',
+        hoverBackgroundColor: '$neutral1',
+        // borderColor: '$primary7',
+        borderColor: '$primary2',
+        pressBorderColor: '$primary7',
+        hoverBorderColor: '$primary7',
+        iconColor: '$primary7',
+        borderWidth: 1,
+      };
+    case 'glass-sm':
+      return {
+        ...baseStyles,
+        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+        pressBackgroundColor: 'rgba(255, 255, 255, 0.25)',
+        hoverBackgroundColor: 'rgba(255, 255, 255, 0.2)',
+        iconColor: '$white',
+        width: 36,
+        height: 36,
+        padding: 4,
+        iconSize: 18,
+      };
+    case 'glass-md':
+      return {
+        ...baseStyles,
+        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+        pressBackgroundColor: 'rgba(255, 255, 255, 0.25)',
+        hoverBackgroundColor: 'rgba(255, 255, 255, 0.2)',
+        iconColor: '$white',
+        width: 40,
+        height: 40,
+        padding: 6,
+        iconSize: 20,
+      };
+    case 'glass-lg':
+      return {
+        ...baseStyles,
+        backgroundColor: 'rgba(255, 255, 255, 0.15)',
+        pressBackgroundColor: 'rgba(255, 255, 255, 0.25)',
+        hoverBackgroundColor: 'rgba(255, 255, 255, 0.2)',
+        iconColor: '$white',
+        width: 64,
+        height: 64,
+        padding: 12,
+        iconSize: 32,
+      };
+
+    default:
+      return baseStyles;
+  }
+};
+
+const UIconButton = forwardRef<any, UIconButtonProps>((props, ref) => {
+  const {
+    variant = 'primary-md',
+    icon = IconPlus,
+    dimen,
+    color,
+    disabled,
+    loading,
+    iconProps = {},
+    ...restProps
+  } = props;
+
+  const variantStyle = useMemo(() => getVariantStyle(variant), [variant]);
+  const {
+    pressBackgroundColor,
+    pressBorderColor,
+    hoverBackgroundColor,
+    hoverBorderColor,
+    iconSize,
+    iconColor,
+    ...restVariantStyles
+  } = variantStyle;
+
+  return (
+    <TamaguiButton
+      ref={ref}
+      {...restVariantStyles}
+      pressStyle={{
+        backgroundColor: pressBackgroundColor,
+        borderColor: pressBorderColor,
+      }}
+      hoverStyle={{
+        backgroundColor: hoverBackgroundColor,
+        borderColor: hoverBorderColor,
+      }}
+      unstyled
+      disabled={disabled}
+      opacity={disabled ? 0.5 : 1}
+      {...restProps}
+    >
+
+      {loading ? (
+        <ActivityIndicator size="small" color={'white'} />
+      ) : (
+        <UIcon
+          icon={icon}
+          color={iconProps.color || color || iconColor || '$white'}
+          dimen={iconProps.dimen || dimen || iconSize}
+        />
+      )}
+      {/* <UIcon
+        icon={icon}
+        color={iconProps.color || iconColor}
+        dimen={iconProps.dimen || iconSize}
+      /> */}
+    </TamaguiButton>
+  );
+});
+
+export default memo(UIconButton);

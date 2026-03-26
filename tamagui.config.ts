@@ -91,6 +91,51 @@ const headingFont = createFont({
   },
 });
 
+const playfairFont = createFont({
+  family: 'PlayfairDisplay',
+  size: {
+    1: 12,
+    2: 14,
+    3: 16,
+    true: 18,
+    4: 18,
+    5: 20,
+    6: 24,
+    7: 28,
+    8: 32,
+    9: 40,
+    10: 48,
+    11: 56,
+    12: 64,
+  },
+  lineHeight: {
+    1: 16,
+    2: 20,
+    3: 24,
+    4: 28,
+    5: 32,
+    6: 36,
+    7: 40,
+    8: 48,
+    9: 56,
+    10: 64,
+    11: 72,
+    12: 80,
+  },
+  weight: {
+    4: '400',
+    7: '700',
+  },
+  letterSpacing: {
+    1: 0.5,
+    2: 0.25,
+  },
+  face: {
+    400: { normal: 'PlayfairDisplay', italic: 'PlayfairDisplay-Italic' },
+    700: { normal: 'PlayfairDisplay-Bold' },
+  },
+});
+
 const adaminaFont = createFont({
   family: 'Adamina',
   size: {
@@ -226,50 +271,48 @@ const dmMonoFont = createFont({
   },
 });
 
-const sfProFont = createFont({
-  family: 'SFProDisplay',
+// ---------------- New Fonts ----------------
+const cormorantGaramondFont = createFont({
+  family: 'CormorantGaramond',
   size: {
-    1: 10,
-    2: 12,
-    3: 14,
-    true: 16,
-    4: 16,
-    5: 18,
-    6: 20,
-    7: 24,
-    8: 30,
-    9: 36,
-    10: 48,
-    11: 60,
-    12: 72,
-    13: 96,
-    14: 128,
+    1: 14,
+    2: 16,
+    3: 20,
+    4: 24,
+    5: 28,
+    6: 32,
   },
-  lineHeight: {
+  weight: {
+    1: '400',
+    2: '500',
+    3: '700',
+  },
+  letterSpacing: {
+    1: 0,
+    2: 0.2,
+  },
+});
+
+const interAltFont = createFont({
+  family: 'Inter',
+  size: {
     1: 12,
     2: 14,
     3: 16,
-    4: 22,
-    5: 24,
-    6: 28,
-    7: 32,
-    8: 40,
-    9: 48,
-    10: 56,
-    11: 72,
-    12: 90,
-    13: 114,
-    14: 150,
+    4: 18,
   },
   weight: {
     1: '400',
     2: '500',
     3: '600',
   },
-  letterSpacing: {
-    1: 0.0,
+  lineHeight: {
+    1: 18,
+    2: 22,
+    3: 24,
   },
 });
+
 
 const tokens = createTokens({
   ...config.tokens,
@@ -278,8 +321,62 @@ const tokens = createTokens({
     white: '#ffffff',
     black: '#000000',
 
+    // --- Brand Palette ---
+    brandCrimson: '#BF092F',
+    brandNavy: '#132440',
+    brandOcean: '#16476A',
+    brandTeal: '#3B9797',
+    brandNavyTransparent: '#132440e0',
+    placeholderGray: '#676767ff',
+    brandGray: '#8E9BAE',
+
+    // --- New theme
+    gold: "#D4AF37",
+    bg: '#F8F2E6',
+    bg2: '#F3E9D6',
+    surface: '#FFFFFF',
+    card: '#FFF9EE',
+    border: '#E2D4B7',
+
+    text: '#2A2A2A',
+    textMuted: '#6C6C6C',
+    heading: '#0B2A4A',
+
+    primary: '#0B2A4A',
+    primaryHover: '#123C6A',
+
+    secondary: '#D2B46C',
+    secondaryHover: '#C19A4A',
+    accent: '#587DA6',
+    link: '#1F5FAF',
+
+    // --- Searchbar Colors
+    searchbarBg: 'rgba(255, 255, 255, 0.04)',
+    searchbarBorder: 'rgba(255, 255, 255, 0.08)',
+    searchbarClearBg: 'rgba(255, 255, 255, 0.12)',
+
+    // --- Dark Theme Colors
+    darkBg: '#1C1B2B',
+    darkSurface: '#252438',
+    darkCard: '#2D2C3E',
+    darkBorder: '#3D3C52',
+    darkText: '#F5F5F7',
+    darkTextMuted: '#A0A0B0',
+    darkAccent: '#E8C872',
+
+    success: '#3A955A',
+    warning: '#D9A441',
+    danger: '#C34A4A',
+
+    tabActive: '#0B2A4A',
+    tabInactive: '#A8A19A',
+    badge: '#EAD7A0',
+
+    shadow: '#09121A33',
+
     // --- Figma Brand Colors ---
     neutral0: '#FFFAFA',
+    neutral1_5: '#C2C0C1',
     neutral2: '#DCD8D9',
     neutral3: '#C2C0C1',
     neutral4: '#A9A7A8',
@@ -300,7 +397,7 @@ const tokens = createTokens({
     primary9: '#232D2A',
     primary10: '#182220',
     primary11: '#4456505E',
-    secondary0: '#FFECEB',
+    secondary0: '#FFD700',
     secondary1: '#FFE1DF',
     secondary2: '#FFC4BF',
     secondary3: '#FFA69F',
@@ -405,6 +502,9 @@ const tokens = createTokens({
     secondaryAlpha10: '#FF6A5FFF',
     secondaryAlpha11: '#A63B33FF',
 
+    // Gold/secondary0 alpha variants (for Pro plan theme)
+    goldAlpha2: '#FFD70033',
+
     positive5: '#00FF66',
     positiveAlpha0: '#00FF6600',
     positiveAlpha1: '#00FF661A',
@@ -444,6 +544,8 @@ const tokens = createTokens({
     negativeAlpha9: '#FF003CE6',
     negativeAlpha10: '#FF003CFF',
     transparent: 'transparent',
+
+    facebook: '#1976D2',
   },
   size: {
     ...config.tokens.size,
@@ -467,7 +569,9 @@ const tamaguiConfig = createTamagui({
     adamina: adaminaFont,
     dmsans: dmSansFont,
     dmmono: dmMonoFont,
-    sfpro: sfProFont,
+    interAlt: interAltFont,
+    cormorantgaramond: cormorantGaramondFont,
+    playfair: playfairFont,
   },
   settings: {
     allowedStyleValues: 'somewhat-strict-web',
@@ -477,7 +581,7 @@ const tamaguiConfig = createTamagui({
 export type AppConfig = typeof tamaguiConfig;
 
 declare module 'tamagui' {
-  interface TamaguiCustomConfig extends AppConfig {}
+  interface TamaguiCustomConfig extends AppConfig { }
 }
 
 export default tamaguiConfig;

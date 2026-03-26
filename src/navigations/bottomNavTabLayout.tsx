@@ -11,11 +11,16 @@ const BottomNavTabLayout = () => {
       }}
       tabBar={(props) => <BottomNavbar {...props} />}
     >
-      <Tabs.Screen name="(home)" options={{ headerShown: false }} />
-      <Tabs.Screen name="library" options={{ headerShown: false }} />
-      <Tabs.Screen name="media" options={{ headerShown: false }} />
-      <Tabs.Screen name="store" options={{ headerShown: false }} />
+      <Tabs.Screen name="(home)"
+        options={{ headerShown: false }}
+      />
+      <Tabs.Screen name="explore" options={{ headerShown: false }} />
+      <Tabs.Screen name="library"
+        options={{ headerShown: false }}
+
+      />
       <Tabs.Screen name="profile" options={{ headerShown: false }} />
+      <Tabs.Screen name="settings" options={{ headerShown: false }} />
     </Tabs>
   );
 };

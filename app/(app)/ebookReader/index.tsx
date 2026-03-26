@@ -1,0 +1,1 @@
+export { EbookReaderScreen as default } from '@/src/ebookReader';

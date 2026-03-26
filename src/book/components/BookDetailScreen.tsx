@@ -1,0 +1,118 @@
+import React from 'react';
+import { YStack, XStack, ScrollView } from 'tamagui';
+import { useLocalSearchParams } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import UBackButton from '@/src/components/core/buttons/uBackButton';
+import AppLoader from '@/src/components/core/loaders/AppLoader';
+import UScreenError from '@/src/components/core/feedback/UScreenError';
+import RatingModal from '@/src/components/core/modals/ratingModal';
+import { haptics } from '@/src/utils/haptics';
+
+import { useBookDetail } from '@/src/book/hooks/useBookDetail';
+import { BookHero } from './BookHero';
+import { BookTags } from './BookInfo';
+import { BookActions } from './BookActions';
+import { BookContentTabs } from './BookContentTabs';
+import UScreenLayout from '@/src/components/core/layout/UScreenLayout';
+
+export function BookDetailScreen() {
+  const { bookId } = useLocalSearchParams<{ bookId: string }>();
+  const { top,bottom } = useSafeAreaInsets();
+
+  const {
+    book,
+    moreBooks,
+    ratingStats,
+    hasAccess,
+    isLoading,
+    isError,
+    isPurchasing,
+    isReviewModalVisible,
+    setReviewModalVisible,
+    refetch,
+    startReading,
+    purchaseBook,
+    submitReview,
+    openRelatedBook,
+  } = useBookDetail(bookId);
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <YStack flex={1} backgroundColor="$brandNavy">
+        <XStack pt={top + 8} pb={12} px={16}>
+          <UBackButton variant="glass-md" />
+        </XStack>
+        <AppLoader bg="transparent" />
+      </YStack>
+    );
+  }
+
+  // Error state
+  if (isError || !book) {
+    return (
+      <YStack flex={1} backgroundColor="$brandNavy">
+        <XStack pt={top + 8} pb={12} px={16}>
+          <UBackButton variant="glass-md" />
+        </XStack>
+        <UScreenError
+          message="Unable to load book details. Please try again."
+          onRetry={refetch}
+        />
+      </YStack>
+    );
+  }
+
+  return (
+    <UScreenLayout flex={1} pt={top + 8}>
+      <XStack px={20} mb={16}>
+        <UBackButton variant="glass-md" />
+      </XStack>
+     
+      <ScrollView
+        scrollEventThrottle={16}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingBottom: bottom + 120,
+        }}
+      >
+        <BookHero
+          book={book}
+          averageRating={ratingStats?.average}
+          totalRatings={ratingStats?.total}
+        />
+
+        <BookTags book={book} />
+
+        <BookContentTabs
+          book={book}
+          moreBooks={moreBooks}
+          ratingStats={ratingStats ?? undefined}
+          hasAccess={hasAccess}
+          onWriteReview={() => {
+            haptics.medium();
+            setReviewModalVisible(true);
+          }}
+          onBookPress={openRelatedBook}
+        />
+      </ScrollView>
+
+      {/* Fixed bottom action button */}
+      <BookActions
+        book={book}
+        hasAccess={hasAccess}
+        isPurchasing={isPurchasing}
+        onStartReading={startReading}
+        onPurchase={purchaseBook}
+      />
+
+      {/* Rating Modal */}
+      <RatingModal
+        visible={isReviewModalVisible}
+        onClose={() => setReviewModalVisible(false)}
+        onSubmit={submitReview}
+        bookTitle={book.title}
+      />
+    </UScreenLayout>
+  );
+}
