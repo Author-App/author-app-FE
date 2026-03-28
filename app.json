@@ -41,7 +41,7 @@
         "android.permission.POST_NOTIFICATIONS"
       ],
       "package": "com.swiftreflex.stanleypaden",
-      "versionCode": 2
+      "versionCode": 3
     },
     "web": {
       "bundler": "metro",
