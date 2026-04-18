@@ -1,12 +1,12 @@
 import { z } from 'zod';
+import { apiResponseSchema } from './common.schemas';
 
-// Wraps data in standard API response format { success, message?, data }
-export const apiResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
-  z.object({
-    success: z.boolean(),
-    message: z.string().optional(),
-    data: dataSchema,
-  });
+// Re-export for backwards compatibility
+export { apiResponseSchema } from './common.schemas';
+
+// ============================================================================
+// AUTH SCHEMAS
+// ============================================================================
 
 export const userSchema = z.object({
   id: z.string(),
