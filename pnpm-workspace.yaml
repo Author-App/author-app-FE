@@ -1,3 +1,0 @@
-ignoredBuiltDependencies:
-  - '@sentry/cli'
-  - unrs-resolver

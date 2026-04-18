@@ -96,5 +96,8 @@
     "ts-jest": "^29.4.9",
     "typescript": "~5.9.2"
   },
+  "pnpm": {
+    "ignoredBuiltDependencies": ["@sentry/cli", "unrs-resolver"]
+  },
   "private": true
 }
