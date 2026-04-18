@@ -4,9 +4,16 @@
   "version": "1.0.0",
   "scripts": {
     "start": "expo start",
+    "dev": "expo start --dev-client",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "typecheck": "tsc --noEmit",
+    "build:ios": "eas build --platform ios",
+    "build:android": "eas build --platform android"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
@@ -43,6 +50,7 @@
     "expo-secure-store": "^55.0.13",
     "expo-splash-screen": "31.0.10",
     "expo-status-bar": "3.0.8",
+    "expo-updates": "^55.0.20",
     "expo-web-browser": "~15.0.10",
     "formik": "^2.4.5",
     "lottie-react-native": "~7.3.4",
@@ -78,8 +86,14 @@
     "@sentry/cli": "^3.1.0",
     "@tamagui/babel-plugin": "~1.126.1",
     "@tamagui/config": "~1.126.1",
+    "@testing-library/jest-native": "^5.4.3",
+    "@testing-library/react-native": "^13.3.3",
+    "@types/jest": "^30.0.0",
     "@types/react": "~19.1.0",
+    "jest": "^30.3.0",
+    "jest-expo": "^55.0.16",
     "react-test-renderer": "19.1.0",
+    "ts-jest": "^29.4.9",
     "typescript": "~5.9.2"
   },
   "private": true
