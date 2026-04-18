@@ -19,7 +19,7 @@ const HeroBanner: React.FC<HeroBannerProps> = ({
 }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const flatListRef = useRef<FlatList<BannerItem>>(null);
-  const autoPlayTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const autoPlayTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isUserScrollingRef = useRef(false);
 
   // Auto-play functionality
