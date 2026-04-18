@@ -40,6 +40,7 @@
     "expo-notifications": "~0.32.15",
     "expo-router": "6.0.11",
     "expo-screen-orientation": "^9.0.8",
+    "expo-secure-store": "^55.0.13",
     "expo-splash-screen": "31.0.10",
     "expo-status-bar": "3.0.8",
     "expo-web-browser": "~15.0.10",
@@ -70,7 +71,8 @@
     "react-redux": "^9.2.0",
     "redux-persist": "^6.0.0",
     "tamagui": "~1.126.1",
-    "yup": "^1.7.1"
+    "yup": "^1.7.1",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@sentry/cli": "^3.1.0",

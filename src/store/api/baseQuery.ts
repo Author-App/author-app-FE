@@ -1,20 +1,16 @@
 import { fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import Toast from 'react-native-toast-message';
+import { ENV } from '@/src/config/env';
 import type { RootState } from '@/src/store';
 import { logOut, updateTokens } from '@/src/store/slices/authSlice';
 import { getAuthTokens, saveAuthTokens } from '@/src/storage/authStorage';
 import type { RefreshResponse } from '@/src/types/api/auth.types';
 
-const API_BASE_URL = 'https://api-dev.stanleypaden.com/api/v1';
-
-
 let isRefreshing = false;
 let refreshPromise: Promise<boolean> | null = null;
 
-
-
 const baseQuery = fetchBaseQuery({
-  baseUrl: API_BASE_URL,
+  baseUrl: ENV.API_BASE_URL,
   prepareHeaders: (headers, { getState }) => {
     const token = (getState() as RootState).auth.token;
     if (token) {
@@ -32,7 +28,7 @@ async function performTokenRefresh(
 ): Promise<boolean> {
   const authState = (api.getState() as RootState).auth;
 
-  // Try Redux state first, then fallback to AsyncStorage
+  // Try Redux first, fallback to SecureStore
   let refreshToken = authState.refreshToken;
   let userId = authState.user?.id;
 
@@ -44,7 +40,7 @@ async function performTokenRefresh(
         userId = storedTokens.userId;
       }
     } catch (error) {
-      console.error('❌ [baseQuery] Failed to read from AsyncStorage:', error);
+      console.error('[baseQuery] Failed to read from SecureStore:', error);
     }
   }
 
@@ -59,7 +55,6 @@ async function performTokenRefresh(
     return false;
   }
 
-  // Attempt refresh
   const refreshResult = await baseQuery(
     {
       url: '/auth/refresh',
@@ -72,7 +67,6 @@ async function performTokenRefresh(
   );
 
 
-  // Handle refresh failure
   if (refreshResult?.error) {
     api.dispatch(logOut());
     Toast.show({
@@ -83,7 +77,6 @@ async function performTokenRefresh(
     return false;
   }
 
-  // Parse refresh response - API wraps response in data.session
   const apiResponse = refreshResult?.data as { data?: { session?: RefreshResponse } } | undefined;
   const session = apiResponse?.data?.session;
   const newAccessToken = session?.access;
@@ -98,12 +91,11 @@ async function performTokenRefresh(
       })
     );
 
-    // Update AsyncStorage with new refresh token
     if (userId) {
       try {
         await saveAuthTokens(newRefreshToken, userId);
       } catch (error) {
-        console.error('❌ [baseQuery] Failed to save tokens to AsyncStorage:', error);
+        console.error('[baseQuery] Failed to save tokens:', error);
       }
     }
 
@@ -119,10 +111,6 @@ async function performTokenRefresh(
   }
 }
 
-// ============================================================================
-// Base Query with Reauth
-// ============================================================================
-
 export const baseQueryWithReauth = async (
   args: Parameters<typeof baseQuery>[0],
   api: Parameters<typeof baseQuery>[1],
@@ -130,35 +118,27 @@ export const baseQueryWithReauth = async (
 ) => {
   let result = await baseQuery(args, api, extraOptions);
 
-  // Skip reauth for login endpoint
   if (typeof args === 'object' && args.url === '/auth/login') {
     return result;
   }
 
-  // Handle 401 - try refresh
   if (result?.error?.status === 401) {
-
-    // If already refreshing, wait for that to complete
+    // Already refreshing - wait for that
     if (isRefreshing && refreshPromise) {
       const success = await refreshPromise;
       if (success) {
-        // Retry original request with new token
         return baseQuery(args, api, extraOptions);
       }
       return result;
     }
 
-    // Start refresh process
     isRefreshing = true;
     refreshPromise = performTokenRefresh(api, extraOptions);
 
     try {
       const success = await refreshPromise;
-
       if (success) {
         result = await baseQuery(args, api, extraOptions);
-      } else {
-        console.log('❌ [baseQuery] Refresh failed - returning error');
       }
     } finally {
       isRefreshing = false;

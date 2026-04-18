@@ -23,21 +23,3 @@ export const selectIsLoggedIn = createSelector(
   [selectAuthState],
   (auth) => auth.isLoggedIn
 );
-
-export const selectRememberedEmail = createSelector(
-  [selectAuthState],
-  (auth) => auth.rememberedEmail
-);
-
-export const selectRememberedPassword = createSelector(
-  [selectAuthState],
-  (auth) => auth.rememberedPassword
-);
-
-export const selectRememberedCredentials = createSelector(
-  [selectAuthState],
-  (auth) => ({
-    email: auth.rememberedEmail,
-    password: auth.rememberedPassword,
-  })
-);

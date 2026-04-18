@@ -1,31 +1,27 @@
-/**
- * Auth API
- *
- * Authentication endpoints that don't require Bearer token.
- * Separate from appApi because auth endpoints use different headers.
- */
-
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import type { ApiResponse } from '@/src/types/api/common.types';
+import { ENV } from '@/src/config/env';
+import {
+  loginResponseSchema,
+  signupResponseSchema,
+  forgotPasswordResponseSchema,
+  verifyCodeResponseSchema,
+  resetPasswordResponseSchema,
+  createResponseValidator,
+  type LoginResponse,
+  type SignupResponse,
+} from '@/src/schemas';
 import type {
   LoginRequest,
-  LoginResponse,
   SignupRequest,
-  SignupResponse,
   ForgotPasswordRequest,
-  ForgotPasswordResponse,
   VerifyCodeRequest,
-  VerifyCodeResponse,
   ResetPasswordRequest,
-  ResetPasswordResponse,
 } from '@/src/types/api/auth.types';
-
-const API_BASE_URL = 'https://api-dev.stanleypaden.com/api/v1';
 
 export const authApi = createApi({
   reducerPath: 'authApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: API_BASE_URL,
+    baseUrl: ENV.API_BASE_URL,
     prepareHeaders: (headers) => {
       headers.set('Accept', 'application/json');
       return headers;
@@ -33,61 +29,51 @@ export const authApi = createApi({
   }),
 
   endpoints: (builder) => ({
-    /**
-     * POST /auth/login
-     */
-    login: builder.mutation<ApiResponse<LoginResponse>, LoginRequest>({
+    login: builder.mutation<LoginResponse, LoginRequest>({
       query: (body) => ({
         url: '/auth/login',
         method: 'POST',
         body,
       }),
+      transformResponse: createResponseValidator(loginResponseSchema, 'login'),
     }),
 
-    /**
-     * POST /auth/signup
-     */
-    signup: builder.mutation<ApiResponse<SignupResponse>, SignupRequest>({
+    signup: builder.mutation<SignupResponse, SignupRequest>({
       query: (body) => ({
         url: '/auth/signup',
         method: 'POST',
         body,
       }),
+      transformResponse: createResponseValidator(signupResponseSchema, 'signup'),
     }),
 
-    /**
-     * POST /password/forgot
-     */
-    forgotPassword: builder.mutation<ApiResponse<ForgotPasswordResponse>, ForgotPasswordRequest>({
-      query: (body) => ({
+    forgotPassword: builder.mutation({
+      query: (body: ForgotPasswordRequest) => ({
         url: '/password/forgot',
         method: 'POST',
         body,
       }),
+      transformResponse: createResponseValidator(forgotPasswordResponseSchema, 'forgotPassword'),
     }),
 
-    /**
-     * POST /password/verify
-     */
-    verifyCode: builder.mutation<ApiResponse<VerifyCodeResponse>, VerifyCodeRequest>({
-      query: ({ token, code }) => ({
+    verifyCode: builder.mutation({
+      query: ({ token, code }: VerifyCodeRequest) => ({
         url: '/password/verify',
         method: 'POST',
         headers: { 'x-password-reset': token },
         body: { code },
       }),
+      transformResponse: createResponseValidator(verifyCodeResponseSchema, 'verifyCode'),
     }),
 
-    /**
-     * POST /password/reset
-     */
-    resetPassword: builder.mutation<ApiResponse<ResetPasswordResponse>, ResetPasswordRequest>({
-      query: ({ token, password }) => ({
+    resetPassword: builder.mutation({
+      query: ({ token, password }: ResetPasswordRequest) => ({
         url: '/password/reset',
         method: 'POST',
         headers: { 'x-password-reset': token },
         body: { newPassword: password },
       }),
+      transformResponse: createResponseValidator(resetPasswordResponseSchema, 'resetPassword'),
     }),
   }),
 });
