@@ -60,7 +60,7 @@ export const authApi = createApi({
       query: ({ token, code }: VerifyCodeRequest) => ({
         url: '/password/verify',
         method: 'POST',
-        headers: { 'x-password-reset': token },
+        headers: { 'x-forgot-password': token },
         body: { code },
       }),
       transformResponse: createResponseValidator(verifyCodeResponseSchema, 'verifyCode'),
@@ -70,8 +70,8 @@ export const authApi = createApi({
       query: ({ token, password }: ResetPasswordRequest) => ({
         url: '/password/reset',
         method: 'POST',
-        headers: { 'x-password-reset': token },
-        body: { newPassword: password },
+        headers: { 'x-reset-password': token },
+        body: { password },
       }),
       transformResponse: createResponseValidator(resetPasswordResponseSchema, 'resetPassword'),
     }),

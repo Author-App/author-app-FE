@@ -1,35 +1,45 @@
+/** @type {import('jest').Config} */
 module.exports = {
-  // Don't use preset - configure manually to avoid RN 0.81 ESM issues
-  testEnvironment: 'node',
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
-  testMatch: ['**/__tests__/**/*.test.[jt]s?(x)', '**/*.test.[jt]s?(x)'],
-  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
-  transform: {
-    '^.+\\.(js|jsx|ts|tsx)$': 'babel-jest',
-  },
+  preset: 'jest-expo',
+
+  // Critical for pnpm: the (?:.pnpm/)? matches pnpm's virtual store path
   transformIgnorePatterns: [
-    'node_modules/(?!(' +
-      'zod' +
-    ')/)',
+    'node_modules/(?!(?:.pnpm/)?(' +
+      '(jest-)?react-native|@react-native(-community)?|' +
+      'expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|' +
+      'react-navigation|@react-navigation/.*|' +
+      'react-native-reanimated|react-native-gesture-handler|' +
+      'react-native-svg|react-native-pdf|' +
+      '@sentry/react-native|native-base|' +
+      '@tamagui/.*|tamagui|' +
+      'react-redux|@reduxjs/toolkit|immer|reselect|' +
+      'zod' + // Keep zod from your original config
+    '))',
   ],
+
+  setupFiles: ['<rootDir>/jest.setup.js'],
+  setupFilesAfterEnv: ['<rootDir>/jest.setup-after-env.js'],
+
   moduleNameMapper: {
+    '\\.(jpg|jpeg|png|gif|webp|svg)$': '<rootDir>/__mocks__/fileMock.js',
     '^@/(.*)$': '<rootDir>/$1',
-    // Mock react-native and expo modules
-    '^react-native$': '<rootDir>/__mocks__/react-native.js',
-    '^expo-secure-store$': '<rootDir>/__mocks__/expo-secure-store.js',
   },
+
+  testPathIgnorePatterns: [
+    '/node_modules/',
+    '/android/',
+    '/ios/',
+    '/.expo/',
+  ],
+
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
-    '!src/**/*.d.ts',
-    '!src/**/index.ts',
-    '!src/**/*.types.ts',
+    'app/**/*.{ts,tsx}',
+    '!src/**/*.test.{ts,tsx}',
+    '!app/**/*.test.{ts,tsx}',
+    '!**/__tests__/**',
+    '!**/node_modules/**',
   ],
-  coverageThreshold: {
-    global: {
-      branches: 0,
-      functions: 0,
-      lines: 0,
-      statements: 0,
-    },
-  },
+
+  maxWorkers: '50%',
 };

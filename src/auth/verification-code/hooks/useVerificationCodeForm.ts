@@ -18,8 +18,8 @@ export const useVerificationCodeForm = () => {
   const formik = useFormik({
     initialValues,
     validationSchema: codeValidationSchema,
-    validateOnChange: true,
-    validateOnBlur: true,
+    validateOnChange: false,  // Don't validate while typing
+    validateOnBlur: false,    // Don't validate on blur either
     onSubmit: async (values, { resetForm }) => {
       const success = await verifyCode(values.code);
       if (success) {
@@ -30,14 +30,15 @@ export const useVerificationCodeForm = () => {
 
   // OTP change handler - auto-submits when 6 digits entered
   const handleOTPChange = useCallback(
-    (text: string) => {
-      formik.setFieldValue('code', text);
+    async (text: string) => {
+      await formik.setFieldValue('code', text, false); // false = don't validate
       if (text.length === 6) {
         haptics.medium();
-        formik.handleSubmit();
+        // Call verifyCode directly with the text value to avoid timing issues
+        await verifyCode(text);
       }
     },
-    [formik.setFieldValue, formik.handleSubmit]
+    [formik.setFieldValue, verifyCode]
   );
 
   // Submit handler

@@ -48,21 +48,36 @@ export const signupResponseSchema = apiResponseSchema(
 
 export const forgotPasswordResponseSchema = apiResponseSchema(
   z.object({
-    message: z.string(),
-    token: z.string().optional(),
+    token: z.string(),
+    user: z.object({
+      id: z.string(),
+      email: z.string(),
+      firstName: z.string(),
+      lastName: z.string(),
+    }).optional(),
   })
 );
 
 export const verifyCodeResponseSchema = apiResponseSchema(
   z.object({
-    message: z.string(),
-    token: z.string().optional(),
+    token: z.string(),
+    user: z.object({
+      id: z.string(),
+      email: z.string(),
+      firstName: z.string(),
+      lastName: z.string(),
+    }).optional(),
   })
 );
 
 export const resetPasswordResponseSchema = apiResponseSchema(
   z.object({
-    message: z.string(),
+    user: z.object({
+      id: z.string(),
+      email: z.string(),
+      firstName: z.string(),
+      lastName: z.string(),
+    }),
   })
 );
 
