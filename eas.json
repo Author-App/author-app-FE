@@ -23,6 +23,10 @@
       "ios": {
         "appleId": "spadjo66@hotmail.com",
         "ascAppId": "6761315194"
+      },
+      "android": {
+        "serviceAccountKeyPath": "./google-service-account.json",
+        "track": "internal"
       }
     }
   }
