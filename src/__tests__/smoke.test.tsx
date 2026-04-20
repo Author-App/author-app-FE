@@ -16,6 +16,6 @@ describe('Jest Setup Smoke Test', () => {
   });
 
   it('should have __DEV__ global defined', () => {
-    expect(global.__DEV__).toBe(true);
+    expect(__DEV__).toBe(true);
   });
 });
