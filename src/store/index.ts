@@ -3,7 +3,6 @@ import { combineReducers, configureStore } from '@reduxjs/toolkit';
 import Toast from 'react-native-toast-message';
 import { persistReducer, persistStore } from 'redux-persist';
 
-// API imports
 import { authApi } from './api/authApi';
 import { homeApi } from './api/homeApi';
 import { exploreApi } from './api/exploreApi';
@@ -13,13 +12,8 @@ import { libraryApi } from './api/libraryApi';
 import { ordersApi } from './api/ordersApi';
 import { pushTokenApi } from './api/pushTokenApi';
 
-// Slice imports
 import authSlice, { type AuthState } from './slices/authSlice';
 import pushTokenSlice, { type PushTokenState } from './slices/pushTokenSlice';
-
-// ============================================================================
-// Middleware
-// ============================================================================
 
 const apiErrorHandler =
   (_store: unknown) => (next: (action: unknown) => unknown) => (action: unknown) => {
@@ -39,11 +33,11 @@ const apiErrorHandler =
     return next(action);
   };
 
-
+// Only persist non-sensitive data (tokens are in SecureStore)
 const authPersistConfig = {
-  key: 'author_app',
+  key: 'author_app_v2',
   storage: AsyncStorage,
-  whitelist: ['token', 'user', 'refreshToken', 'isLoggedIn', 'rememberedEmail', 'rememberedPassword'],
+  whitelist: ['user', 'isLoggedIn'],
 };
 
 const pushTokenPersistConfig = {
@@ -54,11 +48,8 @@ const pushTokenPersistConfig = {
 
 
 const rootReducer = combineReducers({
-  // Persisted slices
   auth: persistReducer(authPersistConfig, authSlice),
   pushToken: persistReducer(pushTokenPersistConfig, pushTokenSlice),
-  
-  // RTK Query APIs
   [authApi.reducerPath]: authApi.reducer,
   [homeApi.reducerPath]: homeApi.reducer,
   [exploreApi.reducerPath]: exploreApi.reducer,
@@ -90,14 +81,8 @@ export const store = configureStore({
 
 export const persistor = persistStore(store);
 
-// ============================================================================
-// Type Exports
-// ============================================================================
-
-// Base RootState from store
 type BaseRootState = ReturnType<typeof store.getState>;
 
-// Properly typed RootState that replaces PersistPartial with actual state types
 export type RootState = Omit<BaseRootState, 'auth' | 'pushToken'> & {
   auth: AuthState;
   pushToken: PushTokenState;

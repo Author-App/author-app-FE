@@ -1,42 +1,35 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+/**
+ * Auth Token Storage (SecureStore)
+ * Migrated from AsyncStorage - users need to re-login once after update
+ */
 
-const AUTH_TOKENS_KEY = 'AUTH_TOKENS';
+import { secureSetObject, secureGetObject, secureDelete } from './secureStorage';
+
+const STORAGE_KEYS = {
+  AUTH_TOKENS: 'auth_tokens_v2', // v2 = SecureStore migration
+} as const;
 
 interface StoredAuthTokens {
   refreshToken: string;
   userId: string;
 }
 
-
 export const saveAuthTokens = async (
   refreshToken: string,
   userId: string
 ): Promise<void> => {
-  try {
-    const data: StoredAuthTokens = { refreshToken, userId };
-    await AsyncStorage.setItem(AUTH_TOKENS_KEY, JSON.stringify(data));
-  } catch (error) {
-    console.error('❌ [authStorage] Failed to save auth tokens:', error);
+  const data: StoredAuthTokens = { refreshToken, userId };
+  const success = await secureSetObject(STORAGE_KEYS.AUTH_TOKENS, data);
+  
+  if (!success) {
+    console.warn('[authStorage] Token save failed - session may not persist');
   }
 };
-
 
 export const getAuthTokens = async (): Promise<StoredAuthTokens | null> => {
-  try {
-    const data = await AsyncStorage.getItem(AUTH_TOKENS_KEY);
-    if (!data) return null;
-    return JSON.parse(data);
-  } catch (error) {
-    console.error('❌ [authStorage] Failed to get auth tokens:', error);
-    return null;
-  }
+  return secureGetObject<StoredAuthTokens>(STORAGE_KEYS.AUTH_TOKENS);
 };
 
-
 export const clearAuthTokens = async (): Promise<void> => {
-  try {
-    await AsyncStorage.removeItem(AUTH_TOKENS_KEY);
-  } catch (error) {
-    console.error('❌ [authStorage] Failed to clear auth tokens:', error);
-  }
+  await secureDelete(STORAGE_KEYS.AUTH_TOKENS);
 };

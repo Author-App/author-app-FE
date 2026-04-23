@@ -123,13 +123,15 @@ const NotificationPermissionSheet: React.FC = () => {
         return;
       }
 
-      // Show token view after permission granted
+      // TODO: Send token to server instead of showing it
+      // For now, just close the sheet after permission granted
       sentryService.addBreadcrumb({
         category: 'notification',
-        message: 'Permission granted - showing token view',
+        message: 'Permission granted - closing sheet',
         level: 'info',
       });
-      setCurrentView('token');
+      setIsOpen(false);
+      // setCurrentView('token'); // Commented out - will send to server later
     } catch (error) {
       sentryService.captureError(error, {
         tags: { type: 'notification_error' },

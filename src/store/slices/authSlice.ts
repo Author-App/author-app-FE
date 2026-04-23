@@ -1,9 +1,3 @@
-/**
- * Auth Slice
- *
- * Manages authentication state: user, tokens, login status.
- */
-
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import Toast from 'react-native-toast-message';
 import { authApi } from '@/src/store/api/authApi';
@@ -15,8 +9,6 @@ export interface AuthState {
   token: string | null;
   refreshToken: string | null;
   user: User | null;
-  rememberedEmail: string | null;
-  rememberedPassword: string | null;
 }
 
 const initialState: AuthState = {
@@ -24,8 +16,6 @@ const initialState: AuthState = {
   token: null,
   refreshToken: null,
   user: null,
-  rememberedEmail: null,
-  rememberedPassword: null,
 };
 
 const authSlice = createSlice({
@@ -38,22 +28,7 @@ const authSlice = createSlice({
       state.token = null;
       state.refreshToken = null;
       state.isLoggedIn = false;
-      // Clear tokens from AsyncStorage
       clearAuthTokens();
-      // Note: SentryUserSync handles clearing Sentry user
-    },
-
-    rememberCredentials: (
-      state,
-      action: PayloadAction<{ email: string; password: string }>
-    ) => {
-      state.rememberedEmail = action.payload.email;
-      state.rememberedPassword = action.payload.password;
-    },
-
-    clearRememberedCredentials: (state) => {
-      state.rememberedEmail = null;
-      state.rememberedPassword = null;
     },
 
     updateTokens: (
@@ -88,11 +63,9 @@ const authSlice = createSlice({
           state.refreshToken = refreshToken ?? null;
           state.isLoggedIn = true;
           
-          // Save refresh token and userId to AsyncStorage for session recovery
           if (refreshToken && user.id) {
             saveAuthTokens(refreshToken, user.id);
           }
-          // Note: SentryUserSync handles setting Sentry user
         } else {
           Toast.show({
             type: 'error',
@@ -101,16 +74,11 @@ const authSlice = createSlice({
         }
       }
     );
-
-    // Signup success - no auto-login, user is redirected to login screen
-    // The signup response only contains user info for verification purposes
   },
 });
 
 export const {
   logOut,
-  rememberCredentials,
-  clearRememberedCredentials,
   updateTokens,
   setUser,
 } = authSlice.actions;

@@ -8,7 +8,7 @@
       "androidMode": "default",
       "androidCollapsedTitle": "New notification"
     },
-    "version": "1.0.1",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/images/mainLogo.png",
     "scheme": "authorapp",
@@ -75,7 +75,9 @@
           "organization": "swift-reflex",
           "uploadSourceMaps": true
         }
-      ]
+      ],
+      "@sentry/react-native",
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true
@@ -86,6 +88,12 @@
         "projectId": "7ed82ebb-1889-49c9-8925-9c793670c3f3"
       }
     },
-    "owner": "shehzar-abbasi-sg"
+    "owner": "shehzar-abbasi-sg",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/7ed82ebb-1889-49c9-8925-9c793670c3f3"
+    }
   }
 }

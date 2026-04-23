@@ -7,6 +7,8 @@ import {
 } from '@/src/store/selectors/eventSelectors';
 import type { EventResponse } from '@/src/types/api/explore.types';
 
+export type { JoinStatus };
+
 interface UseEventDetailReturn {
   event: EventResponse | undefined;
   isLoading: boolean;

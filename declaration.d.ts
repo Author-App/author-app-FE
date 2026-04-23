@@ -14,4 +14,11 @@ declare module '*.svg' {
     const value: any;
     export default value;
   }
+
+  // React Native __DEV__ global
+  declare global {
+    var __DEV__: boolean;
+  }
+  
+  export {};
   

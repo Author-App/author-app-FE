@@ -1,0 +1,65 @@
+# EAS Update Workflow (OTA Updates)
+# Pushes JavaScript updates without app store review
+
+name: EAS Update
+
+on:
+  push:
+    branches: [main, develop]
+    paths-ignore:
+      - '**.md'
+      - '.github/**'
+      - 'docs/**'
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'EAS Update branch/channel'
+        required: true
+        default: 'preview'
+        type: choice
+        options:
+          - preview
+          - production
+
+jobs:
+  update:
+    name: EAS Update
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Expo
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # OTA Update on push to develop
+      - name: Publish Update (Preview)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+        run: eas update --branch preview --message "${{ github.event.head_commit.message }}"
+
+      # OTA Update on push to main
+      - name: Publish Update (Production)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: eas update --branch production --message "${{ github.event.head_commit.message }}"
+
+      # Manual update
+      - name: Publish Update (Manual)
+        if: github.event_name == 'workflow_dispatch'
+        run: eas update --branch ${{ inputs.branch }} --message "Manual update from GitHub Actions"

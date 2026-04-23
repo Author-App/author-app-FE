@@ -2,16 +2,30 @@ import { useSelector } from 'react-redux';
 import { Redirect } from 'expo-router';
 import { useGetMeQuery } from '@/src/store/api/userApi';
 import { selectAuthToken, selectIsLoggedIn } from '@/src/store/selectors/authSelectors';
+import { useAuthInitialization } from '@/src/hooks/useAuthInitialization';
 import AppLoader from '@/src/components/core/loaders/AppLoader';
 
 export default function Index() {
   const token = useSelector(selectAuthToken);
   const isLoggedIn = useSelector(selectIsLoggedIn);
+  
+  // Initialize auth on startup - restores tokens from SecureStore if needed
+  const { isInitializing, isAuthenticated, isUnauthenticated } = useAuthInitialization();
 
   // Only call getMe if we have a token
   const { isSuccess, isLoading, isFetching } = useGetMeQuery(undefined, {
     skip: !token,
   });
+
+  // Still initializing auth from SecureStore
+  if (isInitializing) {
+    return <AppLoader />;
+  }
+
+  // No valid session - go to onboarding
+  if (isUnauthenticated) {
+    return <Redirect href="/(public)/onboarding" />;
+  }
 
   // Still checking auth - show loader while fetching
   if (token && (isLoading || isFetching)) {
@@ -19,8 +33,7 @@ export default function Index() {
   }
 
   // Authenticated - go to home
-  // Check both token exists and isLoggedIn (set to false by baseQueryWithReauth on failed refresh)
-  if (token && isLoggedIn && isSuccess) {
+  if (isAuthenticated && token && isLoggedIn && isSuccess) {
     return <Redirect href="/(app)/(tabs)/(home)" />;
   }
 
