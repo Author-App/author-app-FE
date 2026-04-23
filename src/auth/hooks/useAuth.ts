@@ -32,7 +32,7 @@ export const useLogin = () => {
         return true;
       } catch (err) {
         haptics.error();
-        handleApiError(err);
+        handleApiError(err, 'auth/login');
         return false;
       }
     },
@@ -59,7 +59,7 @@ export const useSignup = () => {
         return true;
       } catch (err) {
         haptics.error();
-        handleApiError(err);
+        handleApiError(err, 'auth/signup');
         return false;
       }
     },
@@ -87,7 +87,7 @@ export const useForgotPassword = () => {
         return true;
       } catch (err) {
         haptics.error();
-        handleApiError(err);
+        handleApiError(err, 'auth/forgot-password');
         return false;
       }
     },
@@ -115,7 +115,7 @@ export const useVerifyCode = (token: string) => {
         return true;
       } catch (err) {
         haptics.error();
-        handleApiError(err);
+        handleApiError(err, 'auth/verify-code');
         return false;
       }
     },
@@ -141,7 +141,7 @@ export const useResetPassword = (token: string) => {
         return true;
       } catch (err) {
         haptics.error();
-        handleApiError(err);
+        handleApiError(err, 'auth/reset-password');
         return false;
       }
     },
