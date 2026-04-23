@@ -52,7 +52,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # Submit iOS to App Store (internal TestFlight first)
+      # Create Google Service Account file from secret
+      - name: Create Google Service Account JSON
+        run: echo '${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}' > google-service-account.json
+
+      # Submit iOS to TestFlight (internal TestFlight first)
       - name: Submit iOS to TestFlight
         if: github.event_name == 'workflow_run' || (github.event_name == 'workflow_dispatch' && (inputs.platform == 'ios' || inputs.platform == 'all'))
         run: eas submit --platform ios --profile production --latest --non-interactive

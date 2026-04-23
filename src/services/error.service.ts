@@ -6,16 +6,26 @@
  */
 
 import { showErrorToast } from '@/src/utils/toast';
+import { sentryService } from '@/src/services/sentry';
 import type { ApiError } from '@/src/types/api/common.types';
 
 /**
- * Handles API errors by showing a toast and optionally logging
+ * Handles API errors by showing a toast and logging to Sentry
  * 
  * @param error - Error from API call (RTK Query, network, or unknown)
+ * @param endpoint - Optional endpoint name for better Sentry categorization
  */
-export const handleApiError = (error: unknown): void => {
+export const handleApiError = (error: unknown, endpoint?: string): void => {
   const message = extractErrorMessage(error);
   showErrorToast(message);
+
+  // Log to Sentry
+  const statusCode = isApiError(error) ? error.status : undefined;
+  sentryService.captureApiError(
+    endpoint || 'unknown',
+    error,
+    statusCode
+  );
 
   // Log in development for debugging
   if (__DEV__) {
