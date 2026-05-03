@@ -50,16 +50,28 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       # OTA Update on push to develop
-      - name: Publish Update (Preview)
+      - name: Publish Update (Preview - iOS)
         if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
-        run: eas update --platform ios,android --branch preview --message "${{ github.event.head_commit.message }}"
+        run: eas update --platform ios --branch preview --message "${{ github.event.head_commit.message }}"
+
+      - name: Publish Update (Preview - Android)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+        run: eas update --platform android --branch preview --message "${{ github.event.head_commit.message }}"
 
       # OTA Update on push to main
-      - name: Publish Update (Production)
+      - name: Publish Update (Production - iOS)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: eas update --platform ios,android --branch production --message "${{ github.event.head_commit.message }}"
+        run: eas update --platform ios --branch production --message "${{ github.event.head_commit.message }}"
+
+      - name: Publish Update (Production - Android)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: eas update --platform android --branch production --message "${{ github.event.head_commit.message }}"
 
       # Manual update
-      - name: Publish Update (Manual)
+      - name: Publish Update (Manual - iOS)
         if: github.event_name == 'workflow_dispatch'
-        run: eas update --platform ios,android --branch ${{ inputs.branch }} --message "Manual update from GitHub Actions"
+        run: eas update --platform ios --branch ${{ inputs.branch }} --message "Manual update from GitHub Actions"
+
+      - name: Publish Update (Manual - Android)
+        if: github.event_name == 'workflow_dispatch'
+        run: eas update --platform android --branch ${{ inputs.branch }} --message "Manual update from GitHub Actions"
