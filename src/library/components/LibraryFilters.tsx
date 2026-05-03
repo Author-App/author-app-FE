@@ -9,6 +9,8 @@ const LIBRARY_TABS: TabItem<string>[] = [
   { label: 'My Books', icon: 'bookmark-outline' },
   { label: 'E-Books', icon: 'book-outline' },
   { label: 'Audiobooks', icon: 'headset-outline' },
+  { label: 'Hardcover', icon: 'albums-outline' },
+  { label: 'Paperback', icon: 'newspaper-outline' },
 ];
 
 const TAB_TO_TYPE: Record<string, LibraryTab> = {
@@ -16,6 +18,8 @@ const TAB_TO_TYPE: Record<string, LibraryTab> = {
   'My Books': 'owned',
   'E-Books': 'ebook',
   'Audiobooks': 'audiobook',
+  'Hardcover': 'hardcover',
+  'Paperback': 'paperback',
 };
 
 const TYPE_TO_TAB: Record<LibraryTab, string> = {
@@ -23,6 +27,8 @@ const TYPE_TO_TAB: Record<LibraryTab, string> = {
   'owned': 'My Books',
   ebook: 'E-Books',
   audiobook: 'Audiobooks',
+  hardcover: 'Hardcover',
+  paperback: 'Paperback',
 };
 
 interface LibraryFiltersProps extends YStackProps {

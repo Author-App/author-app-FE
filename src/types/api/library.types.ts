@@ -1,6 +1,19 @@
+/**
+ * Book format types
+ * Used across home, library, and book detail screens
+ */
+export type BookType = 'ebook' | 'audiobook' | 'hardcover' | 'paperback';
+
+/**
+ * Check if book type is a print format
+ */
+export const isPrintBook = (type: BookType): boolean => 
+  type === 'hardcover' || type === 'paperback';
+
 export interface Tag {
-  id: string;
+  id?: string;
   name: string;
+  color?: string;
 }
 
 export interface PaginationMeta {
@@ -11,7 +24,7 @@ export interface PaginationMeta {
 }
 
 export interface GetBooksParams {
-  type?: 'ebook' | 'audiobook' | '';
+  type?: BookType | '';
   page?: number;
   pageSize?: number;
 }
@@ -28,13 +41,15 @@ export interface BookProgress {
   lastReadAt: string;
 }
 
+export type PrintValidationStatus = 'pending' | 'validated' | 'failed';
+
 export interface BookResponse {
   id: string;
   title: string;
   author: string;
   description: string;
   synopsis?: string;
-  type: 'ebook' | 'audiobook';
+  type: BookType;
   isFree: boolean;
   price: number;
   currency: string;
@@ -51,6 +66,15 @@ export interface BookResponse {
   createdAt: string | null;
   updatedAt: string | null;
   progress?: BookProgress;
+  
+  // Print-specific fields (hardcover/paperback)
+  coverPdf?: string;
+  luluPodPackageId?: string;
+  printInteriorPdfUrl?: string;
+  printCoverPdfUrl?: string;
+  printValidationStatus?: PrintValidationStatus;
+  printValidationErrors?: string[];
+  lastPrintValidatedAt?: string;
 }
 
 export interface BookListResponse {

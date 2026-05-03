@@ -10,6 +10,7 @@ import { mediaApi } from './api/mediaApi';
 import { userApi } from './api/userApi';
 import { libraryApi } from './api/libraryApi';
 import { ordersApi } from './api/ordersApi';
+import { printApi } from './api/printApi';
 import { pushTokenApi } from './api/pushTokenApi';
 
 import authSlice, { type AuthState } from './slices/authSlice';
@@ -57,6 +58,7 @@ const rootReducer = combineReducers({
   [userApi.reducerPath]: userApi.reducer,
   [libraryApi.reducerPath]: libraryApi.reducer,
   [ordersApi.reducerPath]: ordersApi.reducer,
+  [printApi.reducerPath]: printApi.reducer,
   [pushTokenApi.reducerPath]: pushTokenApi.reducer,
 });
 
@@ -75,6 +77,7 @@ export const store = configureStore({
       .concat(userApi.middleware)
       .concat(libraryApi.middleware)
       .concat(ordersApi.middleware)
+      .concat(printApi.middleware)
       .concat(pushTokenApi.middleware)
       .concat(apiErrorHandler),
 });

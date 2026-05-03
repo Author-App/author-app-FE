@@ -59,3 +59,19 @@ export const selectAudiobooks = createSelector(
   [selectBooksSortedByDate],
   (books): BookResponse[] => books.filter((book) => book.type === 'audiobook')
 );
+
+/**
+ * Select only hardcover books
+ */
+export const selectHardcovers = createSelector(
+  [selectBooksSortedByDate],
+  (books): BookResponse[] => books.filter((book) => book.type === 'hardcover')
+);
+
+/**
+ * Select only paperback books
+ */
+export const selectPaperbacks = createSelector(
+  [selectBooksSortedByDate],
+  (books): BookResponse[] => books.filter((book) => book.type === 'paperback')
+);
