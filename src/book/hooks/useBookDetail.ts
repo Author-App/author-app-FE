@@ -31,6 +31,10 @@ export function useBookDetail(bookId: string | undefined) {
   const ratingStats = useAppSelector(selectRatingStats(bookId ?? ''));
   const hasAccess = useAppSelector(selectHasAccess(bookId ?? ''));
 
+  // Debug: Check if backend returns 'type' field
+  if (__DEV__ && book) {
+    console.log('[BookDetail] Book type:', book.type, '| Full book:', JSON.stringify(book, null, 2));
+  }
 
   const [rateBookMutation, { isLoading: isSubmittingReview }] =
     useRateBookMutation();

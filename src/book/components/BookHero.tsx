@@ -9,6 +9,7 @@ import UStarRating from '@/src/components/core/rating/UStarRating';
 import IconBook from '@/assets/icons/iconBook';
 import IconHeadphone from '@/assets/icons/iconHeadphone';
 import type { BookResponse } from '@/src/types/api/library.types';
+import { isPrintBook } from '@/src/types/api/library.types';
 
 interface BookHeroProps {
   book: BookResponse;
@@ -18,7 +19,26 @@ interface BookHeroProps {
 
 export function BookHero({ book, averageRating, totalRatings }: BookHeroProps) {
   const isAudiobook = book.type === 'audiobook';
+  const isPrint = isPrintBook(book.type);
   const TypeIcon = isAudiobook ? IconHeadphone : IconBook;
+
+  // Get display label for book type
+  const getTypeLabel = () => {
+    switch (book.type) {
+      case 'audiobook': return 'Audiobook';
+      case 'ebook': return 'E-Book';
+      case 'hardcover': return 'Hardcover';
+      case 'paperback': return 'Paperback';
+      default: return 'Book';
+    }
+  };
+
+  // Get badge color based on type
+  const getTypeBadgeColor = () => {
+    if (isPrint) return '$brandCrimson';
+    if (isAudiobook) return '$brandTeal';
+    return '$brandOcean';
+  };
 
   return (
   
@@ -72,6 +92,23 @@ export function BookHero({ book, averageRating, totalRatings }: BookHeroProps) {
         >
             {book.author}
         </UText>
+
+        {/* Book Type Badge */}
+        <XStack jc="center" mt={12}>
+          <XStack
+            bg={getTypeBadgeColor()}
+            px={14}
+            py={6}
+            borderRadius={20}
+            ai="center"
+            gap={6}
+          >
+            <TypeIcon dimen={14} color="$white" />
+            <UText variant="text-xs" color="$white" fontWeight="600">
+              {getTypeLabel()}
+            </UText>
+          </XStack>
+        </XStack>
 
         <XStack jc="center" ai="center" mt={12} gap={8}>
             <UStarRating rating={averageRating ?? 0} />

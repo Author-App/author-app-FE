@@ -10,6 +10,8 @@ import {
   selectOwnedBooks,
   selectEbooks,
   selectAudiobooks,
+  selectHardcovers,
+  selectPaperbacks,
 } from '@/src/store/selectors/librarySelectors';
 import type { BookResponse } from '@/src/types/api/library.types';
 import type { LibraryTab } from '../types/library.types';
@@ -26,6 +28,8 @@ export const useLibraryData = () => {
   const ownedBooks = useAppSelector(selectOwnedBooks);
   const ebooks = useAppSelector(selectEbooks);
   const audiobooks = useAppSelector(selectAudiobooks);
+  const hardcovers = useAppSelector(selectHardcovers);
+  const paperbacks = useAppSelector(selectPaperbacks);
 
   const books: BookResponse[] = useMemo(() => {
     switch (activeTab) {
@@ -35,11 +39,15 @@ export const useLibraryData = () => {
         return ebooks;
       case 'audiobook':
         return audiobooks;
+      case 'hardcover':
+        return hardcovers;
+      case 'paperback':
+        return paperbacks;
       case 'all':
       default:
         return allBooks;
     }
-  }, [activeTab, allBooks, ownedBooks, ebooks, audiobooks]);
+  }, [activeTab, allBooks, ownedBooks, ebooks, audiobooks, hardcovers, paperbacks]);
 
   const screenWidth = Dimensions.get('window').width;
   const numColumns = useMemo(() => {

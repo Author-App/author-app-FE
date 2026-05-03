@@ -42,6 +42,15 @@ export const useHomeData = (): UseHomeDataReturn => {
     const continueReadingSection = sections.find((s) => s.type === 'continueReading');
     const audiobooksSection = sections.find((s) => s.type === 'audiobooks');
     const articlesSection = sections.find((s) => s.type === 'articles');
+    
+    // Debug: Check if backend is returning 'type' field on books
+    if (__DEV__ && booksSection?.data?.length) {
+      console.log('[Home] Sample book data:', JSON.stringify(booksSection.data[0], null, 2));
+    }
+    if (__DEV__ && audiobooksSection?.data?.length) {
+      console.log('[Home] Sample audiobook data:', JSON.stringify(audiobooksSection.data[0], null, 2));
+    }
+    
     return {
       books: booksSection?.data ?? [],
       audiobooks: audiobooksSection?.data ?? [],
