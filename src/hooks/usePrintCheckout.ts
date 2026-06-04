@@ -166,14 +166,25 @@ export function usePrintCheckout(options: UsePrintCheckoutOptions = {}): UsePrin
   }, [getPrintQuote]);
 
   // Poll for payment verification
+  // Success statuses: paid, fulfillment_pending, lulu_submitted, in_production, shipped, delivered
   const pollPaymentVerification = useCallback(async (printOrderId: string): Promise<PrintOrderStatus> => {
     let attempts = 0;
+
+    // Success states - payment confirmed and order is processing or complete
+    const SUCCESS_STATUSES: PrintOrderStatus[] = [
+      'paid',
+      'fulfillment_pending',
+      'lulu_submitted',
+      'in_production',
+      'shipped',
+      'delivered',
+    ];
 
     while (attempts < MAX_VERIFICATION_ATTEMPTS) {
       const result = await getPrintOrderStatus({ printOrderId, refresh: true }).unwrap();
       const status = result.data.status;
 
-      if (status === 'paid' || status === 'submitted_to_lulu' || status === 'in_production') {
+      if (SUCCESS_STATUSES.includes(status)) {
         return status;
       }
 
@@ -181,7 +192,7 @@ export function usePrintCheckout(options: UsePrintCheckoutOptions = {}): UsePrin
         throw new Error('Payment failed');
       }
 
-      // Still pending, wait and retry
+      // Status is 'created' or 'payment_pending' - webhook hasn't processed yet, keep polling
       attempts++;
       await new Promise(resolve => setTimeout(resolve, VERIFICATION_POLL_INTERVAL));
     }

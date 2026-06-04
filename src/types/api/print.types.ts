@@ -23,12 +23,14 @@ export type ShippingOption =
 
 /**
  * Print order status
+ * Matches backend statuses: created → paid → fulfillment_pending → lulu_submitted → shipped → delivered
  */
 export type PrintOrderStatus = 
   | 'created' 
   | 'payment_pending' 
   | 'paid' 
-  | 'submitted_to_lulu'
+  | 'fulfillment_pending'
+  | 'lulu_submitted'
   | 'in_production'
   | 'shipped'
   | 'delivered'

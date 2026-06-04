@@ -57,8 +57,9 @@ export const printApi = createApi({
           const { data } = await queryFulfilled;
           const status = data?.data?.status;
           
-          // If order is paid/shipped, invalidate caches
-          if (status === 'paid' || status === 'shipped' || status === 'delivered') {
+          // Invalidate caches when order is successfully processed
+          const successStatuses = ['paid', 'fulfillment_pending', 'lulu_submitted', 'shipped', 'delivered'];
+          if (status && successStatuses.includes(status)) {
             dispatch(homeApi.util.invalidateTags(['HomeFeed']));
             dispatch(libraryApi.util.invalidateTags([{ type: 'Books', id: 'LIST' }]));
           }
