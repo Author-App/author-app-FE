@@ -78,7 +78,8 @@
         }
       ],
       "@sentry/react-native",
-      "expo-secure-store"
+      "expo-secure-store",
+      "./plugins/withGoogleSignInFix"
     ],
     "experiments": {
       "typedRoutes": true
