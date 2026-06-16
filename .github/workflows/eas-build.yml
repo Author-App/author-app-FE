@@ -74,7 +74,7 @@ jobs:
       # Manual builds
       - name: Build (Manual - iOS)
         if: github.event_name == 'workflow_dispatch' && (inputs.platform == 'ios' || inputs.platform == 'all')
-        run: eas build --platform ios --profile ${{ inputs.profile }} --non-interactive
+        run: eas build --platform ios --profile production --non-interactive --clear-cache
 
       - name: Build (Manual - Android)
         if: github.event_name == 'workflow_dispatch' && (inputs.platform == 'android' || inputs.platform == 'all')
