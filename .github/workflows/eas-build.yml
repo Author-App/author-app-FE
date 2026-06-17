@@ -33,6 +33,11 @@ on:
           - development
           - preview
           - production
+      version_confirmed:
+        description: '⚠️ Is app version updated in app.json? (Required for App Store releases)'
+        required: true
+        type: boolean
+        default: false
 
 jobs:
   build:
@@ -42,6 +47,19 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: 📋 Check version (Manual builds)
+        if: github.event_name == 'workflow_dispatch' && inputs.profile == 'production'
+        run: |
+          VERSION=$(cat app.json | jq -r '.expo.version')
+          echo "📦 Current app version: $VERSION"
+          echo ""
+          if [ "${{ inputs.version_confirmed }}" != "true" ]; then
+            echo "❌ ERROR: Production build requires version confirmation!"
+            echo "Please check the 'version_confirmed' checkbox after verifying app.json version."
+            exit 1
+          fi
+          echo "✅ Version confirmed: $VERSION"
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
