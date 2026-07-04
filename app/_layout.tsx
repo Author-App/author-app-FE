@@ -27,11 +27,8 @@ import {
 // Initialize Sentry before anything else
 initSentry({
   enableInDev: false,
-  replaysSessionSampleRate: 0.1,
-  replaysOnErrorSampleRate: 1,
   tracesSampleRate: 0.2,
 });
-
 // Brand colors
 const BRAND_NAVY = '#132440';
 
