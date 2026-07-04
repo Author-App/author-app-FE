@@ -42,6 +42,7 @@ export default sentryWrap(function RootLayout() {
   // Diagnostic: log update state on every boot so we can see in Sentry
   // whether a new bundle actually ran after "Restart Now"
   useEffect(() => {
+    console.log('BOOT_MARKER_V2')
     async function logUpdateState() {
       try {
         const lastId = await AsyncStorage.getItem(LAST_UPDATE_ID_KEY);
