@@ -7,6 +7,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import Toast from 'react-native-toast-message';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Updates from 'expo-updates';
 import * as Sentry from '@sentry/react-native';
 
@@ -25,7 +26,7 @@ import {
 
 // Initialize Sentry before anything else
 initSentry({
-  enableInDev: false, // Set to true to test in development
+  enableInDev: false,
   replaysSessionSampleRate: 0.1,
   replaysOnErrorSampleRate: 1,
   tracesSampleRate: 0.2,
@@ -34,36 +35,51 @@ initSentry({
 // Brand colors
 const BRAND_NAVY = '#132440';
 
+// Storage key for tracking update boots
+const LAST_UPDATE_ID_KEY = '@app/lastUpdateId';
+
 export default sentryWrap(function RootLayout() {
-  // Check for OTA updates silently
+  // Diagnostic: log update state on every boot so we can see in Sentry
+  // whether a new bundle actually ran after "Restart Now"
   useEffect(() => {
-    async function checkForUpdates() {
+    async function logUpdateState() {
       try {
-        const check = await Updates.checkForUpdateAsync();
+        const lastId = await AsyncStorage.getItem(LAST_UPDATE_ID_KEY);
+        const currentId = Updates.updateId ?? 'embedded';
+        const isNewBoot = currentId !== lastId;
 
-        if (check.isAvailable) {
-          Sentry.addBreadcrumb({
-            category: 'updates',
-            message: 'New update available, downloading...',
-            level: 'info',
-          });
+        Sentry.addBreadcrumb({
+          category: 'updates',
+          message: `Boot state`,
+          level: 'info',
+          data: {
+            currentUpdateId: currentId,
+            lastUpdateId: lastId,
+            channel: Updates.channel,
+            runtimeVersion: Updates.runtimeVersion,
+            createdAt: Updates.createdAt?.toISOString?.() ?? null,
+            isEmbeddedLaunch: Updates.isEmbeddedLaunch,
+            isEnabled: Updates.isEnabled,
+            isNewBoot,
+          },
+        });
 
-          await Updates.fetchUpdateAsync();
-          
-          Sentry.addBreadcrumb({
-            category: 'updates',
-            message: 'Update downloaded, will apply on next launch',
-            level: 'info',
-          });
+        // Also send as a message so it's easy to find in Sentry, not just
+        // buried in breadcrumbs of some unrelated error
+        Sentry.captureMessage(
+          `App boot: updateId=${currentId} channel=${Updates.channel} newBoot=${isNewBoot}`,
+          'info'
+        );
+
+        if (currentId !== lastId) {
+          await AsyncStorage.setItem(LAST_UPDATE_ID_KEY, currentId);
         }
       } catch (e: any) {
-        Sentry.captureException(e, { tags: { component: 'update-check' } });
+        Sentry.captureException(e, { tags: { component: 'update-boot-log' } });
       }
     }
 
-    if (!__DEV__) {
-      checkForUpdates();
-    }
+    logUpdateState();
   }, []);
 
   return (
@@ -93,7 +109,7 @@ export default sentryWrap(function RootLayout() {
 
 function AppHead() {
   if (Platform.OS !== 'web') return null;
-  
+
   return (
     <Head>
       <title>Author App</title>
