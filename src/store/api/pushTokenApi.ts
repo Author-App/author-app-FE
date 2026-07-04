@@ -31,8 +31,10 @@ export const pushTokenApi = createApi({
       }),
       // Mock response for now - remove when backend is ready
       async onQueryStarted(arg, { queryFulfilled }) {
-        console.log('📱 [Push Token API] Registering token:', arg.pushToken);
-        console.log('📱 [Push Token API] Platform:', arg.platform);
+        if (__DEV__) {
+          console.log('📱 [Push Token API] Registering token:', arg.pushToken);
+          console.log('📱 [Push Token API] Platform:', arg.platform);
+        }
       },
     }),
 

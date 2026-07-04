@@ -5,7 +5,8 @@ import { shippingAddressValidationSchema } from '@/src/utils/validator';
 import { haptics } from '@/src/utils/haptics';
 import { usePrintCheckout } from '@/src/hooks/usePrintCheckout';
 import { getSavedShippingAddress, saveShippingAddress } from '@/src/storage/checkoutStorage';
-import type { ShippingAddress, ShippingOption, PrintQuoteData } from '@/src/types/api/print.types';
+import type { ShippingAddress, PrintQuoteData } from '@/src/types/api/print.types';
+import { SHIPPING_CONFIG } from '@/src/types/api/print.types';
 
 // Debounce: shorter for discrete values (quantity), longer for typing
 const DEBOUNCE_FAST = 300;
@@ -49,7 +50,8 @@ export function useCheckoutForm({ bookId, onSuccess, onError }: UseCheckoutFormO
 
   // State
   const [quantity, setQuantity] = useState(1);
-  const [shippingOption, setShippingOption] = useState<ShippingOption>('MAIL');
+  // Use fixed shipping method from config (no user selection)
+  const shippingOption = SHIPPING_CONFIG.method;
   const [isReady, setIsReady] = useState(false);
   
   // Pending state: true immediately when params change, before debounce fires
@@ -182,10 +184,6 @@ export function useCheckoutForm({ bookId, onSuccess, onError }: UseCheckoutFormO
     if (n >= 1 && n <= 10) setQuantity(n);
   }, []);
 
-  const handleShippingOptionChange = useCallback((opt: ShippingOption) => {
-    setShippingOption(opt);
-  }, []);
-
   const handlePlaceOrder = useCallback(async () => {
     haptics.medium();
     await createOrder();
@@ -206,8 +204,6 @@ export function useCheckoutForm({ bookId, onSuccess, onError }: UseCheckoutFormO
     getFieldError,
     quantity,
     handleQuantityChange,
-    shippingOption,
-    handleShippingOptionChange,
     // Quote states for smooth UX:
     // - quote: the actual quote to display (cached or server)
     // - isPending: params changed, waiting for debounce/fetch (show "Updating...")

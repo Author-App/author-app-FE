@@ -1,4 +1,4 @@
-import { Platform, Alert } from 'react-native';
+import { Platform } from 'react-native';
 import { useEffect } from 'react';
 import { Slot } from 'expo-router';
 import Head from 'expo-router/head';
@@ -35,69 +35,34 @@ initSentry({
 const BRAND_NAVY = '#132440';
 
 export default sentryWrap(function RootLayout() {
-  // Debug OTA updates
+  // Check for OTA updates silently
   useEffect(() => {
-    async function debugUpdates() {
+    async function checkForUpdates() {
       try {
-        const currentUpdateId = Updates.updateId || 'none';
-        const currentChannel = Updates.channel || 'none';
-        const isEmbedded = Updates.isEmbeddedLaunch;
-        const runtimeVersion = Updates.runtimeVersion || 'none';
-
-        Sentry.addBreadcrumb({
-          category: 'updates',
-          message: 'Update check started',
-          level: 'info',
-          data: { currentUpdateId, currentChannel, isEmbedded, runtimeVersion },
-        });
-
         const check = await Updates.checkForUpdateAsync();
 
-        Sentry.addBreadcrumb({
-          category: 'updates',
-          message: check.isAvailable ? 'New update available' : 'No update available',
-          level: 'info',
-          data: { isAvailable: check.isAvailable, manifestUpdateId: check.manifest?.id || 'none' },
-        });
-
-        Sentry.captureMessage('Update Check Result', {
-          level: 'info',
-          tags: { updateAvailable: String(check.isAvailable), currentChannel },
-          extra: { currentUpdateId, runtimeVersion, isEmbedded, checkResult: check },
-        });
-
         if (check.isAvailable) {
-          Alert.alert('Update Available!', 'A new version is ready. Download now?', [
-            {
-              text: 'Download & Restart',
-              onPress: async () => {
-                try {
-                  await Updates.fetchUpdateAsync();
-                  Sentry.captureMessage('Update downloaded successfully');
-                  await Updates.reloadAsync();
-                } catch (e) {
-                  Sentry.captureException(e);
-                }
-              },
-            },
-            {
-              text: 'Later',
-              onPress: () => {
-                Sentry.addBreadcrumb({ message: 'User declined update', level: 'info' });
-              },
-            },
-          ]);
-        } else {
-          Alert.alert('Already Updated', `Current: ${currentUpdateId}\nChannel: ${currentChannel}`);
+          Sentry.addBreadcrumb({
+            category: 'updates',
+            message: 'New update available, downloading...',
+            level: 'info',
+          });
+
+          await Updates.fetchUpdateAsync();
+          
+          Sentry.addBreadcrumb({
+            category: 'updates',
+            message: 'Update downloaded, will apply on next launch',
+            level: 'info',
+          });
         }
       } catch (e: any) {
         Sentry.captureException(e, { tags: { component: 'update-check' } });
-        Alert.alert('Update Error', e.message);
       }
     }
 
     if (!__DEV__) {
-      debugUpdates();
+      checkForUpdates();
     }
   }, []);
 

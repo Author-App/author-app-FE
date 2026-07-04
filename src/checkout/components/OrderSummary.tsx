@@ -4,6 +4,7 @@ import { Feather } from '@expo/vector-icons';
 
 import UText from '@/src/components/core/text/uText';
 import type { PrintQuoteData } from '@/src/types/api/print.types';
+import { SHIPPING_CONFIG } from '@/src/types/api/print.types';
 
 interface OrderSummaryProps {
   quote: PrintQuoteData | null;
@@ -22,6 +23,7 @@ const formatCurrency = (cents: number, currency: string = 'USD'): string => {
 
 const OrderSummary = memo(({ quote, quantity, bookTitle, bookType, bookPrice }: OrderSummaryProps) => {
   const displayType = bookType === 'hardcover' ? 'Hardcover' : 'Paperback';
+  const subtotal = bookPrice * quantity;
   
   return (
     <YStack gap={14}>
@@ -48,7 +50,27 @@ const OrderSummary = memo(({ quote, quantity, bookTitle, bookType, bookPrice }: 
           </XStack>
         </YStack>
         <UText variant="text-sm" color="$neutral3" fontWeight="500">
-          ${(bookPrice * quantity).toFixed(2)}
+          ${subtotal.toFixed(2)}
+        </UText>
+      </XStack>
+
+      <Separator borderColor="rgba(255, 255, 255, 0.06)" />
+
+      {/* Shipping flat rate */}
+      <XStack jc="space-between" ai="center">
+        <XStack ai="center" gap={8}>
+          <Feather name="truck" size={14} color="#8E8E93" />
+          <YStack>
+            <UText variant="text-sm" color="$neutral3">
+              Standard Shipping
+            </UText>
+            <UText variant="text-2xs" color="$neutral4">
+              {SHIPPING_CONFIG.deliveryEstimate}
+            </UText>
+          </YStack>
+        </XStack>
+        <UText variant="text-sm" color="$neutral3" fontWeight="500">
+          ${SHIPPING_CONFIG.flatRate.toFixed(2)}
         </UText>
       </XStack>
 
@@ -61,7 +83,7 @@ const OrderSummary = memo(({ quote, quantity, bookTitle, bookType, bookPrice }: 
             <XStack ai="center" gap={8}>
               <Feather name="check-circle" size={16} color="#3B9797" />
               <UText variant="text-sm" color="$white" fontWeight="600">
-                Total (incl. shipping & tax)
+                Total (incl. tax)
               </UText>
             </XStack>
             <UText variant="text-md" color="$brandTeal" fontWeight="700">
@@ -73,11 +95,21 @@ const OrderSummary = memo(({ quote, quantity, bookTitle, bookType, bookPrice }: 
         <>
           <Separator borderColor="rgba(255, 255, 255, 0.06)" />
           
+          {/* Estimated total */}
+          <XStack jc="space-between" ai="center">
+            <UText variant="text-sm" color="$neutral4">
+              Estimated Total
+            </UText>
+            <UText variant="text-sm" color="$neutral4">
+              ${(subtotal + SHIPPING_CONFIG.flatRate).toFixed(2)}
+            </UText>
+          </XStack>
+          
           {/* Pending quote message */}
           <XStack ai="center" jc="center" gap={8}>
             <Feather name="info" size={14} color="#8E8E93" />
             <UText variant="text-xs" color="$neutral4" textAlign="center">
-              Complete shipping details for final price
+              Final price after entering address (includes tax)
             </UText>
           </XStack>
         </>

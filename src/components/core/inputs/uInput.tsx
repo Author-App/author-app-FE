@@ -35,7 +35,7 @@ const getVariantStyle = (variant: UInputVariant = 'primary'): StylesType => {
     backgroundColor: '$primary',
     hoverBackgroundColor: '$primaryAlpha2',
     pressBackgroundColor: '$primaryAlpha3',
-    placeholderTextColor: '$white',
+    placeholderTextColor: '$neutral5',
     borderColor: '$secondary',
     borderWidth: 2,
     minHeight: 40,

@@ -30,7 +30,9 @@ export function EbookReaderScreen() {
     saveProgressAndGoBack,
   } = useEbookReader({ bookId });
 
-  console.log('EbookReaderScreen render', { bookId, book});
+  if (__DEV__) {
+    console.log('EbookReaderScreen render', { bookId, book });
+  }
 
 
   if (status === 'loading') {

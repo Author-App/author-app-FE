@@ -94,7 +94,6 @@ export const useSettingsData = () => {
 
   const handleReportBug = useCallback(() => {
     // TODO: Implement bug report functionality
-    console.log('Report a bug');
   }, []);
 
   // Build settings sections with grouped options

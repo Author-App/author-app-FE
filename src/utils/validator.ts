@@ -208,8 +208,5 @@ export const shippingAddressValidationSchema = Yup.object().shape({
         }),
     email: Yup.string()
         .email('Invalid email format')
-        .max(100, 'Email cannot exceed 100 characters')
-        .required('Email is required'),
-    companyName: Yup.string()
-        .max(50, 'Company name cannot exceed 50 characters'),
+        .max(100, 'Email cannot exceed 100 characters'),
 });

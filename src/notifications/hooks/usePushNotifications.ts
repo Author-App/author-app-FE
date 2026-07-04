@@ -195,14 +195,18 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
     // Listener for notifications received while app is in foreground
     notificationListener.current = Notifications.addNotificationReceivedListener(
       (notification) => {
-        console.log('📱 [Push] Notification received in foreground:', notification);
+        if (__DEV__) {
+          console.log('📱 [Push] Notification received in foreground:', notification);
+        }
       }
     );
 
     // Listener for when user taps on a notification
     responseListener.current = Notifications.addNotificationResponseReceivedListener(
       (response) => {
-        console.log('📱 [Push] Notification tapped:', response);
+        if (__DEV__) {
+          console.log('📱 [Push] Notification tapped:', response);
+        }
         
         const data = response.notification.request.content.data as unknown as NotificationData;
         if (data && data.type) {

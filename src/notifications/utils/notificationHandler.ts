@@ -34,7 +34,9 @@ export interface NotificationData {
  * @param data - Notification data from the push payload
  */
 export const handleNotificationNavigation = (data: NotificationData): void => {
-  console.log('📱 [Notification] Handling tap with data:', data);
+  if (__DEV__) {
+    console.log('📱 [Notification] Handling tap with data:', data);
+  }
 
   // If a custom screen is specified, navigate directly
   if (data.screen) {
@@ -88,7 +90,9 @@ export const handleNotificationNavigation = (data: NotificationData): void => {
     default:
       // For general notifications, just open the app (already open)
       // Could navigate to a notifications list screen in the future
-      console.log('📱 [Notification] General notification tapped');
+      if (__DEV__) {
+        console.log('📱 [Notification] General notification tapped');
+      }
       break;
   }
 };
