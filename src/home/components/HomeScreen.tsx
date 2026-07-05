@@ -28,7 +28,8 @@ const HomeScreen: React.FC = () => {
 
   const handleBannerPress = useCallback((item: BannerItem) => {
     haptics.light();
-    const id = item.id.split('-').pop();
+    // Use resourceId (API banners) or extract from legacy id format
+    const id = item.resourceId || item.id.split('-').pop();
     switch (item.type) {
       case 'book':
       case 'audiobook':

@@ -5,9 +5,10 @@ import {
   selectHomeBanner,
   selectHomeSections,
   selectHomeFeedError,
+  selectHeroBanners,
 } from '@/src/store/selectors/homeSelectors';
-import type { HomeBanner } from '@/src/types/api/home.types';
-import type { BannerItem, HomeSectionItem } from '../types/home.types';
+import type { HomeBanner, HeroBanner } from '@/src/types/api/home.types';
+import type { BannerItem, HomeSectionItem, BannerType } from '../types/home.types';
 
 interface UseHomeDataReturn {
   banner: HomeBanner | null;
@@ -34,6 +35,7 @@ export const useHomeData = (): UseHomeDataReturn => {
   const  { isLoading, isFetching, refetch } = useGetHomeFeedQuery();
 
   const banner = useAppSelector(selectHomeBanner);
+  const heroBanners = useAppSelector(selectHeroBanners);
   const sections = useAppSelector(selectHomeSections);
   const error = useAppSelector(selectHomeFeedError);
 
@@ -60,6 +62,22 @@ export const useHomeData = (): UseHomeDataReturn => {
   }, [sections]);
 
   const bannerItems = useMemo((): BannerItem[] => {
+    // Use API banners if available (supports multiple of same type)
+    if (heroBanners.length > 0) {
+      return heroBanners
+        .sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0))
+        .map((b: HeroBanner): BannerItem => ({
+          id: b.id,
+          type: b.type as BannerType,
+          resourceId: b.resourceId,
+          title: b.title,
+          subtitle: b.tagline,
+          image: b.cover,
+          label: b.type.charAt(0).toUpperCase() + b.type.slice(1),
+        }));
+    }
+
+    // Fallback: construct from section data
     const items: BannerItem[] = [];
 
     if (books.length > 0) {
@@ -96,7 +114,7 @@ export const useHomeData = (): UseHomeDataReturn => {
     }
 
     return items;
-  }, [books, audiobooks, articles]);
+  }, [heroBanners, books, audiobooks, articles]);
 
   const homeSections = useMemo((): HomeSectionItem[] => {
     const items: HomeSectionItem[] = [];

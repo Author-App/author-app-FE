@@ -9,6 +9,7 @@ export type {
   HomeSection,
   ContinueReadingBook,
   ContinueReadingProgress,
+  HeroBanner,
 } from '@/src/types/api/home.types';
 
 export type BannerType = 'book' | 'audiobook' | 'event' | 'article' | 'paperback' | 'hardcover';
@@ -16,6 +17,7 @@ export type BannerType = 'book' | 'audiobook' | 'event' | 'article' | 'paperback
 export interface BannerItem {
   id: string;
   type: BannerType;
+  resourceId?: string;  // For API banners - the actual book/article ID
   title: string;
   subtitle?: string;
   image?: string;

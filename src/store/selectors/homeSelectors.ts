@@ -47,6 +47,14 @@ export const selectHomeBanner = createSelector(
 );
 
 /**
+ * Select hero banners array from cache
+ */
+export const selectHeroBanners = createSelector(
+  [selectHomeFeedResult],
+  (result) => result?.data?.data?.banners ?? []
+);
+
+/**
  * Select transformed sections for FlashList
  */
 export const selectHomeSections = createSelector(

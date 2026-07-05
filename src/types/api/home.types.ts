@@ -17,6 +17,19 @@ export interface HomeBanner {
 }
 
 /**
+ * Hero banner from API
+ */
+export interface HeroBanner {
+  id: string;
+  type: 'book' | 'audiobook' | 'paperback' | 'hardcover' | 'article' | 'event';
+  resourceId: string;
+  title: string;
+  tagline?: string;
+  displayOrder?: number;
+  cover?: string;
+}
+
+/**
  * Book item in home feed carousels
  */
 export interface HomeBook {
@@ -72,6 +85,7 @@ export interface ContinueReadingBook {
  */
 export interface HomeFeedResponse {
   banner: HomeBanner | null;
+  banners?: HeroBanner[];
   trendingBooks: HomeBook[];
   articles: HomeArticle[];
   audioBooks: HomeBook[];
