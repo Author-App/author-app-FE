@@ -11,7 +11,7 @@ export type {
   ContinueReadingProgress,
 } from '@/src/types/api/home.types';
 
-export type BannerType = 'book' | 'audiobook' | 'event' | 'article';
+export type BannerType = 'book' | 'audiobook' | 'event' | 'article' | 'paperback' | 'hardcover';
 
 export interface BannerItem {
   id: string;

@@ -18,6 +18,8 @@ const LABEL_TOKEN_KEYS: Record<BannerType, string> = {
   audiobook: '$brandTeal',
   event: '$brandOcean',
   article: '$brandNavy',
+  paperback: '$brandOcean',
+  hardcover: '$brandNavy',
 };
 
 export const BANNER_HEIGHT = 380;

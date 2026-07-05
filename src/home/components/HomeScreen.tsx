@@ -32,6 +32,8 @@ const HomeScreen: React.FC = () => {
     switch (item.type) {
       case 'book':
       case 'audiobook':
+      case 'paperback':
+      case 'hardcover':
         router.push(`/(app)/book/${id}` as Href);
         break;
       case 'article':
