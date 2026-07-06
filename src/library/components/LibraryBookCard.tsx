@@ -8,6 +8,7 @@ import ULocalImage from '@/src/components/core/image/uLocalImage';
 import { formatDurationCompact } from '@/src/utils/helper';
 import { formatPrice } from '@/src/utils/currency';
 import type { BookResponse } from '@/src/types/api/library.types';
+import { getBookTypeLabel, getBookTypeColor, getBookTypeIcon } from '@/src/utils/bookHelpers';
 
 interface LibraryBookCardProps {
   book: BookResponse;
@@ -72,19 +73,19 @@ const LibraryBookCard: React.FC<LibraryBookCardProps> = ({
           ai="center"
         >
           <YStack
-            bg={isAudiobook ? '$brandTeal' : '$brandCrimson'}
+            bg={getBookTypeColor(book.type) as any}
             px={10}
             py={5}
             br={8}
           >
             <XStack ai="center" gap={5}>
               <Ionicons
-                name={isAudiobook ? 'headset' : 'book'}
+                name={getBookTypeIcon(book.type)}
                 size={11}
                 color="white"
               />
               <UText variant="text-xs" color="$white" fontWeight="600">
-                {isAudiobook ? 'Audio' : 'E-Book'}
+                {getBookTypeLabel(book.type)}
               </UText>
             </XStack>
           </YStack>

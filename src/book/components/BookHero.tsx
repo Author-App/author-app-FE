@@ -9,7 +9,7 @@ import UStarRating from '@/src/components/core/rating/UStarRating';
 import IconBook from '@/assets/icons/iconBook';
 import IconHeadphone from '@/assets/icons/iconHeadphone';
 import type { BookResponse } from '@/src/types/api/library.types';
-import { isPrintBook } from '@/src/types/api/library.types';
+import { isPrintBook } from '@/src/utils/bookHelpers';
 
 interface BookHeroProps {
   book: BookResponse;

@@ -4,12 +4,6 @@
  */
 export type BookType = 'ebook' | 'audiobook' | 'hardcover' | 'paperback';
 
-/**
- * Check if book type is a print format
- */
-export const isPrintBook = (type: BookType): boolean => 
-  type === 'hardcover' || type === 'paperback';
-
 export interface Tag {
   id?: string;
   name: string;

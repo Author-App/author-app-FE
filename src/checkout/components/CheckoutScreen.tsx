@@ -22,7 +22,7 @@ import { SHIPPING_CONFIG } from '@/src/types/api/print.types';
 
 import { useBookDetail } from '@/src/book/hooks/useBookDetail';
 import { useCheckoutForm } from '../hooks/useCheckoutForm';
-import { isPrintBook } from '@/src/types/api/library.types';
+import { isPrintBook } from '@/src/utils/bookHelpers';
 
 const AnimatedYStack = Animated.createAnimatedComponent(YStack);
 

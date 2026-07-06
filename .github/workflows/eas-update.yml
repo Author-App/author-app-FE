@@ -1,5 +1,15 @@
 # EAS Update Workflow (OTA Updates)
 # Pushes JavaScript updates without app store review
+#
+# SAFETY GUARDS:
+# This workflow validates that the local runtime version matches the latest
+# build deployed to the target channel FOR EACH PLATFORM before publishing.
+# This prevents "silent skip" scenarios where an OTA update is published for
+# a version that no users have installed yet.
+#
+# Each platform (iOS/Android) is validated independently against its own
+# latest build, and command failures are treated as hard errors (not as
+# "no builds yet").
 
 name: EAS Update
 
@@ -48,6 +58,360 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      # =======================================================================
+      # Runtime Version Guards (Per-Platform)
+      # 
+      # Each platform gets its own validation step. Command failures are treated
+      # as hard errors (exit 1), NOT as "no builds yet". Only a successful
+      # command returning an empty array [] is treated as a new channel.
+      #
+      # With runtimeVersion.policy="appVersion", runtime version = app.json version.
+      # =======================================================================
+
+      # ----- PREVIEW CHANNEL: iOS -----
+      - name: Validate Runtime Version (Preview - iOS)
+        id: validate_preview_ios
+        if: (github.event_name == 'push' && github.ref == 'refs/heads/develop') || (github.event_name == 'workflow_dispatch' && inputs.branch == 'preview')
+        run: |
+          set -e
+          CHANNEL="preview"
+          PLATFORM="ios"
+          
+          echo "🔍 Validating runtime version for channel: $CHANNEL, platform: $PLATFORM"
+          
+          # Get local version from app.json (this becomes runtimeVersion with policy=appVersion)
+          LOCAL_VERSION=$(node -p "require('./app.json').expo.version")
+          echo "📱 Local app.json version: $LOCAL_VERSION"
+          
+          # Run eas build:list, capturing stdout and stderr SEPARATELY
+          # Stderr may contain CLI upgrade notices that would corrupt JSON parsing
+          set +e
+          BUILD_STDERR_FILE=$(mktemp)
+          BUILD_STDOUT=$(eas build:list --channel "$CHANNEL" --platform "$PLATFORM" --limit 1 --json --non-interactive 2>"$BUILD_STDERR_FILE")
+          EXIT_CODE=$?
+          BUILD_STDERR=$(cat "$BUILD_STDERR_FILE")
+          rm -f "$BUILD_STDERR_FILE"
+          set -e
+          
+          # Log any stderr content (upgrade notices, warnings) for visibility
+          if [ -n "$BUILD_STDERR" ]; then
+            echo "ℹ️  EAS CLI stderr output:"
+            echo "$BUILD_STDERR"
+            echo ""
+          fi
+          
+          # BUG 1 FIX: Distinguish command failure from empty result
+          if [ $EXIT_CODE -ne 0 ]; then
+            echo ""
+            echo "❌ EAS BUILD:LIST COMMAND FAILED!"
+            echo "=================================="
+            echo ""
+            echo "Exit code: $EXIT_CODE"
+            echo "Stdout:"
+            echo "$BUILD_STDOUT"
+            echo ""
+            echo "Stderr:"
+            echo "$BUILD_STDERR"
+            echo ""
+            echo "This could be due to:"
+            echo "  - Expired or invalid EXPO_TOKEN"
+            echo "  - Network connectivity issues"
+            echo "  - EAS API outage"
+            echo ""
+            echo "Failing the workflow to prevent publishing without validation."
+            exit 1
+          fi
+          
+          # Try to parse as JSON - if it fails, the output wasn't valid JSON
+          if ! echo "$BUILD_STDOUT" | node -e "JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8'))" 2>/dev/null; then
+            echo ""
+            echo "❌ EAS BUILD:LIST RETURNED INVALID JSON!"
+            echo "========================================"
+            echo ""
+            echo "Stdout (expected JSON):"
+            echo "$BUILD_STDOUT"
+            echo ""
+            echo "Stderr:"
+            echo "$BUILD_STDERR"
+            echo ""
+            echo "Failing the workflow to prevent publishing without validation."
+            exit 1
+          fi
+          
+          # Check if result is empty array (genuinely no builds on this channel/platform)
+          IS_EMPTY=$(echo "$BUILD_STDOUT" | node -p "JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8')).length === 0")
+          
+          if [ "$IS_EMPTY" = "true" ]; then
+            echo "⚠️  WARNING: No $PLATFORM builds found on channel '$CHANNEL'."
+            echo "   This is expected for a new channel/platform. Proceeding with update..."
+            echo "   The first $PLATFORM build on this channel should use version $LOCAL_VERSION"
+            exit 0
+          fi
+          
+          # Extract runtime version from latest build
+          BUILD_RUNTIME=$(echo "$BUILD_STDOUT" | node -p "JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8'))[0]?.runtimeVersion || ''")
+          BUILD_APP_VERSION=$(echo "$BUILD_STDOUT" | node -p "JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8'))[0]?.appVersion || ''")
+          BUILD_PLATFORM=$(echo "$BUILD_STDOUT" | node -p "JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8'))[0]?.platform || ''")
+          
+          echo "🏗️  Latest $PLATFORM build:"
+          echo "    - runtimeVersion: $BUILD_RUNTIME"
+          echo "    - appVersion: $BUILD_APP_VERSION"
+          echo "    - platform: $BUILD_PLATFORM"
+          
+          # Compare versions
+          if [ "$LOCAL_VERSION" != "$BUILD_RUNTIME" ]; then
+            echo ""
+            echo "❌ RUNTIME VERSION MISMATCH DETECTED! ($PLATFORM)"
+            echo "================================================="
+            echo ""
+            echo "   Local app.json version:       $LOCAL_VERSION"
+            echo "   $PLATFORM build runtimeVersion: $BUILD_RUNTIME"
+            echo ""
+            echo "This means you would publish an OTA update that NO $PLATFORM users can receive,"
+            echo "because no $PLATFORM build with runtimeVersion '$LOCAL_VERSION' exists on '$CHANNEL'."
+            echo ""
+            echo "TO FIX:"
+            echo "  - If native changes are needed: run 'eas build --platform $PLATFORM' first,"
+            echo "    wait for it to complete, then retry this workflow."
+            echo "  - If this was a mistake: revert app.json version to '$BUILD_RUNTIME'"
+            echo ""
+            exit 1
+          fi
+          
+          echo "✅ Version check passed for $PLATFORM: $LOCAL_VERSION matches deployed build"
+
+      # ----- PREVIEW CHANNEL: Android -----
+      - name: Validate Runtime Version (Preview - Android)
+        id: validate_preview_android
+        if: (github.event_name == 'push' && github.ref == 'refs/heads/develop') || (github.event_name == 'workflow_dispatch' && inputs.branch == 'preview')
+        run: |
+          set -e
+          CHANNEL="preview"
+          PLATFORM="android"
+          
+          echo "🔍 Validating runtime version for channel: $CHANNEL, platform: $PLATFORM"
+          
+          LOCAL_VERSION=$(node -p "require('./app.json').expo.version")
+          echo "📱 Local app.json version: $LOCAL_VERSION"
+          
+          # Capture stdout and stderr SEPARATELY to avoid CLI notices corrupting JSON
+          set +e
+          BUILD_STDERR_FILE=$(mktemp)
+          BUILD_STDOUT=$(eas build:list --channel "$CHANNEL" --platform "$PLATFORM" --limit 1 --json --non-interactive 2>"$BUILD_STDERR_FILE")
+          EXIT_CODE=$?
+          BUILD_STDERR=$(cat "$BUILD_STDERR_FILE")
+          rm -f "$BUILD_STDERR_FILE"
+          set -e
+          
+          if [ -n "$BUILD_STDERR" ]; then
+            echo "ℹ️  EAS CLI stderr output:"
+            echo "$BUILD_STDERR"
+            echo ""
+          fi
+          
+          if [ $EXIT_CODE -ne 0 ]; then
+            echo ""
+            echo "❌ EAS BUILD:LIST COMMAND FAILED!"
+            echo "=================================="
+            echo "Exit code: $EXIT_CODE"
+            echo "Stdout: $BUILD_STDOUT"
+            echo "Stderr: $BUILD_STDERR"
+            echo ""
+            echo "Failing the workflow to prevent publishing without validation."
+            exit 1
+          fi
+          
+          if ! echo "$BUILD_STDOUT" | node -e "JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8'))" 2>/dev/null; then
+            echo ""
+            echo "❌ EAS BUILD:LIST RETURNED INVALID JSON!"
+            echo "Stdout: $BUILD_STDOUT"
+            echo "Stderr: $BUILD_STDERR"
+            exit 1
+          fi
+          
+          IS_EMPTY=$(echo "$BUILD_STDOUT" | node -p "JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8')).length === 0")
+          
+          if [ "$IS_EMPTY" = "true" ]; then
+            echo "⚠️  WARNING: No $PLATFORM builds found on channel '$CHANNEL'."
+            echo "   Proceeding with update for new channel/platform..."
+            exit 0
+          fi
+          
+          BUILD_RUNTIME=$(echo "$BUILD_STDOUT" | node -p "JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8'))[0]?.runtimeVersion || ''")
+          BUILD_APP_VERSION=$(echo "$BUILD_STDOUT" | node -p "JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8'))[0]?.appVersion || ''")
+          
+          echo "🏗️  Latest $PLATFORM build: runtimeVersion=$BUILD_RUNTIME, appVersion=$BUILD_APP_VERSION"
+          
+          if [ "$LOCAL_VERSION" != "$BUILD_RUNTIME" ]; then
+            echo ""
+            echo "❌ RUNTIME VERSION MISMATCH DETECTED! ($PLATFORM)"
+            echo "================================================="
+            echo "   Local app.json version:       $LOCAL_VERSION"
+            echo "   $PLATFORM build runtimeVersion: $BUILD_RUNTIME"
+            echo ""
+            echo "TO FIX: Run 'eas build --platform $PLATFORM' first, or revert app.json to '$BUILD_RUNTIME'"
+            exit 1
+          fi
+          
+          echo "✅ Version check passed for $PLATFORM: $LOCAL_VERSION matches deployed build"
+
+      # ----- PRODUCTION CHANNEL: iOS -----
+      - name: Validate Runtime Version (Production - iOS)
+        id: validate_production_ios
+        if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.branch == 'production')
+        run: |
+          set -e
+          CHANNEL="production"
+          PLATFORM="ios"
+          
+          echo "🔍 Validating runtime version for channel: $CHANNEL, platform: $PLATFORM"
+          
+          LOCAL_VERSION=$(node -p "require('./app.json').expo.version")
+          echo "📱 Local app.json version: $LOCAL_VERSION"
+          
+          # Capture stdout and stderr SEPARATELY to avoid CLI notices corrupting JSON
+          set +e
+          BUILD_STDERR_FILE=$(mktemp)
+          BUILD_STDOUT=$(eas build:list --channel "$CHANNEL" --platform "$PLATFORM" --limit 1 --json --non-interactive 2>"$BUILD_STDERR_FILE")
+          EXIT_CODE=$?
+          BUILD_STDERR=$(cat "$BUILD_STDERR_FILE")
+          rm -f "$BUILD_STDERR_FILE"
+          set -e
+          
+          if [ -n "$BUILD_STDERR" ]; then
+            echo "ℹ️  EAS CLI stderr output:"
+            echo "$BUILD_STDERR"
+            echo ""
+          fi
+          
+          if [ $EXIT_CODE -ne 0 ]; then
+            echo ""
+            echo "❌ EAS BUILD:LIST COMMAND FAILED!"
+            echo "=================================="
+            echo "Exit code: $EXIT_CODE"
+            echo "Stdout: $BUILD_STDOUT"
+            echo "Stderr: $BUILD_STDERR"
+            echo ""
+            echo "Failing the workflow to prevent publishing without validation."
+            exit 1
+          fi
+          
+          if ! echo "$BUILD_STDOUT" | node -e "JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8'))" 2>/dev/null; then
+            echo ""
+            echo "❌ EAS BUILD:LIST RETURNED INVALID JSON!"
+            echo "Stdout: $BUILD_STDOUT"
+            echo "Stderr: $BUILD_STDERR"
+            exit 1
+          fi
+          
+          IS_EMPTY=$(echo "$BUILD_STDOUT" | node -p "JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8')).length === 0")
+          
+          if [ "$IS_EMPTY" = "true" ]; then
+            echo "⚠️  WARNING: No $PLATFORM builds found on channel '$CHANNEL'."
+            echo "   Proceeding with update for new channel/platform..."
+            exit 0
+          fi
+          
+          BUILD_RUNTIME=$(echo "$BUILD_STDOUT" | node -p "JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8'))[0]?.runtimeVersion || ''")
+          BUILD_APP_VERSION=$(echo "$BUILD_STDOUT" | node -p "JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8'))[0]?.appVersion || ''")
+          
+          echo "🏗️  Latest $PLATFORM build: runtimeVersion=$BUILD_RUNTIME, appVersion=$BUILD_APP_VERSION"
+          
+          if [ "$LOCAL_VERSION" != "$BUILD_RUNTIME" ]; then
+            echo ""
+            echo "❌ RUNTIME VERSION MISMATCH DETECTED! ($PLATFORM)"
+            echo "================================================="
+            echo "   Local app.json version:       $LOCAL_VERSION"
+            echo "   $PLATFORM build runtimeVersion: $BUILD_RUNTIME"
+            echo ""
+            echo "TO FIX: Run 'eas build --platform $PLATFORM' first, or revert app.json to '$BUILD_RUNTIME'"
+            exit 1
+          fi
+          
+          echo "✅ Version check passed for $PLATFORM: $LOCAL_VERSION matches deployed build"
+
+      # ----- PRODUCTION CHANNEL: Android -----
+      - name: Validate Runtime Version (Production - Android)
+        id: validate_production_android
+        if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.branch == 'production')
+        run: |
+          set -e
+          CHANNEL="production"
+          PLATFORM="android"
+          
+          echo "🔍 Validating runtime version for channel: $CHANNEL, platform: $PLATFORM"
+          
+          LOCAL_VERSION=$(node -p "require('./app.json').expo.version")
+          echo "📱 Local app.json version: $LOCAL_VERSION"
+          
+          # Capture stdout and stderr SEPARATELY to avoid CLI notices corrupting JSON
+          set +e
+          BUILD_STDERR_FILE=$(mktemp)
+          BUILD_STDOUT=$(eas build:list --channel "$CHANNEL" --platform "$PLATFORM" --limit 1 --json --non-interactive 2>"$BUILD_STDERR_FILE")
+          EXIT_CODE=$?
+          BUILD_STDERR=$(cat "$BUILD_STDERR_FILE")
+          rm -f "$BUILD_STDERR_FILE"
+          set -e
+          
+          if [ -n "$BUILD_STDERR" ]; then
+            echo "ℹ️  EAS CLI stderr output:"
+            echo "$BUILD_STDERR"
+            echo ""
+          fi
+          
+          if [ $EXIT_CODE -ne 0 ]; then
+            echo ""
+            echo "❌ EAS BUILD:LIST COMMAND FAILED!"
+            echo "=================================="
+            echo "Exit code: $EXIT_CODE"
+            echo "Stdout: $BUILD_STDOUT"
+            echo "Stderr: $BUILD_STDERR"
+            echo ""
+            echo "Failing the workflow to prevent publishing without validation."
+            exit 1
+          fi
+          
+          if ! echo "$BUILD_STDOUT" | node -e "JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8'))" 2>/dev/null; then
+            echo ""
+            echo "❌ EAS BUILD:LIST RETURNED INVALID JSON!"
+            echo "Stdout: $BUILD_STDOUT"
+            echo "Stderr: $BUILD_STDERR"
+            exit 1
+          fi
+          
+          IS_EMPTY=$(echo "$BUILD_STDOUT" | node -p "JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8')).length === 0")
+          
+          if [ "$IS_EMPTY" = "true" ]; then
+            echo "⚠️  WARNING: No $PLATFORM builds found on channel '$CHANNEL'."
+            echo "   Proceeding with update for new channel/platform..."
+            exit 0
+          fi
+          
+          BUILD_RUNTIME=$(echo "$BUILD_STDOUT" | node -p "JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8'))[0]?.runtimeVersion || ''")
+          BUILD_APP_VERSION=$(echo "$BUILD_STDOUT" | node -p "JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8'))[0]?.appVersion || ''")
+          
+          echo "🏗️  Latest $PLATFORM build: runtimeVersion=$BUILD_RUNTIME, appVersion=$BUILD_APP_VERSION"
+          
+          if [ "$LOCAL_VERSION" != "$BUILD_RUNTIME" ]; then
+            echo ""
+            echo "❌ RUNTIME VERSION MISMATCH DETECTED! ($PLATFORM)"
+            echo "================================================="
+            echo "   Local app.json version:       $LOCAL_VERSION"
+            echo "   $PLATFORM build runtimeVersion: $BUILD_RUNTIME"
+            echo ""
+            echo "TO FIX: Run 'eas build --platform $PLATFORM' first, or revert app.json to '$BUILD_RUNTIME'"
+            exit 1
+          fi
+          
+          echo "✅ Version check passed for $PLATFORM: $LOCAL_VERSION matches deployed build"
+
+      # =======================================================================
+      # Publish Updates
+      # Each publish step only runs if its platform-specific validation passed.
+      # Steps in the same job run sequentially, so if validation fails, the job
+      # stops and publish steps never execute.
+      # =======================================================================
 
       # OTA Update on push to develop
       - name: Publish Update (Preview - iOS)
