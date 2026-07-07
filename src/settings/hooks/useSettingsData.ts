@@ -6,6 +6,7 @@ import type { Href } from 'expo-router';
 import { haptics } from '@/src/utils/haptics';
 
 import { useGetMeQuery, useDeleteAccountMutation } from '@/src/store/api/userApi';
+import { useCreateBugReportMutation } from '@/src/store/api/bugReportApi';
 import { useAppSelector } from '@/src/store/hooks';
 import { selectCurrentUser } from '@/src/store/selectors/userSelectors';
 import { logOut } from '@/src/store/slices/authSlice';
@@ -21,6 +22,7 @@ export const useSettingsData = () => {
   // API hooks
   const { isLoading, isError, refetch } = useGetMeQuery();
   const [deleteAccount, { isLoading: isDeleting }] = useDeleteAccountMutation();
+  const [createBugReport, { isLoading: isSubmittingBugReport }] = useCreateBugReportMutation();
 
   // Select data from cache using memoized selector
   const user = useAppSelector(selectCurrentUser);
@@ -33,6 +35,7 @@ export const useSettingsData = () => {
 
   // Local state
   const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [bugReportModalVisible, setBugReportModalVisible] = useState(false);
 
   // Handle logout - always available
   const handleLogout = useCallback(() => {
@@ -92,9 +95,33 @@ export const useSettingsData = () => {
     } as unknown as Href);
   }, [router]);
 
-  const handleReportBug = useCallback(() => {
-    // TODO: Implement bug report functionality
+  // Bug report modal handlers
+  const showBugReportModal = useCallback(() => {
+    haptics.selection();
+    setBugReportModalVisible(true);
   }, []);
+
+  const hideBugReportModal = useCallback(() => {
+    setBugReportModalVisible(false);
+  }, []);
+
+  const submitBugReport = useCallback(async (title: string, description: string) => {
+    try {
+      await createBugReport({ title, description }).unwrap();
+      
+      Toast.show({
+        type: 'success',
+        text2: 'Bug report submitted successfully',
+      });
+      
+      setBugReportModalVisible(false);
+    } catch (error: any) {
+      Toast.show({
+        type: 'error',
+        text2: error?.data?.message || 'Failed to submit bug report',
+      });
+    }
+  }, [createBugReport]);
 
   // Build settings sections with grouped options
   const settingsSections: SettingsSection[] = [
@@ -154,7 +181,7 @@ export const useSettingsData = () => {
           label: 'Report A Bug',
           subtitle: 'Help us improve the app',
           icon: 'bug-outline',
-          onPress: handleReportBug,
+          onPress: showBugReportModal,
           showArrow: true,
         },
       ],
@@ -198,5 +225,10 @@ export const useSettingsData = () => {
     deleteModalVisible,
     hideDeleteModal,
     confirmDeleteAccount,
+    // Bug report modal controls
+    bugReportModalVisible,
+    isSubmittingBugReport,
+    hideBugReportModal,
+    submitBugReport,
   };
 };

@@ -12,6 +12,7 @@ import { libraryApi } from './api/libraryApi';
 import { ordersApi } from './api/ordersApi';
 import { printApi } from './api/printApi';
 import { pushTokenApi } from './api/pushTokenApi';
+import { bugReportApi } from './api/bugReportApi';
 
 import authSlice, { type AuthState } from './slices/authSlice';
 import pushTokenSlice, { type PushTokenState } from './slices/pushTokenSlice';
@@ -60,6 +61,7 @@ const rootReducer = combineReducers({
   [ordersApi.reducerPath]: ordersApi.reducer,
   [printApi.reducerPath]: printApi.reducer,
   [pushTokenApi.reducerPath]: pushTokenApi.reducer,
+  [bugReportApi.reducerPath]: bugReportApi.reducer,
 });
 
 
@@ -79,6 +81,7 @@ export const store = configureStore({
       .concat(ordersApi.middleware)
       .concat(printApi.middleware)
       .concat(pushTokenApi.middleware)
+      .concat(bugReportApi.middleware)
       .concat(apiErrorHandler),
 });
 

@@ -45,14 +45,6 @@ export const useHomeData = (): UseHomeDataReturn => {
     const audiobooksSection = sections.find((s) => s.type === 'audiobooks');
     const articlesSection = sections.find((s) => s.type === 'articles');
     
-    // Debug: Check if backend is returning 'type' field on books
-    if (__DEV__ && booksSection?.data?.length) {
-      console.log('[Home] Sample book data:', JSON.stringify(booksSection.data[0], null, 2));
-    }
-    if (__DEV__ && audiobooksSection?.data?.length) {
-      console.log('[Home] Sample audiobook data:', JSON.stringify(audiobooksSection.data[0], null, 2));
-    }
-    
     return {
       books: booksSection?.data ?? [],
       audiobooks: audiobooksSection?.data ?? [],
@@ -62,9 +54,10 @@ export const useHomeData = (): UseHomeDataReturn => {
   }, [sections]);
 
   const bannerItems = useMemo((): BannerItem[] => {
-    // Use API banners if available (supports multiple of same type)
+    // Use API banners if available
     if (heroBanners.length > 0) {
       return heroBanners
+        .filter((b: HeroBanner) => !!b.cover)
         .sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0))
         .map((b: HeroBanner): BannerItem => ({
           id: b.id,
@@ -80,7 +73,7 @@ export const useHomeData = (): UseHomeDataReturn => {
     // Fallback: construct from section data
     const items: BannerItem[] = [];
 
-    if (books.length > 0) {
+    if (books.length > 0 && books[0].image) {
       items.push({
         id: `banner-book-${books[0].id}`,
         type: 'book',
@@ -91,7 +84,7 @@ export const useHomeData = (): UseHomeDataReturn => {
       });
     }
 
-    if (audiobooks.length > 0) {
+    if (audiobooks.length > 0 && audiobooks[0].image) {
       items.push({
         id: `banner-audiobook-${audiobooks[0].id}`,
         type: 'audiobook',
@@ -102,7 +95,7 @@ export const useHomeData = (): UseHomeDataReturn => {
       });
     }
 
-    if (articles.length > 0) {
+    if (articles.length > 0 && articles[0].image) {
       items.push({
         id: `banner-article-${articles[0].id}`,
         type: 'article',
