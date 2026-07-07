@@ -8,7 +8,7 @@
       "androidMode": "default",
       "androidCollapsedTitle": "New notification"
     },
-    "version": "1.0.6",
+    "version": "1.0.7",
     "orientation": "portrait",
     "icon": "./assets/images/mainLogo.png",
     "scheme": "stanleypaden",
@@ -42,11 +42,6 @@
       ],
       "package": "com.swiftreflex.stanleypaden",
       "versionCode": 10
-    },
-    "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/mainLogo.png"
     },
     "plugins": [
       "expo-router",
