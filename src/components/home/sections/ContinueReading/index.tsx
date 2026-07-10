@@ -17,7 +17,7 @@ interface ContinueReadingProps {
 const MAX_CARD_WIDTH = 380;
 
 const ContinueReading: React.FC<ContinueReadingProps> = ({
-  title = 'Continue Reading',
+  title = 'Continue Exploring',
   subtitle = 'Pick up where you left off',
   data,
   onPressItem,

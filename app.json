@@ -31,7 +31,6 @@
         "foregroundImage": "./assets/images/mainLogo.png",
         "backgroundColor": "#132440"
       },
-      "useNextNotificationsApi": true,
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "permissions": [
@@ -74,7 +73,8 @@
       ],
       "@sentry/react-native",
       "expo-secure-store",
-      "./plugins/withGoogleSignInFix"
+      "./plugins/withGoogleSignInFix",
+      "expo-asset"
     ],
     "experiments": {
       "typedRoutes": true

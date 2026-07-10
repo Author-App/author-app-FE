@@ -58,6 +58,7 @@ export const continueReadingBookSchema = z.object({
   price: z.number(),
   currency: z.string(),
   hasAccess: z.boolean(),
+  type: z.enum(['ebook', 'audiobook', 'hardcover', 'paperback']).optional(),
   progress: continueReadingProgressSchema,
 });
 

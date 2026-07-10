@@ -72,6 +72,7 @@ export interface ContinueReadingBook {
   price: number;
   currency: string;
   hasAccess: boolean;
+  type?: 'ebook' | 'audiobook' | 'hardcover' | 'paperback';
   progress: ContinueReadingProgress;
 }
 

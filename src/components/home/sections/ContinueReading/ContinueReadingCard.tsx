@@ -21,6 +21,8 @@ const ContinueReadingCard = memo(({ item, index, cardWidth, onPress, ...props }:
   const percentage = progress?.percentage ?? 0;
   const pagesLeft = progress ? formatPagesLeft(progress.currentPage, progress.totalPages) : '';
   const lastRead = progress?.lastReadAt ? formatLastRead(progress.lastReadAt) : '';
+  // Only audiobook gets "Last listened", all others (ebook, hardcover, paperback, undefined) get "Last read"
+  const lastActivityLabel = item.type === 'audiobook' ? 'Last listened' : 'Last read';
 
   return (
     <UAnimatedView animation="fadeInUp" delay={index * 100} duration={400}>
@@ -63,7 +65,7 @@ const ContinueReadingCard = memo(({ item, index, cardWidth, onPress, ...props }:
             </UText>
             {lastRead && (
               <UText variant="text-xs" color="$neutral2">
-                Last read {lastRead}
+                {lastActivityLabel} {lastRead}
               </UText>
             )}
           </YStack>
