@@ -48,3 +48,11 @@ export const selectUserProfileImage = createSelector(
   [selectCurrentUser],
   (user): string | undefined => user?.profileImage
 );
+
+/**
+ * Select whether to show welcome banner
+ */
+export const selectShowWelcomeBanner = createSelector(
+  [selectCurrentUser],
+  (user): boolean => user?.showWelcomeBanner ?? false
+);

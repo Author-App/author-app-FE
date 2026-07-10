@@ -24,6 +24,7 @@ export interface User {
   profileImage?: string;
   profileImageUrl?: string;
   isNotificationEnabled?: boolean;
+  showWelcomeBanner?: boolean;
   createdAt: string | null;
   updatedAt: string | null;
 }

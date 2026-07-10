@@ -87,6 +87,18 @@ export const userApi = createApi({
         method: 'DELETE',
       }),
     }),
+
+    /**
+     * POST /banner/welcome/dismiss
+     * Dismisses the welcome banner for the user
+     */
+    dismissWelcomeBanner: builder.mutation<ApiResponse<{ message: string }>, void>({
+      query: () => ({
+        url: '/banner/welcome/dismiss',
+        method: 'POST',
+      }),
+      invalidatesTags: ['User'],
+    }),
   }),
 });
 
@@ -97,4 +109,5 @@ export const {
   useGetProfileImageQuery,
   useChangePasswordMutation,
   useDeleteAccountMutation,
+  useDismissWelcomeBannerMutation,
 } = userApi;
