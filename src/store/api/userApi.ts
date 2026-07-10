@@ -104,6 +104,7 @@ export const userApi = createApi({
 
 export const {
   useGetMeQuery,
+  useLazyGetMeQuery,
   useUpdateProfileMutation,
   useUploadProfileImageMutation,
   useGetProfileImageQuery,

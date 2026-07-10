@@ -119,7 +119,7 @@ export const useHomeData = (): UseHomeDataReturn => {
     if (continueReading.length > 0) {
       items.push({
         type: 'continueReading',
-        title: 'Continue Reading',
+        title: 'Continue Exploring',
         subtitle: 'Pick up where you left off',
         data: continueReading,
       });

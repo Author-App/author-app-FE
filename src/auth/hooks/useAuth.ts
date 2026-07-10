@@ -7,6 +7,7 @@ import {
   useVerifyCodeMutation,
   useResetPasswordMutation,
 } from '@/src/store/api/authApi';
+import { useLazyGetMeQuery } from '@/src/store/api/userApi';
 import { createLoginPayload, createSignupPayload } from '@/src/services/payload.service';
 import { handleApiError } from '@/src/services/error.service';
 import { showSuccessToast } from '@/src/utils/toast';
@@ -15,6 +16,7 @@ import { haptics } from '@/src/utils/haptics';
 
 export const useLogin = () => {
   const [loginMutation, { isLoading, error }] = useLoginMutation();
+  const [triggerGetMe] = useLazyGetMeQuery();
   const router = useRouter();
 
   const login = useCallback(
@@ -22,6 +24,9 @@ export const useLogin = () => {
       try {
         const payload = await createLoginPayload(email, password);
         await loginMutation(payload).unwrap();
+
+        // Fetch user data to populate cache (needed for welcome banner, etc.)
+        await triggerGetMe().unwrap();
 
         haptics.success();
         showSuccessToast("You've logged in successfully");
@@ -36,7 +41,7 @@ export const useLogin = () => {
         return false;
       }
     },
-    [loginMutation, router]
+    [loginMutation, triggerGetMe, router]
   );
 
   return { login, isLoading, error };
