@@ -4,7 +4,6 @@ import type { ApiResponse } from '@/src/types/api/common.types';
 
 interface RegisterPushTokenRequest {
   pushToken: string;
-  platform: 'ios' | 'android';
 }
 
 interface PushTokenResponse {
@@ -29,11 +28,9 @@ export const pushTokenApi = createApi({
         method: 'POST',
         body,
       }),
-      // Mock response for now - remove when backend is ready
       async onQueryStarted(arg, { queryFulfilled }) {
         if (__DEV__) {
           console.log('📱 [Push Token API] Registering token:', arg.pushToken);
-          console.log('📱 [Push Token API] Platform:', arg.platform);
         }
       },
     }),

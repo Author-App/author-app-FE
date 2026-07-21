@@ -123,15 +123,13 @@ const NotificationPermissionSheet: React.FC = () => {
         return;
       }
 
-      // TODO: Send token to server instead of showing it
-      // For now, just close the sheet after permission granted
+      // Token POST handled by registerForPushNotifications() in the hook
       sentryService.addBreadcrumb({
         category: 'notification',
         message: 'Permission granted - closing sheet',
         level: 'info',
       });
       setIsOpen(false);
-      // setCurrentView('token'); // Commented out - will send to server later
     } catch (error) {
       sentryService.captureError(error, {
         tags: { type: 'notification_error' },

@@ -173,16 +173,26 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
       // Store token in Redux
       dispatch(setPushToken(token));
 
-      // Register token with backend via RTK Query
-      const platform = Platform.OS as 'ios' | 'android';
-      await registerPushToken({ pushToken: token, platform });
-
-      sentryService.addBreadcrumb({
-        category: 'notification',
-        message: 'Push token registered with backend',
-        data: { platform },
-        level: 'info',
-      });
+      // Register token with backend - isolated try/catch so failure doesn't break permission flow
+      try {
+        await registerPushToken({ pushToken: token });
+        sentryService.addBreadcrumb({
+          category: 'notification',
+          message: 'Push token registered with backend',
+          level: 'info',
+        });
+      } catch (postError) {
+        // User already granted permission - log error but don't break flow
+        sentryService.addBreadcrumb({
+          category: 'notification',
+          message: 'Failed to register push token with backend',
+          level: 'error',
+        });
+        sentryService.captureError(postError, {
+          tags: { type: 'push_token_sync_error' },
+          extra: { action: 'registerPushToken' },
+        });
+      }
     } catch (error) {
       sentryService.captureError(error, {
         tags: { type: 'notification_error' },
@@ -190,6 +200,25 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
       });
     }
   }, [dispatch, registerPushToken]);
+
+  // Re-sync token on app start when permission is already granted
+  useEffect(() => {
+    const syncTokenOnStart = async () => {
+      if (!Device.isDevice) return;
+
+      const { status } = await Notifications.getPermissionsAsync();
+      if (status === 'granted') {
+        sentryService.addBreadcrumb({
+          category: 'notification',
+          message: 'App start - permission already granted, re-syncing token',
+          level: 'info',
+        });
+        await registerForPushNotifications();
+      }
+    };
+
+    syncTokenOnStart();
+  }, []);
 
   useEffect(() => {
     // Listener for notifications received while app is in foreground

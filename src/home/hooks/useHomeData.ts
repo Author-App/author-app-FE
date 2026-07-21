@@ -129,7 +129,7 @@ export const useHomeData = (): UseHomeDataReturn => {
       items.push({
         type: 'books',
         title: 'Featured Books',
-        subtitle: 'Handpicked for you',
+        subtitle: 'Curated for you',
         data: books,
       });
     }
