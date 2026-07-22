@@ -54,7 +54,8 @@ export const handleNotificationNavigation = (data: NotificationData): void => {
 
     case 'new_audiobook':
       if (data.audiobookId) {
-        router.push(`/(app)/audiobookPlayer/${data.audiobookId}` as Href);
+        // Query param, not path segment
+        router.push(`/(app)/audiobookPlayer?bookId=${data.audiobookId}` as Href);
       }
       break;
 

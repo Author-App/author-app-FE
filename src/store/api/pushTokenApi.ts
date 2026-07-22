@@ -19,8 +19,6 @@ export const pushTokenApi = createApi({
     /**
      * POST /users/push-token
      * Registers the device push token with the backend
-     * 
-     * TODO: Update endpoint URL when backend is ready
      */
     registerPushToken: builder.mutation<ApiResponse<PushTokenResponse>, RegisterPushTokenRequest>({
       query: (body) => ({
@@ -38,14 +36,11 @@ export const pushTokenApi = createApi({
     /**
      * DELETE /users/push-token
      * Unregisters the device push token (call on logout)
-     * 
-     * TODO: Update endpoint URL when backend is ready
      */
-    unregisterPushToken: builder.mutation<ApiResponse<PushTokenResponse>, { pushToken: string }>({
-      query: (body) => ({
+    unregisterPushToken: builder.mutation<ApiResponse<PushTokenResponse>, void>({
+      query: () => ({
         url: '/users/push-token',
         method: 'DELETE',
-        body,
       }),
     }),
   }),

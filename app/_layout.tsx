@@ -16,6 +16,7 @@ import AppTamaguiProvider from '@/src/components/providers/appTamaguiProvider';
 import FontProvider from '@/src/components/providers/fontProvider';
 import { AppStripeProvider } from '@/src/components/providers/appStripeProvider';
 import toastConfig from '@/src/components/core/toast/toastConfig';
+import { NotificationDeepLinkHandler } from '@/src/notifications';
 import {
   initSentry,
   sentryWrap,
@@ -91,6 +92,7 @@ export default sentryWrap(function RootLayout() {
                   <FontProvider>
                     <SentryNavigationTracker />
                     <SentryUserSync />
+                    <NotificationDeepLinkHandler />
                     <Slot />
                     <Toast config={toastConfig} topOffset={0} />
                   </FontProvider>

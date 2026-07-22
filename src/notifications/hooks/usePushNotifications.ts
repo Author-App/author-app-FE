@@ -7,7 +7,6 @@ import { useAppDispatch, useAppSelector } from '@/src/store/hooks';
 import { setPushToken } from '@/src/store/slices/pushTokenSlice';
 import { selectPushToken } from '@/src/store/selectors/pushTokenSelectors';
 import { useRegisterPushTokenMutation } from '@/src/store/api/pushTokenApi';
-import { handleNotificationNavigation, NotificationData } from '../utils/notificationHandler';
 import { sentryService } from '@/src/services/sentry';
 
 Notifications.setNotificationHandler({
@@ -32,7 +31,6 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
   const [registerPushToken] = useRegisterPushTokenMutation();
   
   const notificationListener = useRef<Notifications.EventSubscription | null>(null);
-  const responseListener = useRef<Notifications.EventSubscription | null>(null);
 
   /**
    * Setup Android notification channels
@@ -222,6 +220,7 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
 
   useEffect(() => {
     // Listener for notifications received while app is in foreground
+    // (Tap handling moved to NotificationDeepLinkHandler in root layout)
     notificationListener.current = Notifications.addNotificationReceivedListener(
       (notification) => {
         if (__DEV__) {
@@ -230,27 +229,10 @@ export const usePushNotifications = (): UsePushNotificationsReturn => {
       }
     );
 
-    // Listener for when user taps on a notification
-    responseListener.current = Notifications.addNotificationResponseReceivedListener(
-      (response) => {
-        if (__DEV__) {
-          console.log('📱 [Push] Notification tapped:', response);
-        }
-        
-        const data = response.notification.request.content.data as unknown as NotificationData;
-        if (data && data.type) {
-          handleNotificationNavigation(data);
-        }
-      }
-    );
-
-    // Cleanup listeners on unmount
+    // Cleanup listener on unmount
     return () => {
       if (notificationListener.current) {
         notificationListener.current.remove();
-      }
-      if (responseListener.current) {
-        responseListener.current.remove();
       }
     };
   }, []);

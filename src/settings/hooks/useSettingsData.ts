@@ -7,6 +7,7 @@ import { haptics } from '@/src/utils/haptics';
 
 import { useGetMeQuery, useDeleteAccountMutation } from '@/src/store/api/userApi';
 import { useCreateBugReportMutation } from '@/src/store/api/bugReportApi';
+import { useUnregisterPushTokenMutation } from '@/src/store/api/pushTokenApi';
 import { useAppSelector } from '@/src/store/hooks';
 import { selectCurrentUser } from '@/src/store/selectors/userSelectors';
 import { logOut } from '@/src/store/slices/authSlice';
@@ -23,6 +24,7 @@ export const useSettingsData = () => {
   const { isLoading, isError, refetch } = useGetMeQuery();
   const [deleteAccount, { isLoading: isDeleting }] = useDeleteAccountMutation();
   const [createBugReport, { isLoading: isSubmittingBugReport }] = useCreateBugReportMutation();
+  const [unregisterPushToken] = useUnregisterPushTokenMutation();
 
   // Select data from cache using memoized selector
   const user = useAppSelector(selectCurrentUser);
@@ -38,13 +40,19 @@ export const useSettingsData = () => {
   const [bugReportModalVisible, setBugReportModalVisible] = useState(false);
 
   // Handle logout - always available
-  const handleLogout = useCallback(() => {
+  const handleLogout = useCallback(async () => {
     haptics.medium();
+    
+    // Clear push token on server (fire-and-forget, don't block logout)
+    unregisterPushToken().catch(() => {
+      // Ignore errors - user is logging out anyway
+    });
+    
     dispatch(logOut());
     dispatch(clearPushToken());
     persistor.purge();
     router.push('/(public)/login' as Href);
-  }, [dispatch, router]);
+  }, [dispatch, router, unregisterPushToken]);
 
   // Show delete account modal
   const showDeleteModal = useCallback(() => {
