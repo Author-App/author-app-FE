@@ -1,5 +1,4 @@
 import { Platform } from 'react-native';
-import { useEffect } from 'react';
 import { Slot } from 'expo-router';
 import Head from 'expo-router/head';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -7,14 +6,12 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import Toast from 'react-native-toast-message';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import * as Updates from 'expo-updates';
-import * as Sentry from '@sentry/react-native';
 
 import { persistor, store } from '@/src/store';
 import AppTamaguiProvider from '@/src/components/providers/appTamaguiProvider';
 import FontProvider from '@/src/components/providers/fontProvider';
 import { AppStripeProvider } from '@/src/components/providers/appStripeProvider';
+import { OTAUpdateTracker } from '@/src/components/providers/OTAUpdateTracker';
 import toastConfig from '@/src/components/core/toast/toastConfig';
 import { NotificationDeepLinkHandler } from '@/src/notifications';
 import {
@@ -30,56 +27,11 @@ initSentry({
   enableInDev: false,
   tracesSampleRate: 0.2,
 });
+
 // Brand colors
 const BRAND_NAVY = '#132440';
 
-// Storage key for tracking update boots
-const LAST_UPDATE_ID_KEY = '@app/lastUpdateId';
-
 export default sentryWrap(function RootLayout() {
-  // Diagnostic: log update state on every boot so we can see in Sentry
-  // whether a new bundle actually ran after "Restart Now"
-  useEffect(() => {
-    async function logUpdateState() {
-      try {
-        const lastId = await AsyncStorage.getItem(LAST_UPDATE_ID_KEY);
-        const currentId = Updates.updateId ?? 'embedded';
-        const isNewBoot = currentId !== lastId;
-
-        Sentry.addBreadcrumb({
-          category: 'updates',
-          message: `Boot state`,
-          level: 'info',
-          data: {
-            currentUpdateId: currentId,
-            lastUpdateId: lastId,
-            channel: Updates.channel,
-            runtimeVersion: Updates.runtimeVersion,
-            createdAt: Updates.createdAt?.toISOString?.() ?? null,
-            isEmbeddedLaunch: Updates.isEmbeddedLaunch,
-            isEnabled: Updates.isEnabled,
-            isNewBoot,
-          },
-        });
-
-        // Also send as a message so it's easy to find in Sentry, not just
-        // buried in breadcrumbs of some unrelated error
-        Sentry.captureMessage(
-          `App boot: updateId=${currentId} channel=${Updates.channel} newBoot=${isNewBoot}`,
-          'info'
-        );
-
-        if (currentId !== lastId) {
-          await AsyncStorage.setItem(LAST_UPDATE_ID_KEY, currentId);
-        }
-      } catch (e: any) {
-        Sentry.captureException(e, { tags: { component: 'update-boot-log' } });
-      }
-    }
-
-    logUpdateState();
-  }, []);
-
   return (
     <SentryErrorBoundary>
       <SafeAreaProvider style={{ backgroundColor: BRAND_NAVY }}>
@@ -90,6 +42,7 @@ export default sentryWrap(function RootLayout() {
               <AppStripeProvider>
                 <AppTamaguiProvider>
                   <FontProvider>
+                    <OTAUpdateTracker />
                     <SentryNavigationTracker />
                     <SentryUserSync />
                     <NotificationDeepLinkHandler />
