@@ -7,7 +7,7 @@
 
 import React from 'react';
 import * as Updates from 'expo-updates';
-import * as Application from 'expo-application';
+import Constants from 'expo-constants';
 import { YStack } from 'tamagui';
 import UText from '@/src/components/core/text/uText';
 
@@ -20,8 +20,10 @@ export function DevUpdateInfoView(): React.ReactElement | null {
   const runtimeVersion = Updates.runtimeVersion ?? 'N/A';
   const isEmbedded = Updates.isEmbeddedLaunch;
   const isEnabled = Updates.isEnabled;
-  const appVersion = Application.nativeApplicationVersion ?? 'N/A';
-  const buildNumber = Application.nativeBuildVersion ?? 'N/A';
+  // Use Constants.expoConfig instead of expo-application to avoid
+  // native module initialization issues during OTA bundle loading
+  const appVersion = Constants.expoConfig?.version ?? 'N/A';
+  const buildNumber = Constants.expoConfig?.ios?.buildNumber ?? Constants.expoConfig?.android?.versionCode?.toString() ?? 'N/A';
 
   return (
     <YStack

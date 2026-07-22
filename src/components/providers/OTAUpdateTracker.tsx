@@ -12,7 +12,7 @@
 import { useEffect, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Updates from 'expo-updates';
-import * as Application from 'expo-application';
+import Constants from 'expo-constants';
 import { sentryService } from '@/src/services/sentry';
 
 // Storage key for tracking update boots (single key, not a store)
@@ -20,6 +20,10 @@ const LAST_UPDATE_ID_KEY = '@app/lastUpdateId';
 
 /**
  * Get update info for Sentry context
+ * 
+ * NOTE: We use expo-constants instead of expo-application to avoid a crash.
+ * expo-application's module-level native access can fail during OTA bundle
+ * loading if the native module isn't fully initialized yet.
  */
 function getUpdateContext() {
   return {
@@ -29,8 +33,9 @@ function getUpdateContext() {
     createdAt: Updates.createdAt?.toISOString() ?? null,
     isEmbeddedLaunch: Updates.isEmbeddedLaunch,
     isEnabled: Updates.isEnabled,
-    appVersion: Application.nativeApplicationVersion ?? null,
-    buildNumber: Application.nativeBuildVersion ?? null,
+    // Use Constants.expoConfig which is already loaded and safe
+    appVersion: Constants.expoConfig?.version ?? null,
+    buildNumber: Constants.expoConfig?.ios?.buildNumber ?? Constants.expoConfig?.android?.versionCode?.toString() ?? null,
   };
 }
 
