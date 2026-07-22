@@ -1,10 +1,32 @@
 import React, { memo, ErrorInfo } from 'react';
-import { YStack, getTokenValue, ScrollView } from 'tamagui';
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+} from 'react-native';
 import { Feather } from '@expo/vector-icons';
 
-import UText from '@/src/components/core/text/uText';
-import { UButton } from '@/src/components/core/buttons/uButton';
-import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
+/**
+ * CRITICAL: This component MUST NOT use Tamagui or any themed components.
+ * 
+ * SentryErrorBoundary is the outermost wrapper in the app and renders OUTSIDE
+ * the TamaguiProvider. If this fallback uses Tamagui tokens (like $brandNavy),
+ * it will throw "Missing theme" and create an infinite error loop that hangs
+ * the app and causes a WatchdogTermination crash.
+ * 
+ * Use plain React Native components with hardcoded colors only.
+ */
+
+// Hardcoded brand colors (from tamagui.config.ts)
+const COLORS = {
+  brandNavy: '#0D1B2A',
+  brandCrimson: '#D64550',
+  brandTeal: '#7EC8E3',
+  white: '#FFFFFF',
+  gray: '#9CA3AF',
+};
 
 interface SentryErrorFallbackProps {
   error: Error | null;
@@ -19,97 +41,136 @@ export const SentryErrorFallback = memo(function SentryErrorFallback({
   showErrorDetails = false,
   onRetry,
 }: SentryErrorFallbackProps) {
-  const crimson = getTokenValue('$brandCrimson', 'color');
-
   return (
-    <YStack flex={1} bg="$brandNavy" jc="center" ai="center" px={24} gap={24}>
+    <View style={styles.container}>
       {/* Icon */}
-      <UAnimatedView animation="fadeInUp" duration={400} position="relative">
-        <YStack
-          w={80}
-          h={80}
-          br={40}
-          bg="$brandCrimson"
-          opacity={0.1}
-          jc="center"
-          ai="center"
-        />
-        <YStack
-          position="absolute"
-          top={0}
-          left={0}
-          right={0}
-          jc="center"
-          ai="center"
-          w={80}
-          h={80}
-        >
-          <Feather name="alert-triangle" size={32} color={crimson} />
-        </YStack>
-      </UAnimatedView>
+      <View style={styles.iconWrapper}>
+        <View style={styles.iconCircle} />
+        <View style={styles.iconOverlay}>
+          <Feather name="alert-triangle" size={32} color={COLORS.brandCrimson} />
+        </View>
+      </View>
 
       {/* Text Content */}
-      <UAnimatedView animation="fadeInUp" duration={400} delay={200}>
-        <YStack ai="center" gap={8}>
-          <UText variant="playfair-lg" color="$white" textAlign="center">
-            Something went wrong
-          </UText>
-          <UText
-            variant="text-sm"
-            color="$brandTeal"
-            textAlign="center"
-            opacity={0.9}
-          >
-            We've been notified and are working on a fix.
-          </UText>
-        </YStack>
-      </UAnimatedView>
+      <View style={styles.textContainer}>
+        <Text style={styles.title}>Something went wrong</Text>
+        <Text style={styles.subtitle}>
+          We've been notified and are working on a fix.
+        </Text>
+      </View>
 
       {/* Error Details (Development Only) */}
       {showErrorDetails && error && (
-        <UAnimatedView animation="fadeInUp" duration={400} delay={250}>
-          <YStack
-            bg="rgba(255, 255, 255, 0.05)"
-            br={12}
-            p={12}
-            maxWidth={350}
-            maxHeight={200}
+        <View style={styles.errorDetails}>
+          <Text style={styles.errorLabel}>Error Details:</Text>
+          <ScrollView
+            style={styles.errorScroll}
+            showsVerticalScrollIndicator={false}
           >
-            <UText
-              variant="text-xs"
-              color="$brandCrimson"
-              fontWeight="600"
-              mb={8}
-            >
-              Error Details:
-            </UText>
-            <ScrollView showsVerticalScrollIndicator={false}>
-              <UText color="white" fontFamily='$dmmono' mb={8} variant='text-xs'>
-                {error.message}
-              </UText>
-              {errorInfo?.componentStack && (
-                <UText variant='text-2xs' color="$brandGray" numberOfLines={8}>
-                  {errorInfo.componentStack}
-                </UText>
-              )}
-            </ScrollView>
-          </YStack>
-        </UAnimatedView>
+            <Text style={styles.errorMessage}>{error.message}</Text>
+            {errorInfo?.componentStack && (
+              <Text style={styles.stackTrace} numberOfLines={8}>
+                {errorInfo.componentStack}
+              </Text>
+            )}
+          </ScrollView>
+        </View>
       )}
 
       {/* Retry Button */}
-      <UAnimatedView animation="fadeInUp" duration={400} delay={300}>
-        <UButton
-          onPress={onRetry}
-          bg="$brandCrimson"
-          color="$white"
-          px={32}
-          br={12}
-          pressStyle={{ opacity: 0.9, scale: 0.98 }}
-        >
-          Try Again
-        </UButton>
-      </UAnimatedView>
-    </YStack>
+      <TouchableOpacity
+        style={styles.retryButton}
+        onPress={onRetry}
+        activeOpacity={0.8}
+      >
+        <Text style={styles.retryButtonText}>Try Again</Text>
+      </TouchableOpacity>
+    </View>
   );
+});
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.brandNavy,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    gap: 24,
+  },
+  iconWrapper: {
+    position: 'relative',
+    width: 80,
+    height: 80,
+  },
+  iconCircle: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: COLORS.brandCrimson,
+    opacity: 0.1,
+  },
+  iconOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  textContainer: {
+    alignItems: 'center',
+    gap: 8,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: COLORS.white,
+    textAlign: 'center',
+    fontFamily: 'PlayfairDisplay',
+  },
+  subtitle: {
+    fontSize: 14,
+    color: COLORS.brandTeal,
+    textAlign: 'center',
+    opacity: 0.9,
+  },
+  errorDetails: {
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 12,
+    padding: 12,
+    maxWidth: 350,
+    maxHeight: 200,
+  },
+  errorLabel: {
+    fontSize: 12,
+    color: COLORS.brandCrimson,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  errorScroll: {
+    maxHeight: 160,
+  },
+  errorMessage: {
+    fontSize: 12,
+    color: COLORS.white,
+    fontFamily: 'DMMono',
+    marginBottom: 8,
+  },
+  stackTrace: {
+    fontSize: 10,
+    color: COLORS.gray,
+  },
+  retryButton: {
+    backgroundColor: COLORS.brandCrimson,
+    paddingHorizontal: 32,
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  retryButtonText: {
+    color: COLORS.white,
+    fontSize: 16,
+    fontWeight: '600',
+  },
 });

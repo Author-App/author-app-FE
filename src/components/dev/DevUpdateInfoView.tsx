@@ -35,22 +35,22 @@ export function DevUpdateInfoView(): React.ReactElement | null {
       <UText variant="label-sm" color="$gray11">
         OTA Update Info (Dev Only)
       </UText>
-      <UText variant="body-sm" color="$white">
+      <UText variant="text-sm" color="$white">
         Update ID: {updateId.substring(0, 16)}...
       </UText>
-      <UText variant="body-sm" color="$white">
+      <UText variant="text-sm" color="$white">
         Channel: {channel}
       </UText>
-      <UText variant="body-sm" color="$white">
+      <UText variant="text-sm" color="$white">
         Runtime: {runtimeVersion}
       </UText>
-      <UText variant="body-sm" color="$white">
+      <UText variant="text-sm" color="$white">
         Embedded: {isEmbedded ? 'Yes' : 'No'}
       </UText>
-      <UText variant="body-sm" color="$white">
+      <UText variant="text-sm" color="$white">
         Updates Enabled: {isEnabled ? 'Yes' : 'No'}
       </UText>
-      <UText variant="body-sm" color="$white">
+      <UText variant="text-sm" color="$white">
         App: {appVersion} ({buildNumber})
       </UText>
     </YStack>

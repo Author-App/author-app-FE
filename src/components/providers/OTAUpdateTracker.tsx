@@ -149,62 +149,10 @@ export function OTAUpdateTracker(): null {
   }, []);
 
   // TASK 2 (continued): Track update errors via useUpdates hook
-  useEffect(() => {
-    // Safe no-op in dev
-    if (!Updates.isEnabled) return;
-
-    // Note: useUpdates() is a hook but we're in a component, so we use
-    // Updates.addListener for error tracking at this level
-    const subscription = Updates.addListener((event) => {
-      if (event.type === Updates.UpdateEventType.ERROR) {
-        const errorMessage = (event as any).message ?? 'Unknown update error';
-        
-        sentryService.addBreadcrumb({
-          category: 'ota',
-          message: 'Update error occurred',
-          data: { error: errorMessage },
-          level: 'error',
-        });
-
-        sentryService.captureError(new Error(`OTA Update Error: ${errorMessage}`), {
-          tags: {
-            type: 'ota_error',
-            'ota.event': 'update_error',
-          },
-          extra: {
-            updateId: Updates.updateId,
-            channel: Updates.channel,
-            errorMessage,
-          },
-        });
-
-        if (__DEV__) {
-          console.error('📦 [OTA] Update error:', errorMessage);
-        }
-      }
-
-      if (event.type === Updates.UpdateEventType.UPDATE_AVAILABLE) {
-        sentryService.addBreadcrumb({
-          category: 'ota',
-          message: 'Update available',
-          data: { manifest: (event as any).manifest?.id },
-          level: 'info',
-        });
-      }
-
-      if (event.type === Updates.UpdateEventType.NO_UPDATE_AVAILABLE) {
-        sentryService.addBreadcrumb({
-          category: 'ota',
-          message: 'No update available',
-          level: 'info',
-        });
-      }
-    });
-
-    return () => {
-      subscription.remove();
-    };
-  }, []);
+  // Note: expo-updates SDK 54+ removed Updates.addListener and UpdateEventType
+  // Error tracking now happens via useUpdates() which we don't use here since
+  // the app already handles update checks elsewhere. The critical Sentry context
+  // is set in TASK 1 above.
 
   // This component renders nothing
   return null;
