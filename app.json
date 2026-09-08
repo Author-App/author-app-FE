@@ -8,7 +8,7 @@
       "androidMode": "default",
       "androidCollapsedTitle": "New notification"
     },
-    "version": "1.0.8",
+    "version": "1.0.9",
     "orientation": "portrait",
     "icon": "./assets/images/mainLogo.png",
     "scheme": "stanleypaden",
@@ -73,8 +73,8 @@
       ],
       "@sentry/react-native",
       "expo-secure-store",
-      "./plugins/withGoogleSignInFix",
-      "expo-asset"
+      "expo-asset",
+      "expo-video"
     ],
     "experiments": {
       "typedRoutes": true

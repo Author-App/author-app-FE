@@ -129,10 +129,10 @@ author-app/
 ```
 ## 📚 Documentation
 
-- [📋 Versioning Guide](./VERSIONING.md) - How to manage app versions and releases
-- [🧪 Testing Guide](./TESTING.md) - Jest testing setup and best practices
+- [📋 Versioning Guide](./docs/VERSIONING.md) - How to manage app versions and releases
+- [🧪 Testing Guide](./docs/TESTING.md) - Jest testing setup and best practices
 - [🔄 CI/CD Workflows](./docs/CI_CD_SETUP.md) - GitHub Actions automation
-- [📊 App Architecture](./docs/APP_ARCHITECTURE_GUIDE.md) - Project structure and patterns
+- [📊 App Architecture](./docs/CODING_STANDARDS.md) - Project structure and coding patterns
 ---
 
 Built by [Swift Reflex](https://swiftreflex.com/) with Expo and Tamagui

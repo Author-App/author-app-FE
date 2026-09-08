@@ -16,10 +16,6 @@ describe('AuthStorage', () => {
   const mockRefreshToken = 'refresh_456abc';
   const mockUserId = 'user_123';
 
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
   describe('saveAuthTokens', () => {
     it('should store tokens securely', async () => {
       mockSecureSetObject.mockResolvedValue(true);
