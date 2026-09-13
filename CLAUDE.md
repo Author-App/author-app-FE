@@ -49,6 +49,8 @@ Code is faster for him than prose. Include a snippet whenever it makes the idea 
 
 Never write a test file before walking through this with him.
 
+**Step 0. Find the dead code first.** Grep every exported name in the file for callers outside it. Anything with zero callers gets deleted before the branch list is written, not tested. Tests written over dead code are worse than no tests: they make it look alive and they make deleting it expensive. This has already caught `getErrorMessage` in `error.service.ts`, `HOME_SECTION_TITLES`, and four unused home selectors, one of which had tests written for it in this repo.
+
 **Step 1. Read the code together.** List the branches. Every `if`, `?`, `??`, and default value.
 
 **Step 2. Decide what is worth testing.** For each branch, ask what a user sees if it breaks. If nothing, skip it.
