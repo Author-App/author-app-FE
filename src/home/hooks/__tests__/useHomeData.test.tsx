@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Provider } from 'react-redux';
-import { renderHook, waitFor, act } from '@testing-library/react-native';
+import { renderHook, waitFor } from '@testing-library/react-native';
 
 import { useHomeData } from '../useHomeData';
 import { homeApi } from '@/src/store/api/homeApi';
@@ -35,7 +35,7 @@ describe('useHomeData', () => {
     // has to exclude it, or the pull-to-refresh spinner shows on a cold start.
     expect(result.current.isRefreshing).toBe(false);
 
-    act(() => release());
+    release();
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current.homeSections.map((s) => s.type)).toEqual([
@@ -56,7 +56,7 @@ describe('useHomeData', () => {
       })
     );
     const { result } = renderHomeData(store);
-    act(() => release());
+    release();
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
@@ -78,7 +78,7 @@ describe('useHomeData', () => {
       })
     );
     const { result } = renderHomeData(store);
-    act(() => release());
+    release();
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
@@ -95,7 +95,7 @@ describe('useHomeData', () => {
       })
     );
     const { result } = renderHomeData(store);
-    act(() => release());
+    release();
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
@@ -107,7 +107,7 @@ describe('useHomeData', () => {
   it('shows no banner when nothing in the feed has an image', async () => {
     const { release } = mockFetchJson(buildHomeFeed({ banners: [] }));
     const { result } = renderHomeData(store);
-    act(() => release());
+    release();
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
@@ -117,7 +117,7 @@ describe('useHomeData', () => {
   it('surfaces the server message when the request fails', async () => {
     const { release } = mockFetchJson({ message: 'Feed is down' }, 500);
     const { result } = renderHomeData(store);
-    act(() => release());
+    release();
 
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(result.current.errorMessage).toBe('Feed is down');
@@ -127,7 +127,7 @@ describe('useHomeData', () => {
   it('has no error message on a healthy feed', async () => {
     const { release } = mockFetchJson(buildHomeFeed());
     const { result } = renderHomeData(store);
-    act(() => release());
+    release();
 
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
@@ -140,18 +140,16 @@ describe('useHomeData', () => {
   it('refetches without falling back to the full screen loader', async () => {
     const first = mockFetchJson(buildHomeFeed());
     const { result } = renderHomeData(store);
-    act(() => first.release());
+    first.release();
     await waitFor(() => expect(result.current.isLoading).toBe(false));
 
     const second = mockFetchJson(buildHomeFeed());
-    act(() => {
-      result.current.refetch();
-    });
+    result.current.refetch();
 
     await waitFor(() => expect(result.current.isRefreshing).toBe(true));
     expect(result.current.isLoading).toBe(false);
 
-    act(() => second.release());
+    second.release();
     await waitFor(() => expect(result.current.isRefreshing).toBe(false));
   });
 });

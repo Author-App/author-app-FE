@@ -38,7 +38,10 @@ const HomeScreen: React.FC = () => {
         router.push(`/(app)/book/${id}` as Href);
         break;
       case 'article':
-        router.push(`/(app)/article/${id}`);
+        router.push(`/(app)/book/${id}` as Href);
+        break;
+      case 'event':
+        router.push(`/(app)/events/${id}` as Href);
         break;
     }
   }, []);
@@ -130,7 +133,9 @@ const HomeScreen: React.FC = () => {
     );
   }
 
-  if (isError) {
+  // Only take over the screen when there is nothing to show. A refetch that fails
+  // while a feed is already cached should leave the feed on screen.
+  if (isError && homeSections.length === 0) {
     return (
       <UScreenLayout>
         <UScreenError message={errorMessage} onRetry={refetch} />

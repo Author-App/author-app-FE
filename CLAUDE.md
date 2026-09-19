@@ -10,17 +10,19 @@ He is new to mobile testing. That is the whole point of this work.
 
 He has used Vitest and Playwright on web. On mobile he has now, in this repo:
 
-- Set up and fixed the Jest config from scratch
-- Written unit tests for `src/utils/currency.ts` and `src/utils/helper.ts`
-- Learned to freeze the clock with `jest.useFakeTimers()` and `jest.setSystemTime()`
+- Set up and fixed the Jest config from scratch, including `transformIgnorePatterns` for pnpm
+- Written unit tests for pure functions, with a frozen clock
+- Written component tests with RNTL: `render`, `screen`, `fireEvent.press`, `fireEvent.changeText`, `rerender`, queries by text, label and role
+- Tested selectors against a real Redux store seeded through `upsertQueryData`
+- Written a hook test with `renderHook`, a `wrapper`, `waitFor`, and a `fetch` he can hold in flight
+
+- Written integration tests that render a whole screen against a real store and a faked `fetch`, including a form flow with Formik and Yup validation, a mutation, and navigation asserted through a mocked router
 
 He has **not** yet:
 
-- Written a single component test with React Native Testing Library
 - Used Detox or Maestro
-- Written an integration test
 
-Assume he knows Jest basics and nothing about RNTL beyond theory.
+He knows the difference between `fireEvent`, `waitFor` and `act`, and that `act` is only needed when asserting immediately instead of awaiting.
 
 ## The goal
 
@@ -69,7 +71,11 @@ He will push back when something is wrong. Engage honestly. A softened answer he
 
 ## Checkpoint questions
 
-When he asks for one, ask exactly one question an interviewer would plausibly ask about what was just covered. Phrase it like an interviewer, not a textbook. Then stop. Do not answer it yourself.
+When he asks for one, ask exactly one question an interviewer would plausibly ask. Phrase it like an interviewer, not a textbook. Then stop. Do not answer it yourself.
+
+**Pitch them at the level an interviewer actually works at.** How do you set up testing in a React Native app. What do you mock and why. How do you test a component that talks to the backend. What is the difference between unit, component and integration. How do you know a test is any good.
+
+**Do not ask about one specific file in this repo.** Nobody will ask him about `USearchbar`. A question he could only answer by remembering one test file teaches him nothing transferable. Use this repo's tests as the **example** in his answer, never as the subject of the question.
 
 When he answers, say what was right, what was missing, and what an interviewer would push on next. Be honest when the answer is wrong.
 
@@ -95,17 +101,38 @@ Do not re-argue these.
 
 **Stack:** Expo SDK 54, React Native 0.81, Reanimated 4, RNTL 13.3, pnpm, Redux Toolkit with RTK Query, Expo Router, Tamagui, Stripe, Sentry.
 
-**Tests that exist:**
+**Tests that exist:** 16 suites, 175 tests.
 
-| File | State |
+| File | Kind | State |
+|---|---|---|
+| `src/config/__tests__/env.test.ts` | unit | Good. Tests the real exported Zod schema. |
+| `src/schemas/__tests__/api.schemas.test.ts` | unit | Good. Imports the real schemas. |
+| `src/storage/__tests__/secureStorage.test.ts` | unit | Good. Mocks `expo-secure-store`, the real boundary. |
+| `src/utils/__tests__/currency.test.ts` | unit | Good. |
+| `src/utils/__tests__/helper.test.ts` | unit | Good. Includes frozen-clock tests. |
+| `src/services/__tests__/error.service.test.ts` | unit | Good. Pins the branches of `extractErrorMessage`. |
+| `src/components/home/sections/__tests__/SectionHeader.test.tsx` | component | Good. First RNTL test. |
+| `src/components/core/buttons/__tests__/uBackButton.test.tsx` | component | Good. Press, plus `expo-router` mocked locally as the assertion target. |
+| `src/components/core/rating/__tests__/UStarRating.test.tsx` | unit + component | Good. Includes a `rerender` regression test for the stale closure. |
+| `src/components/core/inputs/__tests__/uSearchbar.test.tsx` | component | Good. `changeText`, clear button, disabled. |
+| `src/store/selectors/__tests__/homeSelectors.test.ts` | unit, real store | Good. Seeds the RTK Query cache. |
+| `src/home/hooks/__tests__/useHomeData.test.tsx` | hook, async | Good. Real store, only `fetch` faked. |
+| `src/home/components/__tests__/HomeScreen.test.tsx` | integration | Good. Whole screen, real store, only `fetch` and `expo-router` faked. Covers loading, error, retry, stale-feed-on-failed-refresh, and navigation. |
+| `src/auth/login/components/__tests__/LoginScreen.test.tsx` | integration | Good. Whole login flow: validation, payload, navigation, toasts, failure keeping the form. Fakes `fetch`, `expo-router`, the toast and `expo-application`. |
+| `src/__tests__/smoke.test.tsx` | component | One test. Proves the render pipeline works. |
+| `src/storage/__tests__/authStorage.test.ts` | unit | **Weak. Needs rewriting.** It mocks `../secureStorage`, which is his own code. Its "lifecycle" test tells a mock to return null then checks it returned null. Needs a fake store that actually holds state, with `expo-secure-store` as the only mock. |
+
+**Shared test helpers** in `src/test-utils/`:
+
+| File | What |
 |---|---|
-| `src/config/__tests__/env.test.ts` | Good. Tests the real exported Zod schema. |
-| `src/schemas/__tests__/api.schemas.test.ts` | Good. Imports the real schemas. |
-| `src/storage/__tests__/secureStorage.test.ts` | Good. Mocks `expo-secure-store`, the real boundary. |
-| `src/utils/__tests__/currency.test.ts` | Good. Written from scratch in this process. |
-| `src/utils/__tests__/helper.test.ts` | Good. Includes frozen-clock tests. |
-| `src/__tests__/smoke.test.tsx` | One test. Proves the render pipeline works. |
-| `src/storage/__tests__/authStorage.test.ts` | **Weak. Needs rewriting.** It mocks `../secureStorage`, which is his own code. Its "lifecycle" test tells a mock to return null then checks it returned null. Needs a fake store that actually holds state, with `expo-secure-store` as the only mock. |
+| `render.tsx` | `renderWithProviders`. Redux, SafeArea (with `initialMetrics`, or `useSafeAreaInsets` throws) and Tamagui. Add more only when a failure names one. |
+| `homeStore.ts` | `makeHomeStore` (includes the `auth` slice, because `prepareHeaders` reads the token), `seedHomeFeed` (`upsertQueryData`), `mockFetchJson` (holds the request until you call `release`). |
+| `homeFeed.fixture.ts` | `buildHomeFeed`, a full feed with per-section overrides. |
+| `authStore.ts` | `makeAuthStore` (auth slice plus the authApi and userApi caches), `mockFetchRoutes` (answers several URLs from one fetch mock, with the same `release`). |
+| `auth.fixture.ts` | `buildLoginResponse`, `buildMeResponse`. |
+
+**Keep this section current.** After a test file lands, update the table, the "what he knows" list, and the next targets. A stale CLAUDE.md misdirects the next session. This file has already been wrong once.
 
 ## Component test setup, and how to debug it
 
@@ -159,14 +186,13 @@ He liked this shape. Keep it.
 ## Known open risks
 
 - `formatEventDisplay` in `helper.ts` uses `Intl.DateTimeFormat` with a `timeZone` option. Node has full ICU so it works under Jest. Hermes on device may not. Tests could be green while the app is wrong. Unconfirmed on a real device.
-- `renderWithProviders` in `src/test-utils/render.tsx` supplies only Redux and Tamagui. The real root in `app/_layout.tsx` also has SafeAreaProvider, GestureHandlerRootView, Stripe, PersistGate, and FontProvider. The first component test will fail on a missing provider. **Do not fix this pre-emptively.** Wait for the real failure, then fix what the error actually names.
+- `renderWithProviders` now has Redux, SafeAreaProvider and Tamagui. The real root in `app/_layout.tsx` also has GestureHandlerRootView, Stripe, PersistGate and FontProvider. A screen that needs one of those will fail and name it. **Do not add them pre-emptively.**
 - The app has zero `testID` props and one `accessibilityLabel` in total. RNTL prefers querying by role and label. Detox requires `testID` on everything it touches. This is app code work, not test work, and it is coming.
 
 ## Next targets, in order
 
-1. `src/services/error.service.ts`. `extractErrorMessage` takes `unknown` and branches on shape. No clock, no mocking.
-2. `src/store/selectors/homeSelectors.ts`. `buildSections` turns an API response into UI sections. Most logic, closest to what a user sees.
-3. Rewrite `authStorage.test.ts` against the real boundary.
-4. First component tests with RNTL. This is where `renderWithProviders` gets fixed.
+1. Rewrite `authStorage.test.ts` against the real boundary.
+2. E2E. Start with Maestro, not Detox: Maestro runs against the existing Expo build and finds elements by text, while Detox needs its own build and a `testID` on everything.
+3. A `testID` pass across the app, if Detox is ever required. App code work, separate project.
 
 Do not start any of these without walking through the seven steps above first.
