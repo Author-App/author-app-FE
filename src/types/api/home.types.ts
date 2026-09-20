@@ -103,16 +103,6 @@ export interface HomeFeedResponse {
 export type HomeSectionType = 'books' | 'audiobooks' | 'articles' | 'continueReading';
 
 /**
- * Section titles mapped by type
- */
-export const HOME_SECTION_TITLES: Record<HomeSectionType, string> = {
-  books: 'Trending Books',
-  audiobooks: 'New Audiobooks',
-  articles: 'Featured Articles',
-  continueReading: 'Continue Reading',
-};
-
-/**
  * Discriminated union for type-safe sections
  * TypeScript knows data type based on section type
  */

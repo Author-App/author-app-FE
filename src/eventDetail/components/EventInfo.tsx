@@ -6,22 +6,28 @@ import IconDuration from '@/assets/icons/iconDuration';
 import IconLocation from '@/assets/icons/iconLocation';
 import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
 import UText from '@/src/components/core/text/uText';
-import { formatDate, formatTime12h } from '@/src/utils/helper';
+import { formatEventDisplay } from '@/src/utils/helper';
 import { EventType } from '@/src/types/api/explore.types';
 
 interface EventInfoProps {
+  eventStartUtc?: string | null;
   eventDate: string | null;
   eventTime: string;
+  timezone?: string;
   eventType: EventType;
   location?: string;
 }
 
 export const EventInfo = memo(function EventInfo({
+  eventStartUtc,
   eventDate,
   eventTime,
+  timezone,
   eventType,
   location,
 }: EventInfoProps) {
+  const display = formatEventDisplay({ eventStartUtc, eventDate, eventTime, timezone });
+
   return (
     <UAnimatedView animation="fadeInUp" delay={200}>
       <YStack
@@ -48,7 +54,7 @@ export const EventInfo = memo(function EventInfo({
                 Date
               </UText>
               <UText variant="text-md" color="$white" fontWeight="600">
-                {formatDate(eventDate)}
+                {display.dateLabel}
               </UText>
             </YStack>
           </XStack>
@@ -71,7 +77,7 @@ export const EventInfo = memo(function EventInfo({
               Time
             </UText>
             <UText variant="text-md" color="$white" fontWeight="600">
-              {formatTime12h(eventTime)}
+              {display.timeLabel}{display.timezoneLabel ? ` ${display.timezoneLabel}` : ''}
             </UText>
           </YStack>
         </XStack>

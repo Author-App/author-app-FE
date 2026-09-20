@@ -3,7 +3,7 @@
 ## Overview
 
 This project uses Jest with `jest-expo` for unit and component testing. The setup is configured for:
-- React Native 0.81.4
+- React Native 0.81.5
 - Expo SDK 54
 - TypeScript
 - pnpm package manager

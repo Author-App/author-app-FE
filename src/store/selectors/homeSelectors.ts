@@ -67,38 +67,6 @@ export const selectHomeSections = createSelector(
 );
 
 /**
- * Select trending books from cache
- */
-export const selectTrendingBooks = createSelector(
-  [selectHomeFeedResult],
-  (result) => result?.data?.data?.trendingBooks ?? []
-);
-
-/**
- * Select articles from cache
- */
-export const selectHomeArticles = createSelector(
-  [selectHomeFeedResult],
-  (result) => result?.data?.data?.articles ?? []
-);
-
-/**
- * Select audiobooks from cache
- */
-export const selectAudioBooks = createSelector(
-  [selectHomeFeedResult],
-  (result) => result?.data?.data?.audioBooks ?? []
-);
-
-/**
- * Select loading state
- */
-export const selectHomeFeedIsLoading = createSelector(
-  [selectHomeFeedResult],
-  (result) => result?.isLoading ?? true
-);
-
-/**
  * Select error state
  */
 export const selectHomeFeedError = createSelector(

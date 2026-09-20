@@ -50,3 +50,6 @@ yarn-error.*
 
 .env.local
 google-service-account.json
+
+# Detox run output
+artifacts/
