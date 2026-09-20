@@ -17,10 +17,12 @@ He has used Vitest and Playwright on web. On mobile he has now, in this repo:
 - Written a hook test with `renderHook`, a `wrapper`, `waitFor`, and a `fetch` he can hold in flight
 
 - Written integration tests that render a whole screen against a real store and a faked `fetch`, including a form flow with Formik and Yup validation, a mutation, and navigation asserted through a mocked router
+- Set up Detox from nothing and written an E2E login test that drives the real app on a simulator against the real backend
 
 He has **not** yet:
 
-- Used Detox or Maestro
+- Used Maestro
+- Run the E2E suite in CI
 
 He knows the difference between `fireEvent`, `waitFor` and `act`, and that `act` is only needed when asserting immediately instead of awaiting.
 
@@ -30,7 +32,7 @@ Learn mobile testing properly, using this app as the practice ground.
 
 **The most important part:** he must understand every test well enough to defend it out loud in a technical interview. You write the code. He owns the reasoning. A test he cannot explain is worse than no test.
 
-Order of work: unit tests, then integration tests, then E2E with Detox.
+Order of work: unit tests, then integration tests, then E2E with Detox. The first three are done.
 
 ## How to answer him
 
@@ -101,7 +103,7 @@ Do not re-argue these.
 
 **Stack:** Expo SDK 54, React Native 0.81, Reanimated 4, RNTL 13.3, pnpm, Redux Toolkit with RTK Query, Expo Router, Tamagui, Stripe, Sentry.
 
-**Tests that exist:** 16 suites, 175 tests.
+**Tests that exist:** 16 Jest suites, 175 tests, plus 1 Detox E2E test on a separate runner.
 
 | File | Kind | State |
 |---|---|---|
@@ -120,6 +122,7 @@ Do not re-argue these.
 | `src/home/components/__tests__/HomeScreen.test.tsx` | integration | Good. Whole screen, real store, only `fetch` and `expo-router` faked. Covers loading, error, retry, stale-feed-on-failed-refresh, and navigation. |
 | `src/auth/login/components/__tests__/LoginScreen.test.tsx` | integration | Good. Whole login flow: validation, payload, navigation, toasts, failure keeping the form. Fakes `fetch`, `expo-router`, the toast and `expo-application`. |
 | `src/__tests__/smoke.test.tsx` | component | One test. Proves the render pipeline works. |
+| `e2e/login.test.js` | E2E, Detox | Good. Real Release build on a simulator, real backend, real account. Onboarding to login to home. |
 | `src/storage/__tests__/authStorage.test.ts` | unit | **Weak. Needs rewriting.** It mocks `../secureStorage`, which is his own code. Its "lifecycle" test tells a mock to return null then checks it returned null. Needs a fake store that actually holds state, with `expo-secure-store` as the only mock. |
 
 **Shared test helpers** in `src/test-utils/`:
@@ -131,6 +134,19 @@ Do not re-argue these.
 | `homeFeed.fixture.ts` | `buildHomeFeed`, a full feed with per-section overrides. |
 | `authStore.ts` | `makeAuthStore` (auth slice plus the authApi and userApi caches), `mockFetchRoutes` (answers several URLs from one fetch mock, with the same `release`). |
 | `auth.fixture.ts` | `buildLoginResponse`, `buildMeResponse`. |
+
+**E2E setup.** Detox 20.51, `applesimutils` from the `wix/brew` tap, `@config-plugins/detox` installed but unused until Android. `.detoxrc.js` holds the `xcodebuild` command and the binary path. `e2e/jest.config.js` is a second Jest config with no `jest-expo` preset, because E2E imports no app code. `/e2e/` is in the unit config's `testPathIgnorePatterns` so `pnpm test` never picks it up. Credentials come from `E2E_EMAIL` and `E2E_PASSWORD` in `.env`, loaded by `e2e/setup.js`. **Never prefix those with `EXPO_PUBLIC_`**, or Babel inlines them into the shipped bundle.
+
+| Command | What |
+|---|---|
+| `pnpm e2e:build` | compiles a Release build. Needed after any app source change. |
+| `pnpm e2e:test` | runs the flow. No rebuild needed if only `e2e/` changed. |
+
+**Three Detox traps already hit here, all real:**
+
+1. **Hittability.** Detox refuses to tap a view a finger could not reach. The Sign In button is covered by the keyboard, so the test submits with `tapReturnKey()` instead. RNTL would have pressed it happily, because RNTL has no keyboard and no screen.
+2. **Synchronisation.** Detox waits for the app to be idle before every match. `HeroBanner` runs `setInterval(4000)` forever, so idle never comes and `waitFor` times out while the screen looks correct. Fixed with a narrow `device.disableSynchronization()` before the home assertions only, never at launch.
+3. **Keychain.** `expo-secure-store` writes to the iOS keychain, which survives an app reinstall. Without `device.clearKeychain()` the app can boot already logged in and the test proves nothing.
 
 **Keep this section current.** After a test file lands, update the table, the "what he knows" list, and the next targets. A stale CLAUDE.md misdirects the next session. This file has already been wrong once.
 
@@ -164,9 +180,15 @@ The app was built fast. Core components are missing accessibility props. That is
 
 Never reach for `UNSAFE_getByType` or a `testID` to route around a missing label. The failing query is the signal.
 
+- The bottom tab bar was icon-only with no label and no role, so a screen reader announced nothing. Fixed while adding `testID` for Detox: `accessible`, `accessibilityRole`, `accessibilityLabel`, `accessibilityState={{ selected }}`. A dead `accessibilityLabel` prop on `TabItem` was deleted at the same time.
+
 ### Accessibility debt found, not yet fixed
 
 - `UIconButton` does not forward `disabled` to the host element as `accessibilityState`. Tamagui blocks the press with `pointerEvents: none`, so it works, but a screen reader does not announce the button as dimmed.
+
+### Layout debt found, not yet fixed
+
+- The Sign In button on `LoginScreen` sits in the outer `YStack` with `jc="space-between"`, outside `UKeyboardAvoidingView`. It never moves when the keyboard opens, so the primary button of the screen is covered while the user types. Not a blocker, the user can press Done or tap empty space to dismiss, but it is why the E2E cannot tap it.
 
 ## How to pick which components to test
 
@@ -187,12 +209,13 @@ He liked this shape. Keep it.
 
 - `formatEventDisplay` in `helper.ts` uses `Intl.DateTimeFormat` with a `timeZone` option. Node has full ICU so it works under Jest. Hermes on device may not. Tests could be green while the app is wrong. Unconfirmed on a real device.
 - `renderWithProviders` now has Redux, SafeAreaProvider and Tamagui. The real root in `app/_layout.tsx` also has GestureHandlerRootView, Stripe, PersistGate and FontProvider. A screen that needs one of those will fail and name it. **Do not add them pre-emptively.**
-- The app has zero `testID` props and one `accessibilityLabel` in total. RNTL prefers querying by role and label. Detox requires `testID` on everything it touches. This is app code work, not test work, and it is coming.
+- The E2E logs into the real backend with a real account. It is not hermetic. A backend outage fails it, and it writes real session data. This is why it must not run on every PR.
+- Only the elements the login flow touches carry a `testID`: `onboarding-login`, `login-email`, `login-password`, `home-screen`, `tab-*`. Add one only when an E2E actually needs it. Never add a `testID` to route around a missing accessibility label in a component test.
 
 ## Next targets, in order
 
-1. Rewrite `authStorage.test.ts` against the real boundary.
-2. E2E. Start with Maestro, not Detox: Maestro runs against the existing Expo build and finds elements by text, while Detox needs its own build and a `testID` on everything.
-3. A `testID` pass across the app, if Detox is ever required. App code work, separate project.
+1. A GitHub Actions workflow for the E2E suite. `macos-latest`, `workflow_dispatch` plus a nightly `schedule`, never on `pull_request`. Needs `brew install applesimutils`, `expo prebuild`, and `EXPO_PUBLIC_API_BASE_URL`, `E2E_EMAIL`, `E2E_PASSWORD` as repo secrets. The existing `test.yml` and `pr-check.yml` need no edits.
+2. Rewrite `authStorage.test.ts` against the real boundary.
+3. Move `pnpm.overrides` out of `package.json`. pnpm 12 stopped reading that field, so the `react-native-web` override is currently doing nothing.
 
 Do not start any of these without walking through the seven steps above first.

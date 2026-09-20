@@ -35,7 +35,7 @@ module.exports = {
   },
 
   // Folders Jest should not search for test files.
-  testPathIgnorePatterns: ['/node_modules/', '/android/', '/ios/', '/.expo/'],
+  testPathIgnorePatterns: ['/node_modules/', '/android/', '/ios/', '/.expo/', '/e2e/'],
 
   // Wipes mock call history between tests, so leftover state cannot make one pass.
   clearMocks: true,

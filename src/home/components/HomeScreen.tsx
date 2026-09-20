@@ -144,7 +144,7 @@ const HomeScreen: React.FC = () => {
   }
 
   return (
-    <UScreenLayout>
+    <UScreenLayout testID="home-screen">
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{

@@ -1,0 +1,78 @@
+# End-to-end Detox suite.
+#
+# Deliberately NOT on pull_request. It needs a macOS runner (billed at 10x),
+# takes 20+ minutes, and logs into the real api-dev backend with a real
+# account. Nightly plus a manual button is the right cadence for that.
+
+name: E2E
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 06:00 UTC, so a failure is waiting in the morning.
+    - cron: '0 6 * * *'
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
+jobs:
+  detox-ios:
+    name: Detox on iOS simulator
+    runs-on: macos-latest
+    timeout-minutes: 60
+
+    env:
+      # Inlined into the JS bundle at BUILD time, not read at test time.
+      EXPO_PUBLIC_API_BASE_URL: ${{ secrets.EXPO_PUBLIC_API_BASE_URL }}
+      EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY: ${{ secrets.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY }}
+      EXPO_PUBLIC_STRIPE_MERCHANT_IDENTIFIER: ${{ secrets.EXPO_PUBLIC_STRIPE_MERCHANT_IDENTIFIER }}
+      # Read by the test process only. Never prefixed with EXPO_PUBLIC_.
+      E2E_EMAIL: ${{ secrets.E2E_EMAIL }}
+      E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install applesimutils
+        # Detox drives the simulator through this, not through simctl.
+        run: |
+          brew tap wix/brew
+          brew trust wix/brew
+          brew install applesimutils
+
+      - name: Generate native project
+        # ios/ is gitignored, so it does not exist on a fresh clone.
+        # This also runs pod install.
+        run: npx expo prebuild --platform ios
+
+      - name: Build the app
+        run: pnpm e2e:build
+
+      - name: Run the E2E suite
+        # Detox writes nothing by default. These two flags keep the device log
+        # and a screenshot for failures only, which is what the upload below wants.
+        run: pnpm e2e:test --record-logs failing --take-screenshots failing
+
+      - name: Upload Detox artifacts
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: detox-artifacts
+          path: artifacts/
+          retention-days: 7

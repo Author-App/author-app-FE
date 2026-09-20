@@ -1,4 +1,6 @@
 allowBuilds:
   '@sentry/cli': false
   '@swc/core': false
+  detox: true
+  dtrace-provider: false
   esbuild: false
