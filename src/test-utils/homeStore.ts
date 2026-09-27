@@ -48,7 +48,7 @@ export const mockFetchJson = (body: unknown, status = 200) => {
     });
   });
 
-  global.fetch = fetchMock as unknown as typeof fetch;
+  globalThis.fetch = fetchMock as unknown as typeof fetch;
 
   return { fetchMock, release };
 };

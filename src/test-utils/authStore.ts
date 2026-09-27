@@ -54,7 +54,7 @@ export const mockFetchRoutes = (routes: Route[]) => {
     });
   });
 
-  global.fetch = fetchMock as unknown as typeof fetch;
+  globalThis.fetch = fetchMock as unknown as typeof fetch;
 
   return { fetchMock, release };
 };
