@@ -1,118 +1,90 @@
-import { z } from 'zod';
+import { envSchema } from '../env';
 
-// We test the schema validation logic without importing the actual module
-// (which would execute validation at import time)
+// process.env.EXPO_PUBLIC_* is inlined by babel-preset-expo at compile time,
+// so loadEnv cannot be driven from a test. The schema is the testable seam.
 
-describe('Environment Configuration', () => {
-  // Mirror the schema from env.ts for testing
-  const envSchema = z.object({
-    API_BASE_URL: z.string().url('API_BASE_URL must be a valid URL'),
-    APP_NAME: z.string().default('Author App'),
-    SENTRY_DSN: z.string().optional(),
+const validRawEnv = {
+  API_BASE_URL: 'https://api.example.com',
+  STRIPE_PUBLISHABLE_KEY: 'pk_test_123',
+  STRIPE_MERCHANT_IDENTIFIER: 'merchant.com.example',
+  STRIPE_URL_SCHEME: 'authorapp',
+  IS_DEV: true,
+};
+
+describe('envSchema', () => {
+  it('accepts a fully populated config', () => {
+    const result = envSchema.safeParse(validRawEnv);
+
+    expect(result.success).toBe(true);
   });
 
-  describe('envSchema validation', () => {
-    it('should validate correct configuration', () => {
-      const validEnv = {
-        API_BASE_URL: 'https://api.example.com',
-        APP_NAME: 'My App',
-      };
+  describe('STRIPE_URL_SCHEME', () => {
+    it('defaults to authorapp when absent', () => {
+      const { STRIPE_URL_SCHEME, ...withoutScheme } = validRawEnv;
 
-      const result = envSchema.safeParse(validEnv);
-      expect(result.success).toBe(true);
+      const result = envSchema.parse(withoutScheme);
+
+      expect(result.STRIPE_URL_SCHEME).toBe('authorapp');
     });
 
-    it('should reject invalid API_BASE_URL', () => {
-      const invalidEnv = {
+    it('keeps the provided value when present', () => {
+      const result = envSchema.parse({
+        ...validRawEnv,
+        STRIPE_URL_SCHEME: 'customscheme',
+      });
+
+      expect(result.STRIPE_URL_SCHEME).toBe('customscheme');
+    });
+  });
+
+  describe('required fields', () => {
+    it.each([
+      'API_BASE_URL',
+      'STRIPE_PUBLISHABLE_KEY',
+      'STRIPE_MERCHANT_IDENTIFIER',
+      'IS_DEV',
+    ])('rejects config missing %s', (field) => {
+      const incomplete = { ...validRawEnv };
+      delete incomplete[field as keyof typeof incomplete];
+
+      const result = envSchema.safeParse(incomplete);
+
+      expect(result.success).toBe(false);
+    });
+  });
+
+  describe('error messages', () => {
+    it('explains an API_BASE_URL that is not a URL', () => {
+      const result = envSchema.safeParse({
+        ...validRawEnv,
         API_BASE_URL: 'not-a-url',
-        APP_NAME: 'My App',
-      };
+      });
 
-      const result = envSchema.safeParse(invalidEnv);
       expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error.issues[0].message).toBe('API_BASE_URL must be a valid URL');
-      }
+      expect(result.error?.issues[0].message).toBe('API_BASE_URL must be a valid URL');
     });
 
-    it('should require API_BASE_URL', () => {
-      const missingUrl = {
-        APP_NAME: 'My App',
-      };
+    it('explains an empty STRIPE_PUBLISHABLE_KEY', () => {
+      const result = envSchema.safeParse({
+        ...validRawEnv,
+        STRIPE_PUBLISHABLE_KEY: '',
+      });
 
-      const result = envSchema.safeParse(missingUrl);
       expect(result.success).toBe(false);
-    });
-
-    it('should use default APP_NAME when not provided', () => {
-      const envWithoutAppName = {
-        API_BASE_URL: 'https://api.example.com',
-      };
-
-      const result = envSchema.safeParse(envWithoutAppName);
-      expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.data.APP_NAME).toBe('Author App');
-      }
-    });
-
-    it('should allow optional SENTRY_DSN to be omitted', () => {
-      const envWithoutSentry = {
-        API_BASE_URL: 'https://api.example.com',
-      };
-
-      const result = envSchema.safeParse(envWithoutSentry);
-      expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.data.SENTRY_DSN).toBeUndefined();
-      }
-    });
-
-    it('should allow SENTRY_DSN when provided', () => {
-      const envWithSentry = {
-        API_BASE_URL: 'https://api.example.com',
-        SENTRY_DSN: 'https://xxx@sentry.io/123',
-      };
-
-      const result = envSchema.safeParse(envWithSentry);
-      expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.data.SENTRY_DSN).toBe('https://xxx@sentry.io/123');
-      }
-    });
-
-    it('should handle HTTPS URLs', () => {
-      const httpsEnv = {
-        API_BASE_URL: 'https://secure-api.example.com/v1',
-      };
-
-      const result = envSchema.safeParse(httpsEnv);
-      expect(result.success).toBe(true);
-    });
-
-    it('should handle localhost URLs', () => {
-      const localEnv = {
-        API_BASE_URL: 'http://localhost:3000',
-      };
-
-      const result = envSchema.safeParse(localEnv);
-      expect(result.success).toBe(true);
+      expect(result.error?.issues[0].message).toBe('STRIPE_PUBLISHABLE_KEY is required');
     });
   });
 
-  describe('fail-fast behavior', () => {
-    it('should aggregate all validation errors', () => {
-      const invalidEnv = {};
-      const result = envSchema.safeParse(invalidEnv);
-      
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        // Should have error for missing API_BASE_URL
-        const apiUrlError = result.error.issues.find(
-          (issue) => issue.path.includes('API_BASE_URL')
-        );
-        expect(apiUrlError).toBeDefined();
-      }
-    });
+  it('reports every invalid field at once, not just the first', () => {
+    const result = envSchema.safeParse({ IS_DEV: true });
+
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.map((issue) => issue.path[0])).toEqual(
+      expect.arrayContaining([
+        'API_BASE_URL',
+        'STRIPE_PUBLISHABLE_KEY',
+        'STRIPE_MERCHANT_IDENTIFIER',
+      ])
+    );
   });
 });

@@ -109,7 +109,7 @@ const OnboardingScreen = memo(() => {
         <View height={LOGO_HEIGHT} width={LOGO_WIDTH} onLayout={onPlaceholderLayout}/>
 
         <UAnimatedView animation="fadeInUp" delay={300}>
-          <NeonButton onPress={handleLoginPress} width={280} title="Log In" />
+          <NeonButton testID="onboarding-login" onPress={handleLoginPress} width={280} title="Log In" />
         </UAnimatedView>
 
         <UAnimatedView animation="fadeInUp" delay={450}>

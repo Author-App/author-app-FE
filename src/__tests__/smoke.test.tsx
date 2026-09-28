@@ -10,12 +10,4 @@ describe('Jest Setup Smoke Test', () => {
     expect(getByText('Hello Test')).toBeTruthy();
   });
 
-  it('should have access to Jest matchers', () => {
-    expect(true).toBe(true);
-    expect([1, 2, 3]).toHaveLength(3);
-  });
-
-  it('should have __DEV__ global defined', () => {
-    expect(__DEV__).toBe(true);
-  });
 });

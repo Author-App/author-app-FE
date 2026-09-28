@@ -1,6 +1,6 @@
 import React, { memo, useState, useEffect, useCallback } from 'react';
 import { StyleSheet, Dimensions, StatusBar, ActivityIndicator } from 'react-native';
-import { Video, ResizeMode, AVPlaybackStatus } from 'expo-av';
+import { VideoView, type VideoPlayer as ExpoVideoPlayer } from 'expo-video';
 import { YStack } from 'tamagui';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -11,20 +11,12 @@ import haptics from '@/src/utils/haptics';
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 interface VideoPlayerProps {
-  videoRef: React.RefObject<Video | null>;
-  fileUrl: string;
-  thumbnail?: string | null;
-  initialPosition?: number;
-  onPlaybackStatusUpdate: (status: AVPlaybackStatus) => void;
+  player: ExpoVideoPlayer;
   isLoading?: boolean;
 }
 
 export const VideoPlayer = memo(function VideoPlayer({
-  videoRef,
-  fileUrl,
-  thumbnail,
-  initialPosition = 0,
-  onPlaybackStatusUpdate,
+  player,
   isLoading,
 }: VideoPlayerProps) {
   const { top: safeTop } = useSafeAreaInsets();
@@ -92,21 +84,14 @@ export const VideoPlayer = memo(function VideoPlayer({
         />
       )}
 
-      <Video
-        ref={videoRef}
-        source={{ uri: fileUrl }}
+      <VideoView
+        player={player}
         style={[
           styles.video,
           isFullscreen && { width: SCREEN_HEIGHT, height: SCREEN_WIDTH },
         ]}
-        useNativeControls
-        resizeMode={ResizeMode.CONTAIN}
-        shouldPlay
-        positionMillis={initialPosition}
-        posterSource={thumbnail ? { uri: thumbnail } : undefined}
-        posterStyle={styles.poster}
-        onPlaybackStatusUpdate={onPlaybackStatusUpdate}
-        progressUpdateIntervalMillis={500}
+        nativeControls
+        contentFit="contain"
       />
 
       {/* Fullscreen toggle button */}

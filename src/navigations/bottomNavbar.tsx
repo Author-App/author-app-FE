@@ -44,10 +44,9 @@ interface TabItemProps {
   focused: boolean;
   onPress: () => void;
   onLongPress: () => void;
-  accessibilityLabel?: string;
 }
 
-const TabItem = React.memo(({ routeName, focused, onPress, onLongPress, accessibilityLabel }: TabItemProps) => {
+const TabItem = React.memo(({ routeName, focused, onPress, onLongPress }: TabItemProps) => {
   const config = TAB_CONFIG[routeName] ?? DEFAULT_TAB;
   
   // Active: white icon on crimson circle | Inactive: ocean blue icon
@@ -64,6 +63,13 @@ const TabItem = React.memo(({ routeName, focused, onPress, onLongPress, accessib
       pressStyle={TAB_PRESS_STYLE}
       animation="quick"
       cursor="pointer"
+      // Icon-only tab. Without these a screen reader announces nothing,
+      // and the tab cannot be selected as a button.
+      accessible
+      accessibilityRole="button"
+      accessibilityState={{ selected: focused }}
+      accessibilityLabel={config.label}
+      testID={`tab-${routeName}`}
     >
       {/* Active indicator circle */}
       <YStack

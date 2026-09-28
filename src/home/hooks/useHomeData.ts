@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { extractErrorMessage } from '@/src/services/error.service';
 import { useGetHomeFeedQuery } from '@/src/store/api/homeApi';
 import { useAppSelector } from '@/src/store/hooks';
 import {
@@ -19,17 +20,6 @@ interface UseHomeDataReturn {
   errorMessage: string | null;
   refetch: () => void;
 }
-
-const getErrorMessage = (error: unknown): string | null => {
-  if (!error) return null;
-  if (typeof error === 'object' && 'data' in error) {
-    const data = (error as { data: unknown }).data;
-    if (typeof data === 'object' && data && 'message' in data) {
-      return (data as { message: string }).message;
-    }
-  }
-  return 'Something went wrong';
-};
 
 export const useHomeData = (): UseHomeDataReturn => {
   const  { isLoading, isFetching, refetch } = useGetHomeFeedQuery();
@@ -153,7 +143,7 @@ export const useHomeData = (): UseHomeDataReturn => {
     }
     
     return items;
-  }, [bannerItems, books, audiobooks, articles]);
+  }, [bannerItems, continueReading, books, audiobooks, articles]);
 
   return {
     banner,
@@ -161,7 +151,7 @@ export const useHomeData = (): UseHomeDataReturn => {
     isLoading,
     isRefreshing: isFetching && !isLoading,
     isError: !!error,
-    errorMessage: getErrorMessage(error),
+    errorMessage: error ? extractErrorMessage(error) : null,
     refetch,
   };
 };

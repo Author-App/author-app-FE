@@ -1,4 +1,4 @@
-import { memo, useRef, useMemo, useEffect } from 'react';
+import { memo, useRef, useEffect } from 'react';
 import { TextInput } from 'react-native';
 import { XStack, YStack, Input, getTokenValue } from 'tamagui';
 import { Feather } from '@expo/vector-icons';
@@ -26,7 +26,7 @@ const USearchbar = ({
   disabled = false,
 }: USearchbarProps) => {
   const inputRef = useRef<TextInput>(null);
-  const hasText = useMemo(() => search.length > 0, [search]);
+  const hasText =  search.length > 0;
 
   const neutral1 = getTokenValue('$neutral1', 'color');
   const crimson = getTokenValue('$brandCrimson', 'color');
@@ -50,6 +50,10 @@ const USearchbar = ({
   }, [hasText, xIconOpacity, xIconTranslateY]);
 
   const handleClear = () => {
+    // The icon is hidden with pointerEvents, which is a style, not a rule.
+    // Guard here so clearing is impossible when disabled or already empty.
+    if (disabled || !hasText) return;
+
     onSearchChange('');
     onClear?.();
     inputRef.current?.focus();
@@ -100,6 +104,10 @@ const USearchbar = ({
           bg="$searchbarClearBg"
           pressStyle={{ opacity: 0.7 }}
           onPress={handleClear}
+          // Icon-only button. Announces nothing without these.
+          accessible
+          accessibilityRole="button"
+          accessibilityLabel="Clear search"
         >
           <Feather name="x" size={16} color={crimson} />
         </UAnimatedYStack>

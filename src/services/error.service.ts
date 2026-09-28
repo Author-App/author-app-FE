@@ -79,14 +79,3 @@ const isApiError = (error: unknown): error is ApiError => {
     typeof (error as ApiError).data === 'object'
   );
 };
-
-/**
- * Gets error message without showing toast
- * Useful when you need the message but want to handle display yourself
- * 
- * @param error - Error from API call
- * @returns User-friendly error message
- */
-export const getErrorMessage = (error: unknown): string => {
-  return extractErrorMessage(error);
-};

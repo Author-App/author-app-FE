@@ -4,6 +4,7 @@
  * Fetches and transforms explore data based on active tab.
  */
 
+import { extractErrorMessage } from '@/src/services/error.service';
 import { useMemo, useState, useCallback } from 'react';
 import {
   useGetArticlesQuery,
@@ -46,17 +47,6 @@ interface UseExploreDataReturn {
   isJoining: boolean;
   isExiting: boolean;
 }
-
-const getErrorMessage = (error: unknown): string | null => {
-  if (!error) return null;
-  if (typeof error === 'object' && 'data' in error) {
-    const data = (error as { data: unknown }).data;
-    if (typeof data === 'object' && data && 'message' in data) {
-      return (data as { message: string }).message;
-    }
-  }
-  return 'Something went wrong';
-};
 
 export const useExploreData = (): UseExploreDataReturn => {
   const [activeTab, setActiveTab] = useState<ExploreTabType>('Blogs');
@@ -227,7 +217,7 @@ export const useExploreData = (): UseExploreDataReturn => {
     isLoading: currentQuery.isLoading,
     isRefreshing: currentQuery.isFetching && !currentQuery.isLoading,
     isError: currentQuery.isError,
-    errorMessage: getErrorMessage(currentQuery.error),
+    errorMessage: currentQuery.error ? extractErrorMessage(currentQuery.error) : null,
     refetch,
     handleJoinCommunity,
     handleExitCommunity,

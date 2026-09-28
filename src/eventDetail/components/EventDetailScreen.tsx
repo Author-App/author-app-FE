@@ -62,8 +62,10 @@ export const EventDetailScreen: React.FC<EventDetailScreenProps> = ({ eventId })
 
         <YStack px={20} pt={20}>
           <EventInfo
+            eventStartUtc={event.eventStartUtc}
             eventDate={event.eventDate}
             eventTime={event.eventTime}
+            timezone={event.timezone}
             eventType={event.eventType}
             location={event.location}
           />

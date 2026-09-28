@@ -39,10 +39,9 @@ export function VideoDetailScreen() {
   const { handleBack, handleProgressUpdate } = useSaveMediaProgress(videoId);
 
   const {
-    videoRef,
+    player,
     isLoading: isVideoLoading,
-    handlePlaybackStatusUpdate,
-  } = useVideoPlayer({
+  } = useVideoPlayer(video?.fileUrl, {
     initialPosition,
     onProgressUpdate: handleProgressUpdate,
   });
@@ -92,11 +91,7 @@ export function VideoDetailScreen() {
       >
         {/* Video Player */}
         <VideoPlayer
-          videoRef={videoRef}
-          fileUrl={video.fileUrl}
-          thumbnail={video.thumbnail}
-          initialPosition={initialPosition}
-          onPlaybackStatusUpdate={handlePlaybackStatusUpdate}
+          player={player}
           isLoading={isVideoLoading}
         />
 

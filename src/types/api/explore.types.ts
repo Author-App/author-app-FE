@@ -93,8 +93,10 @@ export interface EventResponse {
   title: string;
   description?: string;
   thumbnail?: string;
+  eventStartUtc?: string | null;
   eventDate: string | null;
   eventTime: string;
+  timezone?: string;
   eventType: EventType;
   location?: string;
   locationGoogleMapLink?: string;

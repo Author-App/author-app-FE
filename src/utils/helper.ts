@@ -12,8 +12,12 @@ export const formatPagesLeft = (currentPage: number, totalPages: number): string
 
 export const formatLastRead = (lastReadAt: string): string => {
   const date = new Date(lastReadAt);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
+  if (Number.isNaN(date.getTime())) return '';
+
+  const now = Date.now();
+  const diffMs = now - date.getTime();
+  if (diffMs < 0) return 'Just now';
+
   const diffMins = Math.floor(diffMs / 60000);
   const diffHours = Math.floor(diffMins / 60);
   const diffDays = Math.floor(diffHours / 24);
@@ -23,22 +27,22 @@ export const formatLastRead = (lastReadAt: string): string => {
   if (diffHours < 24) return `${diffHours}h ago`;
   if (diffDays === 1) return 'Yesterday';
   if (diffDays < 7) return `${diffDays}d ago`;
-  
+
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 };
 
 export const formatTimeLeft = (currentSec: number, totalSec: number): string => {
   const leftSec = totalSec - currentSec;
   if (leftSec <= 0) return 'Completed';
-  
+
   const mins = Math.floor(leftSec / 60);
+  if (mins < 1) return 'Less than a minute left';
   if (mins < 60) return `${mins} min left`;
-  
+
   const hours = Math.floor(mins / 60);
   const remainingMins = mins % 60;
   return remainingMins > 0 ? `${hours}h ${remainingMins}m left` : `${hours}h left`;
 };
-
 export const percentageToDecimal = (percentage: number): number => {
   if (isNaN(percentage)) return 0;
   const value = percentage / 100;
@@ -56,8 +60,65 @@ export const getInitials = (name: string | null | undefined): string => {
   return initials.slice(0, 2);
 };
 
+const JOIN_WINDOW_MINUTES = 10;
+const EVENT_DURATION_HOURS = 2;
+
+export interface EventTimeInput {
+  eventStartUtc?: string | null;
+  eventDate?: string | null;
+  eventTime?: string;
+  timezone?: string;
+}
+
+export interface ResolvedEventStart {
+  instant: Date | null;
+  isAbsolute: boolean;
+}
+
+export const resolveEventStart = (event: EventTimeInput): ResolvedEventStart => {
+  if (event.eventStartUtc) {
+    const instant = new Date(event.eventStartUtc);
+    if (!Number.isNaN(instant.getTime())) {
+      return { instant, isAbsolute: true };
+    }
+  }
+
+  if (!event.eventDate) {
+    return { instant: null, isAbsolute: false };
+  }
+
+  const dateOnlyMatch = event.eventDate.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  const localDate = dateOnlyMatch
+    ? new Date(Number(dateOnlyMatch[1]), Number(dateOnlyMatch[2]) - 1, Number(dateOnlyMatch[3]))
+    : new Date(event.eventDate);
+
+  if (Number.isNaN(localDate.getTime())) {
+    return { instant: null, isAbsolute: false };
+  }
+
+  if (event.eventTime) {
+    const [hourStr, minuteStr, secondStr] = event.eventTime.split(':');
+    const hour = Number(hourStr);
+    const minute = Number(minuteStr);
+    const second = Number(secondStr ?? 0);
+
+    if (!Number.isNaN(hour) && !Number.isNaN(minute)) {
+      localDate.setHours(hour, minute, second, 0);
+    }
+  }
+
+  return { instant: localDate, isAbsolute: false };
+};
+
 export const formatDate = (isoDate: string): string => {
-  const date = new Date(isoDate);
+  if (!isoDate) return '';
+
+  const dateOnlyMatch = isoDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  const date = dateOnlyMatch
+    ? new Date(Number(dateOnlyMatch[1]), Number(dateOnlyMatch[2]) - 1, Number(dateOnlyMatch[3]))
+    : new Date(isoDate);
+
+  if (Number.isNaN(date.getTime())) return '';
 
   const options: Intl.DateTimeFormatOptions = {
     year: 'numeric',
@@ -71,25 +132,15 @@ export const formatDate = (isoDate: string): string => {
 export const formatDuration = (durationSec: number): string => {
   if (!durationSec || durationSec < 0) return '00:00';
 
-  const minutes = Math.floor(durationSec / 60);
-  const seconds = durationSec % 60;
+  const hours = Math.floor(durationSec / 3600);
+  const minutes = Math.floor((durationSec % 3600) / 60);
+  const seconds = Math.floor(durationSec % 60);
 
-  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-};
+  const mm = String(minutes).padStart(2, '0');
+  const ss = String(seconds).padStart(2, '0');
 
-export const formatDuration2 = (seconds: number) => {
-  if (!seconds || seconds <= 0) return '0 sec';
-
-  const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
-
-  if (mins > 0 && secs > 0) {
-    return `${mins} min ${secs} sec`;
-  } else if (mins > 0) {
-    return `${mins} min`;
-  } else {
-    return `${secs} sec`;
-  }
+  // Hours only appear once needed, so short audio stays as mm:ss.
+  return hours > 0 ? `${hours}:${mm}:${ss}` : `${mm}:${ss}`;
 };
 
 /**
@@ -107,60 +158,133 @@ export const formatDurationCompact = (seconds: number): string => {
 };
 
 
-export const formatTime12h = (time24: string) => {
+export const formatTime12h = (time24: string): string => {
   if (!time24) return '';
 
   const [hourStr, minuteStr] = time24.split(':');
-  let hour = parseInt(hourStr, 10);
+  const hour24 = parseInt(hourStr, 10);
   const minute = parseInt(minuteStr, 10);
-  const ampm = hour >= 12 ? 'PM' : 'AM';
 
-  hour = hour % 12;
-  if (hour === 0) hour = 12;
+  // Nonsense input renders as nothing rather than a plausible wrong time.
+  if (Number.isNaN(hour24) || Number.isNaN(minute)) return '';
+  if (hour24 < 0 || hour24 > 23) return '';
+  if (minute < 0 || minute > 59) return '';
+
+  const ampm = hour24 >= 12 ? 'PM' : 'AM';
+  const hour = hour24 % 12 === 0 ? 12 : hour24 % 12;
 
   return `${hour}${minute > 0 ? `:${minute.toString().padStart(2, '0')}` : ''} ${ampm}`;
 };
 
-export const isWithinJoinWindow = (
-  eventDate: string,
-  eventTime: string
-) => {
-  // Combine date + time
-  const eventStart = new Date(eventDate);
+const getDateOnlyLocal = (eventDate: string | null): Date | null => {
+  if (!eventDate) return null;
 
-  const [hours, minutes, seconds] = eventTime.split(":").map(Number);
-  eventStart.setHours(hours, minutes, seconds || 0, 0);
+  const match = eventDate.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!match) return null;
 
-  const now = new Date();
-
-  const eventEnd = new Date(eventStart);
-  eventEnd.setHours(eventEnd.getHours() + 24);
-
-  return now >= eventStart && now <= eventEnd;
+  const [, year, month, day] = match;
+  return new Date(Number(year), Number(month) - 1, Number(day));
 };
 
-export const getJoinStatus = (
-  eventDate: string,
-  eventTime: string
-): "upcoming" | "live" | "ended" => {
-  const eventStart = new Date(eventDate);
+export const formatEventDisplay = (
+  event: EventTimeInput,
+  viewerTimeZone?: string
+): {
+  dateLabel: string;
+  timeLabel: string;
+  timezoneLabel?: string;
+  badgeDay: number | null;
+  badgeMonthLabel: string;
+} => {
+  const resolved = resolveEventStart(event);
 
-  const [hours, minutes, seconds] = eventTime.split(":").map(Number);
-  eventStart.setHours(hours, minutes, seconds || 0, 0);
+  if (!event.eventDate) {
+    return {
+      dateLabel: '',
+      timeLabel: event.timezone ? '' : formatTime12h(event.eventTime || ''),
+      timezoneLabel: undefined,
+      badgeDay: null,
+      badgeMonthLabel: '',
+    };
+  }
+
+  if (!resolved.instant || !resolved.isAbsolute) {
+    const parsedDate = getDateOnlyLocal(event.eventDate) ?? new Date(event.eventDate);
+    const badgeMonthLabel = Number.isNaN(parsedDate.getTime())
+      ? ''
+      : parsedDate.toLocaleString('en-US', { month: 'short' });
+
+    return {
+      dateLabel: formatDate(event.eventDate),
+      timeLabel: formatTime12h(event.eventTime || ''),
+      timezoneLabel: undefined,
+      badgeDay: Number.isNaN(parsedDate.getTime()) ? null : parsedDate.getDate(),
+      badgeMonthLabel,
+    };
+  }
+
+  const resolvedViewerTimeZone = viewerTimeZone || Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+  const viewerDateFormatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: resolvedViewerTimeZone,
+    month: 'short',
+    day: '2-digit',
+    year: 'numeric',
+  });
+
+  const viewerTimeFormatter = new Intl.DateTimeFormat('en-US', {
+    timeZone: resolvedViewerTimeZone,
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  });
+
+  let timezoneLabel: string | undefined;
+  if (event.timezone) {
+    const timezoneFormatter = new Intl.DateTimeFormat('en-US', {
+      timeZone: event.timezone,
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+      timeZoneName: 'short',
+    });
+
+    const formattedPart = timezoneFormatter.formatToParts(resolved.instant)
+      .find((part) => part.type === 'timeZoneName');
+
+    timezoneLabel = formattedPart?.value ? formattedPart.value : undefined;
+  }
+
+  return {
+    dateLabel: viewerDateFormatter.format(resolved.instant),
+    timeLabel: viewerTimeFormatter.format(resolved.instant),
+    timezoneLabel,
+    badgeDay: Number(new Intl.DateTimeFormat('en-US', { timeZone: resolvedViewerTimeZone, day: 'numeric' }).format(resolved.instant)),
+    badgeMonthLabel: new Intl.DateTimeFormat('en-US', { timeZone: resolvedViewerTimeZone, month: 'short' }).format(resolved.instant),
+  };
+};
+
+export const isWithinJoinWindow = (event: EventTimeInput): boolean => {
+  return getJoinStatus(event) === 'live';
+};
+
+export const getJoinStatus = (event: EventTimeInput): "upcoming" | "live" | "ended" => {
+  const { instant } = resolveEventStart(event);
+  if (!instant) {
+    // A broken event date is more harmful than a hidden button, so treat it as already ended.
+    return 'ended';
+  }
 
   const now = new Date();
 
-  // Allow joining 10 minutes before
-  const joinWindowStart = new Date(eventStart);
-  joinWindowStart.setMinutes(joinWindowStart.getMinutes() - 10);
+  const joinWindowStart = new Date(instant);
+  joinWindowStart.setMinutes(joinWindowStart.getMinutes() - JOIN_WINDOW_MINUTES);
 
-  // Assume meeting ends after 2 hours (adjust if needed)
-  const eventEnd = new Date(eventStart);
-  eventEnd.setHours(eventEnd.getHours() + 2);
+  const eventEnd = new Date(instant);
+  eventEnd.setHours(eventEnd.getHours() + EVENT_DURATION_HOURS);
 
-  if (now < joinWindowStart) return "upcoming";
-  if (now >= joinWindowStart && now <= eventEnd) return "live";
-  return "ended";
+  if (now < joinWindowStart) return 'upcoming';
+  if (now >= joinWindowStart && now <= eventEnd) return 'live';
+  return 'ended';
 };
 
 

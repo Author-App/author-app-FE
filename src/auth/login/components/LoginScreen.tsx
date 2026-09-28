@@ -61,6 +61,7 @@ export const LoginScreen = memo(() => {
           <UKeyboardAvoidingView gap={16} mt={25}>
             <UAnimatedView animation="fadeInUp" delay={300}>
               <UInput
+                testID="login-email"
                 variant="primary"
                 placeholder="Enter your email"
                 value={email}
@@ -78,6 +79,7 @@ export const LoginScreen = memo(() => {
             </UAnimatedView>
             <UAnimatedView animation="fadeInUp" delay={400}>
               <UInput
+                testID="login-password"
                 ref={passwordRef}
                 variant="primary"
                 placeholder="Enter your password"

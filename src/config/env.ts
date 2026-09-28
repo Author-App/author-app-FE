@@ -4,16 +4,11 @@ import { z } from 'zod';
  * Environment variable schema with validation
  * App crashes immediately on startup if config is invalid - fail fast!
  */
-const envSchema = z.object({
-  // API
+export const envSchema = z.object({
   API_BASE_URL: z.string().url('API_BASE_URL must be a valid URL'),
-  
-  // Stripe
   STRIPE_PUBLISHABLE_KEY: z.string().min(1, 'STRIPE_PUBLISHABLE_KEY is required'),
   STRIPE_MERCHANT_IDENTIFIER: z.string().min(1, 'STRIPE_MERCHANT_IDENTIFIER is required'),
   STRIPE_URL_SCHEME: z.string().default('authorapp'),
-  
-  // App Info
   IS_DEV: z.boolean(),
 });
 
