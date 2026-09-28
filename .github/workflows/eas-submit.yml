@@ -28,10 +28,18 @@ jobs:
     runs-on: ubuntu-latest
     # Only run if the build workflow succeeded
     if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+
+    # Needed to push the release tag at the end of the job.
+    permissions:
+      contents: write
     
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          # A workflow_run checkout defaults to the default branch HEAD, which may
+          # already be ahead of the commit that produced the build being submitted.
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -64,3 +72,28 @@ jobs:
       - name: Submit Android to Play Store
         if: github.event_name == 'workflow_run' || (github.event_name == 'workflow_dispatch' && (inputs.platform == 'android' || inputs.platform == 'all'))
         run: eas submit --platform android --profile production --latest --non-interactive
+
+      # Tag the commit that is now in the stores, so a later hotfix can branch
+      # from the exact code users are running and ship an OTA to that runtime
+      # version. Only on the workflow_run path: a manual dispatch submits
+      # `--latest`, which is not necessarily this commit.
+      - name: Tag the released version
+        if: github.event_name == 'workflow_run'
+        env:
+          RELEASE_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -e
+          VERSION=$(node -p "require('./app.json').expo.version")
+          TAG="v$VERSION"
+
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists. Leaving it pointing at the first build of this version."
+            echo "Bump the version in app.json before the next store release."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -a "$TAG" "$RELEASE_SHA" -m "Submitted to App Store and Play Store (run ${{ github.run_id }})"
+          git push origin "$TAG"
+          echo "Tagged $TAG at $RELEASE_SHA"
