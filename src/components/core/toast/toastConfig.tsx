@@ -1,238 +1,109 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { BaseToast, ErrorToast, ToastConfig } from 'react-native-toast-message';
-import { getTokenValue } from 'tamagui';
+import Toast, { ToastConfig, ToastConfigParams } from 'react-native-toast-message';
+import { Ionicons } from '@expo/vector-icons';
+import { XStack, YStack, getTokenValue } from 'tamagui';
 
-// Custom Success Toast
-const SuccessToast = (props: any) => {
-    const { top } = useSafeAreaInsets();
+import UText from '@/src/components/core/text/uText';
 
-    return (
-        <View style={[styles.container, { marginTop: top }]}>
-            <BaseToast
-                {...props}
-                style={styles.successToast}
-                contentContainerStyle={styles.contentContainer}
-                text1Style={styles.title}
-                text2Style={styles.message}
-                text1NumberOfLines={1}
-                text2NumberOfLines={2}
-                renderLeadingIcon={() => (
-                    <View style={styles.iconContainer}>
-                        <View style={[styles.iconCircle, styles.successIcon]}>
-                            <View style={styles.checkmark} />
-                        </View>
-                    </View>
-                )}
-            />
-        </View>
-    );
-};
+/** Optional action button, passed as Toast.show({ props: { action } }) */
+export interface ToastAction {
+  label: string;
+  onPress: () => void;
+}
 
-// Custom Error Toast
-const CustomErrorToast = (props: any) => {
-    const { top } = useSafeAreaInsets();
+// Design system toasts: cyan glass for success, red glass for errors, purple glass for info
+const TONES = {
+  success: {
+    bg: 'rgba(10,25,45,0.9)',
+    border: 'rgba(0,240,255,0.35)',
+    glow: '0 0 24px rgba(0,240,255,0.15)',
+    icon: 'checkmark-circle-outline',
+    iconColor: '$accentCyan',
+    text: '$textSecondary',
+  },
+  error: {
+    bg: 'rgba(45,10,10,0.85)',
+    border: 'rgba(255,60,60,0.35)',
+    glow: '0 0 24px rgba(255,60,60,0.18)',
+    icon: 'alert-circle-outline',
+    iconColor: '$danger',
+    text: '$errorToastText',
+  },
+  info: {
+    bg: 'rgba(18,14,42,0.9)',
+    border: '$glassGlowBorder',
+    glow: '0 0 24px rgba(135,54,247,0.2)',
+    icon: 'information-circle-outline',
+    iconColor: '$accentPurple',
+    text: '$textSecondary',
+  },
+} as const;
 
-    return (
-        <View style={[styles.container, { marginTop: top }]}>
-            <ErrorToast
-                {...props}
-                style={styles.errorToast}
-                contentContainerStyle={styles.contentContainer}
-                text1Style={styles.title}
-                text2Style={styles.message}
-                text1NumberOfLines={1}
-                text2NumberOfLines={2}
-                renderLeadingIcon={() => (
-                    <View style={styles.iconContainer}>
-                        <View style={[styles.iconCircle, styles.errorIcon]}>
-                            <View style={styles.crossIcon}>
-                                <View style={[styles.crossLine, styles.crossLine1]} />
-                                <View style={[styles.crossLine, styles.crossLine2]} />
-                            </View>
-                        </View>
-                    </View>
-                )}
-            />
-        </View>
-    );
-};
+type Tone = keyof typeof TONES;
 
-// Custom Info Toast
-const InfoToast = (props: any) => {
-    const { top } = useSafeAreaInsets();
+const UToast = ({ tone, text1, text2, props }: ToastConfigParams<{ action?: ToastAction }> & { tone: Tone }) => {
+  const { top } = useSafeAreaInsets();
+  const colors = TONES[tone];
+  const action = props?.action;
 
-    return (
-        <View style={[styles.container, { marginTop: top }]}>
-            <BaseToast
-                {...props}
-                style={styles.infoToast}
-                contentContainerStyle={styles.contentContainer}
-                text1Style={styles.title}
-                text2Style={styles.message}
-                text1NumberOfLines={1}
-                text2NumberOfLines={2}
-                renderLeadingIcon={() => (
-                    <View style={styles.iconContainer}>
-                        <View style={[styles.iconCircle, styles.infoIcon]}>
-                            <View style={styles.infoSymbol}>
-                                <View style={styles.infoDot} />
-                                <View style={styles.infoLine} />
-                            </View>
-                        </View>
-                    </View>
-                )}
-            />
-        </View>
-    );
+  return (
+    <XStack
+      mt={top}
+      mx={16}
+      minHeight={56}
+      py={10}
+      pl={14}
+      pr={action ? 8 : 14}
+      gap={12}
+      ai="center"
+      br={16}
+      borderWidth={1}
+      bg={colors.bg}
+      borderColor={colors.border}
+      boxShadow={colors.glow}
+      accessibilityRole="alert"
+      accessibilityLiveRegion="polite"
+    >
+      <Ionicons name={colors.icon} size={20} color={getTokenValue(colors.iconColor, 'color')} />
+      <YStack flex={1} gap={2}>
+        {!!text1 && (
+          <UText variant="body" fontSize={14} lineHeight={20} fontWeight="600" color="$textPrimary" numberOfLines={1}>
+            {text1}
+          </UText>
+        )}
+        {!!text2 && (
+          <UText variant="body-s" color={colors.text} numberOfLines={2}>
+            {text2}
+          </UText>
+        )}
+      </YStack>
+      {action && (
+        <YStack
+          h={44}
+          px={14}
+          jc="center"
+          onPress={() => {
+            Toast.hide();
+            action.onPress();
+          }}
+          accessible
+          accessibilityRole="button"
+          accessibilityLabel={action.label}
+        >
+          <UText variant="label-button" fontSize={11} lineHeight={14} letterSpacing={0.88} color="$textPrimary">
+            {action.label}
+          </UText>
+        </YStack>
+      )}
+    </XStack>
+  );
 };
 
 export const toastConfig: ToastConfig = {
-    success: (props) => <SuccessToast {...props} />,
-    error: (props) => <CustomErrorToast {...props} />,
-    info: (props) => <InfoToast {...props} />,
+  success: (params) => <UToast tone="success" {...params} />,
+  error: (params) => <UToast tone="error" {...params} />,
+  info: (params) => <UToast tone="info" {...params} />,
 };
-
-const styles = StyleSheet.create({
-    container: {
-        width: '100%',
-        paddingHorizontal: 16,
-    },
-    successToast: {
-        backgroundColor: '#1a1a2e',
-        borderLeftWidth: 0,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: '#2d5a3d',
-        height: 'auto',
-        minHeight: 70,
-        paddingVertical: 12,
-        shadowColor: '#22c55e',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 12,
-        elevation: 8,
-    },
-    errorToast: {
-        backgroundColor: '#1a1a2e',
-        borderLeftWidth: 0,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: '#5a2d2d',
-        height: 'auto',
-        minHeight: 70,
-        paddingVertical: 12,
-        shadowColor: '#ef4444',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 12,
-        elevation: 8,
-    },
-    infoToast: {
-        backgroundColor: '#1a1a2e',
-        borderLeftWidth: 0,
-        borderRadius: 12,
-        borderWidth: 1,
-        borderColor: '#2d4a5a',
-        height: 'auto',
-        minHeight: 70,
-        paddingVertical: 12,
-        shadowColor: '#3b82f6',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.15,
-        shadowRadius: 12,
-        elevation: 8,
-    },
-    contentContainer: {
-        paddingHorizontal: 12,
-        flex: 1,
-    },
-    title: {
-        fontSize: 15,
-        fontWeight: '700',
-        color: '#ffffff',
-        fontFamily: 'System',
-        letterSpacing: 0.3,
-    },
-    message: {
-        fontSize: 13,
-        fontWeight: '400',
-        color: '#a0a0a0',
-        fontFamily: 'System',
-        marginTop: 2,
-    },
-    iconContainer: {
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingLeft: 16,
-    },
-    iconCircle: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    successIcon: {
-        backgroundColor: 'rgba(34, 197, 94, 0.15)',
-        borderWidth: 1.5,
-        borderColor: 'rgba(34, 197, 94, 0.3)',
-    },
-    errorIcon: {
-        backgroundColor: 'rgba(239, 68, 68, 0.15)',
-        borderWidth: 1.5,
-        borderColor: 'rgba(239, 68, 68, 0.3)',
-    },
-    infoIcon: {
-        backgroundColor: 'rgba(59, 130, 246, 0.15)',
-        borderWidth: 1.5,
-        borderColor: 'rgba(59, 130, 246, 0.3)',
-    },
-    checkmark: {
-        width: 12,
-        height: 6,
-        borderLeftWidth: 2,
-        borderBottomWidth: 2,
-        borderColor: '#22c55e',
-        transform: [{ rotate: '-45deg' }],
-        marginTop: -2,
-    },
-    crossIcon: {
-        width: 14,
-        height: 14,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    crossLine: {
-        position: 'absolute',
-        width: 14,
-        height: 2,
-        backgroundColor: '#ef4444',
-        borderRadius: 1,
-    },
-    crossLine1: {
-        transform: [{ rotate: '45deg' }],
-    },
-    crossLine2: {
-        transform: [{ rotate: '-45deg' }],
-    },
-    infoSymbol: {
-        alignItems: 'center',
-    },
-    infoDot: {
-        width: 4,
-        height: 4,
-        borderRadius: 2,
-        backgroundColor: '#3b82f6',
-        marginBottom: 2,
-    },
-    infoLine: {
-        width: 2,
-        height: 10,
-        backgroundColor: '#3b82f6',
-        borderRadius: 1,
-    },
-});
 
 export default toastConfig;

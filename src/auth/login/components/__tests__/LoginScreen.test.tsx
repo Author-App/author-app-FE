@@ -33,11 +33,12 @@ const renderLogin = (store: AuthStore) =>
   renderWithProviders(<LoginScreen />, { store });
 
 const fillForm = (email = EMAIL, password = PASSWORD) => {
-  fireEvent.changeText(screen.getByPlaceholderText('Enter your email'), email);
-  fireEvent.changeText(screen.getByPlaceholderText('Enter your password'), password);
+  fireEvent.changeText(screen.getByLabelText('Email'), email);
+  fireEvent.changeText(screen.getByLabelText('Password'), password);
 };
 
-const submit = () => fireEvent.press(screen.getByText('Sign In'));
+// By role: "Sign In" is also the screen title.
+const submit = () => fireEvent.press(screen.getByRole('button', { name: 'Sign In' }));
 
 /** Every request the happy path needs: login, then the profile fetch after it. */
 const mockSuccessfulLogin = () =>
@@ -215,7 +216,7 @@ describe('LoginScreen', () => {
     it('opens forgot password', () => {
       renderLogin(store);
 
-      fireEvent.press(screen.getByText('Forgot Password?'));
+      fireEvent.press(screen.getByRole('link', { name: 'Forgot password?' }));
 
       expect(mockPush).toHaveBeenCalledWith('/(public)/forgotpassword');
     });
@@ -223,7 +224,7 @@ describe('LoginScreen', () => {
     it('opens signup', () => {
       renderLogin(store);
 
-      fireEvent.press(screen.getByText('Sign Up'));
+      fireEvent.press(screen.getByRole('link', { name: 'Sign up' }));
 
       expect(mockPush).toHaveBeenCalledWith('/(public)/signup');
     });

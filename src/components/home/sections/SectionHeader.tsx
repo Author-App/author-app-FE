@@ -1,8 +1,8 @@
 import React, { memo } from 'react';
-import { YStack, XStack } from 'tamagui';
+import { YStack } from 'tamagui';
 
 import UText from '@/src/components/core/text/uText';
-import { HORIZONTAL_PADDING } from './FeaturedBooks/constants';
+import { HOME_GUTTER } from './constants';
 
 export interface SectionHeaderProps {
   title: string;
@@ -10,18 +10,16 @@ export interface SectionHeaderProps {
 }
 
 const SectionHeader = memo(({ title, subtitle }: SectionHeaderProps) => (
-  <XStack jc="space-between" ai="flex-end" px={HORIZONTAL_PADDING} mb={20}>
-    <YStack flex={1} mr={16}>
-      <UText variant="playfair-lg" color="$white" fontWeight={700}>
-        {title}
+  <YStack px={HOME_GUTTER} gap={2}>
+    <UText variant="display-m" color="$textPrimary" accessibilityRole="header">
+      {title}
+    </UText>
+    {subtitle && (
+      <UText variant="body-s" color="$textMuted">
+        {subtitle}
       </UText>
-      {subtitle && (
-        <UText variant="text-sm" color="$neutralAlphaLight6" mt={4}>
-          {subtitle}
-        </UText>
-      )}
-    </YStack>
-  </XStack>
+    )}
+  </YStack>
 ));
 
 SectionHeader.displayName = 'SectionHeader';

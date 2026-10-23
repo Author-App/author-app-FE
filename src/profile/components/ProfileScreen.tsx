@@ -2,6 +2,7 @@ import React, { memo } from 'react';
 import { ScrollView } from 'react-native';
 import { YStack } from 'tamagui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTabBarInset } from '@/src/navigations/hooks/useTabBarInset';
 
 import { useProfileData } from '../hooks/useProfileData';
 
@@ -14,7 +15,8 @@ import AboutSection from './AboutSection';
 import WritingProcess from './WritingProcess';
 
 const ProfileScreen: React.FC = () => {
-  const { top, bottom } = useSafeAreaInsets();
+  const { top } = useSafeAreaInsets();
+  const { clearance } = useTabBarInset();
   const { author, isLoading, isError } = useProfileData();
 
   if (isLoading) {
@@ -40,7 +42,7 @@ const ProfileScreen: React.FC = () => {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingBottom: 64 + Math.max(bottom, 24),
+          paddingBottom: clearance,
         }}
       >
         <ProfileHeader />

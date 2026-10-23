@@ -3,7 +3,8 @@ import { FlatList, ViewToken } from 'react-native';
 import { YStack } from 'tamagui';
 import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
 import type { BannerItem } from '@/src/home/types/home.types';
-import BannerCard, {CARD_GAP,CARD_WIDTH,HORIZONTAL_PADDING,BANNER_HEIGHT} from './BannerCard';
+import BannerCard, { CARD_GAP, CARD_WIDTH } from './BannerCard';
+import { HOME_GUTTER } from '@/src/components/home/sections/constants';
 import PaginationDots from './PaginationDots';
 
 interface HeroBannerProps {
@@ -97,7 +98,7 @@ const HeroBanner: React.FC<HeroBannerProps> = ({
 
   return (
     <UAnimatedView animation="fadeInUp" duration={500}>
-      <YStack h={BANNER_HEIGHT} pt={16}>
+      <YStack gap={12}>
         <FlatList
           ref={flatListRef}
           data={items}
@@ -107,9 +108,7 @@ const HeroBanner: React.FC<HeroBannerProps> = ({
           showsHorizontalScrollIndicator={false}
           snapToInterval={CARD_WIDTH + CARD_GAP}
           decelerationRate="fast"
-          contentContainerStyle={{
-            paddingHorizontal: HORIZONTAL_PADDING,
-          }}
+          contentContainerStyle={{ paddingHorizontal: HOME_GUTTER, gap: CARD_GAP }}
           onViewableItemsChanged={onViewableItemsChanged}
           viewabilityConfig={viewabilityConfig}
           onScrollBeginDrag={onScrollBeginDrag}

@@ -24,10 +24,12 @@ describe('SectionHeader', () => {
   });
 
   // An empty string is falsy, so it hides the subtitle the same way undefined does.
-  // Counts rendered Text elements, not their content: an empty Text still renders.
+  // Counts rendered elements, not their content: an empty Text still renders.
+  // The title is a header for screen readers, so the subtitle is the only role="text".
   it('renders only one line of text when the subtitle is an empty string', () => {
     renderWithProviders(<SectionHeader title="Featured Books" subtitle="" />);
 
-    expect(screen.getAllByRole('text')).toHaveLength(1);
+    expect(screen.getByRole('header', { name: 'Featured Books' })).toBeOnTheScreen();
+    expect(screen.queryAllByRole('text')).toHaveLength(0);
   });
 });

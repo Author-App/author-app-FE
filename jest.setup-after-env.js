@@ -19,6 +19,10 @@ jest.mock('@react-native-async-storage/async-storage', () =>
 // Native module with no JS fallback.
 jest.mock('react-native-pdf', () => 'Pdf');
 
+// Icon fonts load asynchronously and set state after a test ends, which floods
+// the output with act() warnings. Icons are decoration; tests query labels and text.
+jest.mock('@expo/vector-icons', () => ({ Ionicons: () => null, Feather: () => null }));
+
 // Native vibration module. Every button in the app calls it.
 jest.mock('react-native-haptic-feedback', () => ({
   __esModule: true,

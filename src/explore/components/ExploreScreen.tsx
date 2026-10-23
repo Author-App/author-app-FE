@@ -1,10 +1,11 @@
-import React, { memo, useCallback } from 'react';
-import { YStack } from 'tamagui';
+import React, { memo, useCallback, useState } from 'react';
 import { Href, router } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTabBarInset } from '@/src/navigations/hooks/useTabBarInset';
 
 import { useExploreData } from '@/src/explore/hooks/useExploreData';
 import UScreenLayout from '@/src/components/core/layout/UScreenLayout';
+import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
 import haptics from '@/src/utils/haptics';
 import type {
   ExploreSectionItem,
@@ -14,11 +15,11 @@ import type {
   CommunityResponse,
 } from '@/src/explore/types/explore.types';
 
-import AppLoader from '@/src/components/core/loaders/AppLoader';
+import { ContentCardSkeleton, ListSkeleton } from '@/src/components/core/skeletons';
+import UEmptyState from '@/src/components/core/feedback/UEmptyState';
 import UScreenError from '@/src/components/core/feedback/UScreenError';
 import { URefreshableList } from '@/src/components/core/layout/uRefreshableList';
-import ExploreHeader from './ExploreHeader';
-import UText from '@/src/components/core/text/uText';
+import ExploreHeader, { EXPLORE_TABS } from './ExploreHeader';
 
 import BlogCard from '@/src/components/explore/cards/BlogCard';
 import PodcastCard from '@/src/components/explore/cards/PodcastCard';
@@ -27,7 +28,8 @@ import EventCard from '@/src/components/explore/cards/EventCard';
 import CommunityCard from '@/src/components/explore/cards/CommunityCard';
 
 const ExploreScreen: React.FC = () => {
-  const { top, bottom } = useSafeAreaInsets();
+  const { top } = useSafeAreaInsets();
+  const { clearance } = useTabBarInset();
   const {
     activeTab,
     setActiveTab,
@@ -40,8 +42,6 @@ const ExploreScreen: React.FC = () => {
     refetch,
     handleJoinCommunity,
     handleExitCommunity,
-    isJoining,
-    isExiting,
   } = useExploreData();
 
   const handleBlogPress = useCallback((article: ArticleResponse) => {
@@ -78,13 +78,26 @@ const ExploreScreen: React.FC = () => {
     } as Href);
   }, []);
 
+  // Per community: the join and exit mutations share one isLoading across every card
+  const [pendingIds, setPendingIds] = useState<ReadonlySet<string>>(new Set());
+
   const handleCommunityToggle = useCallback(
     async (community: CommunityResponse) => {
       haptics.light();
-      if (community.isJoined) {
-        await handleExitCommunity(community.id);
-      } else {
-        await handleJoinCommunity(community.id);
+      setPendingIds((ids) => new Set(ids).add(community.id));
+      try {
+        if (community.isJoined) {
+          await handleExitCommunity(community.id);
+        } else {
+          await handleJoinCommunity(community.id);
+        }
+      } finally {
+        // Clear only this one: another card may still be in flight
+        setPendingIds((ids) => {
+          const next = new Set(ids);
+          next.delete(community.id);
+          return next;
+        });
       }
     },
     [handleJoinCommunity, handleExitCommunity]
@@ -94,20 +107,20 @@ const ExploreScreen: React.FC = () => {
     ({ item }: { item: ExploreSectionItem }) => {
       switch (item.type) {
         case 'blog':
-          return <BlogCard data={item.data} onPress={() => handleBlogPress(item.data)} />;
+          return <BlogCard data={item.data} onPress={handleBlogPress} />;
         case 'podcast':
-          return <PodcastCard data={item.data} onPress={() => handlePodcastPress(item.data)} />;
+          return <PodcastCard data={item.data} onPress={handlePodcastPress} />;
         case 'video':
-          return <VideoCard data={item.data} onPress={() => handleVideoPress(item.data)} />;
+          return <VideoCard data={item.data} onPress={handleVideoPress} />;
         case 'event':
-          return <EventCard data={item.data} onPress={() => handleEventPress(item.data)} />;
+          return <EventCard data={item.data} onPress={handleEventPress} />;
         case 'community':
           return (
             <CommunityCard
               data={item.data}
-              onPress={() => handleCommunityPress(item.data)}
-              onToggleJoin={() => handleCommunityToggle(item.data)}
-              isToggling={isJoining || isExiting}
+              onPress={handleCommunityPress}
+              onToggleJoin={handleCommunityToggle}
+              isToggling={pendingIds.has(item.data.id)}
             />
           );
         default:
@@ -121,8 +134,7 @@ const ExploreScreen: React.FC = () => {
       handleEventPress,
       handleCommunityPress,
       handleCommunityToggle,
-      isJoining,
-      isExiting,
+      pendingIds,
     ]
   );
 
@@ -132,29 +144,29 @@ const ExploreScreen: React.FC = () => {
 
   const renderEmpty = useCallback(() => {
     if (isLoading) return null;
+    const icon = EXPLORE_TABS.find((tab) => tab.label === activeTab)?.icon ?? 'search-outline';
     return (
-      <YStack flex={1} jc="center" ai="center" pt={80}>
-        <UText variant="text-md" color="$brandTeal">
-          No {activeTab.toLowerCase()} found
-        </UText>
-      </YStack>
+      <UEmptyState
+        icon={icon}
+        title={`No ${activeTab.toLowerCase()} found`}
+        message={search ? 'Try a different search, or clear it.' : 'Pull down to refresh.'}
+      />
     );
-  }, [activeTab, isLoading]);
+  }, [activeTab, isLoading, search]);
 
   const renderContent = () => {
     if (isLoading && items.length === 0) {
-      return (
-        <YStack jc="center" ai="center" flex={1} pb={64 + Math.max(bottom, 24)}>
-          <AppLoader size={150} bg="transparent"/>
-        </YStack>
-      );
+      return <ListSkeleton count={4} SkeletonComponent={ContentCardSkeleton} />;
     }
 
     if (isError) {
-      return <UScreenError message={errorMessage} onRetry={refetch} pb={64+Math.max(bottom, 24)}/>;
+      return <UScreenError message={errorMessage} onRetry={refetch} pb={clearance}/>;
     }
 
+    // Animated once per tab, not per card: FlashList recycles cells, so a per-card
+    // mount animation played for some cards and not others
     return (
+      <UAnimatedView key={activeTab} animation="fadeInUp" duration={400} flex={1}>
       <URefreshableList
         data={items}
         renderItem={renderItem}
@@ -162,12 +174,12 @@ const ExploreScreen: React.FC = () => {
         ListEmptyComponent={renderEmpty}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingBottom: 64 + Math.max(bottom, 24),
+          paddingBottom: clearance,
           flexGrow: 1,
         }}
-        key={activeTab}
         onRefresh={refetch}
       />
+      </UAnimatedView>
     );
   };
 

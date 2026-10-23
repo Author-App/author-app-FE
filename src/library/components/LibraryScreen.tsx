@@ -1,6 +1,7 @@
 import React, { memo, useCallback } from 'react';
 import { YStack } from 'tamagui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTabBarInset } from '@/src/navigations/hooks/useTabBarInset';
 
 import AppLoader from '@/src/components/core/loaders/AppLoader';
 import { URefreshableList } from '@/src/components/core/layout/uRefreshableList';
@@ -15,7 +16,8 @@ import { useLibraryData } from '../hooks/useLibraryData';
 import type { BookResponse } from '@/src/types/api/library.types';
 
 const LibraryScreen: React.FC = () => {
-  const { top, bottom } = useSafeAreaInsets();
+  const { top } = useSafeAreaInsets();
+  const { clearance } = useTabBarInset();
 
   const {
     books,
@@ -58,14 +60,14 @@ const LibraryScreen: React.FC = () => {
   const renderContent = () => {
     if (isLoading && books.length === 0) {
       return (
-        <YStack jc="center" ai="center" flex={1} pb={64 + Math.max(bottom, 24)}>
+        <YStack jc="center" ai="center" flex={1} pb={clearance}>
           <AppLoader size={150} bg="$transparent" />
         </YStack>
       );
     }
 
     if (isError) {
-      return <UScreenError message="We couldn't load your library. Please check your connection and try again." onRetry={refetch} pb={64 + Math.max(bottom, 24)} />;
+      return <UScreenError message="We couldn't load your library. Please check your connection and try again." onRetry={refetch} pb={clearance} />;
     }
 
     return (
@@ -80,7 +82,7 @@ const LibraryScreen: React.FC = () => {
         onRefresh={handleRefresh}
         contentContainerStyle={{
           paddingTop: 16,
-          paddingBottom: 64 + Math.max(bottom, 24),
+          paddingBottom: clearance,
           flexGrow: 1,
         }}
       />

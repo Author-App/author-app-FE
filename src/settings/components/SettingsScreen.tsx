@@ -2,6 +2,7 @@ import React, { memo } from 'react';
 import { ScrollView } from 'react-native';
 import { YStack, Switch } from 'tamagui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTabBarInset } from '@/src/navigations/hooks/useTabBarInset';
 
 import AppLoader from '@/src/components/core/loaders/AppLoader';
 import UScreenLayout from '@/src/components/core/layout/UScreenLayout';
@@ -15,7 +16,8 @@ import { useSettingsData } from '../hooks/useSettingsData';
 
 
 const SettingsScreen = () => {
-  const { top, bottom } = useSafeAreaInsets();
+  const { top } = useSafeAreaInsets();
+  const { clearance } = useTabBarInset();
 
   const {
     user,
@@ -66,7 +68,7 @@ const SettingsScreen = () => {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingBottom: 64 + Math.max(bottom, 24),
+          paddingBottom: clearance,
         }}
       >
         <SettingsHeader />

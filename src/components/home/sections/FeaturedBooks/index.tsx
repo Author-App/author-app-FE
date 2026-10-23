@@ -1,11 +1,11 @@
-import React, { memo, useCallback, useMemo } from 'react';
+import React, { memo, useCallback } from 'react';
 import { FlatList, ListRenderItem } from 'react-native';
 import { YStack } from 'tamagui';
 
 import type { HomeBook } from '@/src/home/types/home.types';
-import { HORIZONTAL_PADDING, getCardDimensions } from './constants';
-import BookCard from './BookCard';
+import BookCard, { BOOK_GAP } from './BookCard';
 import SectionHeader from '../SectionHeader';
+import { HOME_GUTTER } from '../constants';
 
 interface FeaturedBooksProps {
   title: string;
@@ -22,9 +22,6 @@ const FeaturedBooks: React.FC<FeaturedBooksProps> = ({
   onPressItem,
   isAudiobook,
 }) => {
-  // Responsive card dimensions
-  const { cardWidth, imageHeight } = useMemo(() => getCardDimensions(), []);
-
   const renderItem: ListRenderItem<HomeBook> = useCallback(
     ({ item, index }) => (
       <BookCard
@@ -32,11 +29,9 @@ const FeaturedBooks: React.FC<FeaturedBooksProps> = ({
         onPress={() => onPressItem(item)}
         index={index}
         isAudiobook={isAudiobook}
-        cardWidth={cardWidth}
-        imageHeight={imageHeight}
       />
     ),
-    [onPressItem, isAudiobook, cardWidth, imageHeight]
+    [onPressItem, isAudiobook]
   );
 
   const keyExtractor = useCallback((item: HomeBook) => item.id, []);
@@ -44,11 +39,8 @@ const FeaturedBooks: React.FC<FeaturedBooksProps> = ({
   if (!data.length) return null;
 
   return (
-    <YStack py={24}>
-      <SectionHeader
-        title={title}
-        subtitle={subtitle}
-      />
+    <YStack gap={12}>
+      <SectionHeader title={title} subtitle={subtitle} />
 
       <FlatList
         data={data}
@@ -56,9 +48,7 @@ const FeaturedBooks: React.FC<FeaturedBooksProps> = ({
         keyExtractor={keyExtractor}
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{
-          paddingHorizontal: HORIZONTAL_PADDING,
-        }}
+        contentContainerStyle={{ paddingHorizontal: HOME_GUTTER, gap: BOOK_GAP }}
       />
     </YStack>
   );

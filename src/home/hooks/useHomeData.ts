@@ -18,7 +18,8 @@ interface UseHomeDataReturn {
   isRefreshing: boolean;
   isError: boolean;
   errorMessage: string | null;
-  refetch: () => void;
+  /** Resolves with the request's result, so a caller can react to a failed refresh */
+  refetch: ReturnType<typeof useGetHomeFeedQuery>['refetch'];
 }
 
 export const useHomeData = (): UseHomeDataReturn => {

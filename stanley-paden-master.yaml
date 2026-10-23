@@ -1,0 +1,119 @@
+### Stanley Paden
+label: React Native application, live on App Store + Play Store
+stack: [React Native, Expo, TypeScript, Expo Router, Redux Toolkit, RTK Query,
+  Tamagui, EAS, Stripe, Sentry, Expo Push Notifications, Reanimated, Zod,
+  Formik, Jest, React Native Testing Library, Detox]
+my_role: Sole front-end developer
+start: 2025-10
+end: 2026-09
+status: live
+domain: media
+priority: 1
+tags: [mobile, ci-cd, ownership, integration, payments, testing, design]
+links:
+  - label: App Store
+    url: apps.apple.com/ca/app/stanley-paden/id6761315194
+  - label: Play Store
+    url: play.google.com/store/apps/details?id=com.swiftreflex.stanleypaden
+claim_boundary:
+  can_claim:
+    - Built the app solo and shipped it to both stores personally; 97.4% of the
+      current TypeScript is mine by git blame
+    - Built the release pipeline and can walk through every stage of it
+    - Handled Apple and Google review, including a rejection and its fix
+    - Set up the entire test suite and the Detox E2E runner from nothing
+    - Designed the app. No designs were supplied; the visual language, colour and
+      type system, screen layouts, information architecture, and the reader and
+      player interfaces were mine, proposed to the client and approved
+  cannot_claim:
+    - The backend. It was consumed, not built. Stripe webhooks, the order state
+      machine, the Lulu print integration and signed-URL generation are all server side
+    - In-app purchases. The subscription screen is UI only, with RevenueCat pending;
+      nothing is charged through it
+    - Scale or traffic; a single-author audience, not a high-volume app
+    - Content and roadmap decisions, which sat with the client, meaning what gets published
+      and which features exist. The design of all of it is mine
+    - Any production metric. No DAU, crash-free rate or latency figure exists outside
+      Sentry, and none has been pulled
+  required_qualifiers:
+    - 'The 30 minute figure is the native build only, not time to reach users;
+      store review adds days on Apple and hours on Google'
+    - 'Coverage is about 20% of statements by design: the suite targets the data
+      layer, auth and the home feed rather than the whole app'
+    - 'One E2E flow, iOS simulator only; Android E2E is configured but not enabled yet'
+    - 'The CMS is a separate codebase and is not shown in this repo'
+unverified:
+  - 'Whether the nightly Detox workflow has ever completed green on a GitHub macOS
+    runner. The workflow is written and correct on reading; the run history has not
+    been checked'
+bullets:
+  - id: stanley-paden-app
+    priority: 1
+    tags: [mobile, ownership]
+    text: 'Sole front-end developer on a production React Native (Expo) app covering 7 content types, from podcasts and videos to community chat, events, e-books and audiobooks; built the CMS behind it and handled both store releases myself.'
+    short: 'Sole front-end developer on a production React Native app covering 7 content types, and built the CMS behind it.'
+    metric:
+      value: '7 content types'
+      source: measured
+      method: 'Counted in the shipped app'
+  - id: stanley-paden-design
+    priority: 1
+    tags: [mobile, design, ownership]
+    text: 'Designed the app end to end from no supplied designs, covering 7 content types, with a Tamagui colour and type token system, defining every screen layout and the e-book reader and audiobook player interfaces.'
+    short: 'Designed the app end to end from no supplied designs across 7 content types with a Tamagui token system.'
+    metric:
+      value: '7 content types designed from scratch'
+      source: measured
+      method: 'Counted in the shipped app'
+  - id: stanley-paden-cicd
+    priority: 1
+    tags: [mobile, ci-cd]
+    text: 'Cut deploy time to roughly 3 minute OTA updates against roughly 30 minute native rebuilds, with a path-based CI/CD pipeline running GitHub Actions PR checks and tests into EAS Build, EAS Update and EAS Submit.'
+    short: 'Cut deploy time to roughly 3 minute OTA updates from roughly 30 minute native rebuilds with a path-based EAS pipeline.'
+    metric:
+      value: 'roughly 3 min OTA updates against roughly 30 min native rebuilds'
+      source: measured
+      method: 'Observed pipeline run times in GitHub Actions and EAS'
+  - id: stanley-paden-testing
+    priority: 1
+    tags: [mobile, testing]
+    text: 'Grew automated test coverage from zero to 175 tests across 16 suites with Jest, React Native Testing Library and Detox, covering the Redux Toolkit Query data layer, authentication and full-screen integration flows.'
+    short: 'Grew automated test coverage from zero to 175 tests across 16 suites with Jest, React Native Testing Library and Detox.'
+    metric:
+      value: '175 tests across 16 suites, 19.57% statement coverage'
+      source: measured
+      method: 'pnpm test and pnpm test:coverage, 2026-09'
+  - id: stanley-paden-ota-guard
+    priority: 2
+    tags: [mobile, ci-cd]
+    text: 'Eliminated silent zero-reach OTA releases with per-platform runtime-version guards in GitHub Actions and EAS Update, failing the job when the local app version does not match the latest build on the channel.'
+    short: 'Eliminated silent zero-reach OTA releases with per-platform runtime-version guards in GitHub Actions.'
+  - id: stanley-paden-e2e
+    priority: 2
+    tags: [mobile, testing, ci-cd]
+    text: 'Extended testing to the device with Detox end-to-end coverage running nightly on a macOS GitHub Actions runner, driving a Release build against the real backend to catch keyboard, animation-idle and keychain failures.'
+    short: 'Extended testing to the device with Detox end-to-end coverage running nightly on a macOS GitHub Actions runner.'
+  - id: stanley-paden-auth
+    priority: 2
+    tags: [mobile, architecture]
+    text: 'Stopped concurrent 401s racing to overwrite the session with a single-flight token refresh in Redux Toolkit Query, holding refresh tokens in the device keychain through expo-secure-store.'
+    short: 'Stopped concurrent 401s racing to overwrite the session with single-flight token refresh in Redux Toolkit Query.'
+  - id: stanley-paden-push
+    priority: 2
+    tags: [mobile, integration]
+    text: 'Built Expo push notifications with token registration on app open, triggered by new content or a manual CMS send, deep linking to the relevant screen, alongside Reanimated animations and Sentry crash reporting.'
+    short: 'Built Expo push notifications with deep linking to the relevant screen, plus Reanimated animations and Sentry.'
+  - id: stanley-paden-cms
+    priority: 2
+    tags: [mobile, cms, ownership]
+    text: 'Built the content management system behind the app so the client could publish across every content type without developer involvement.'
+    short: 'Built the CMS behind the app so the client could publish without a developer.'
+  - id: stanley-paden-stripe
+    priority: 3
+    tags: [mobile, payments, integration]
+    text: 'Integrated Stripe for physical book purchases inside the app.'
+  - id: stanley-paden-reader
+    priority: 3
+    tags: [mobile, integration]
+    text: 'Made books readable offline after first open with an e-book reader and audiobook player built on react-native-pdf and expo-file-system, caching signed URLs and syncing reading position with the server.'
+    short: 'Made books readable offline after first open with on-device caching in expo-file-system and server-synced progress.'

@@ -4,13 +4,19 @@ import { TamaguiTextElement, Text, TextProps } from 'tamagui';
 import { TextVariant } from '@/src/components/core/types/text/textVariant';
 
 export type FontFamily = {
-  fontFamily?: '$cormorantgaramond' | '$adamina' | '$dmsans' | '$dmmono' | '$playfair';
+  fontFamily?:
+    | '$cormorantgaramond'
+    | '$adamina'
+    | '$dmsans'
+    | '$dmmono'
+    | '$playfair'
+    | '$orbitron'
+    | '$jura'
+    | '$inter';
 };
 export interface UTextProps
-  extends Omit<
-    TextProps,
-    'fontFamily' | 'fontSize' | 'letterSpacing'
-  >,
+  // fontSize and letterSpacing may override the variant for one-off artboard sizes
+  extends Omit<TextProps, 'fontFamily'>,
   FontFamily {
   variant?: TextVariant;
 }
@@ -142,6 +148,35 @@ const getVariantStyle = (variant: TextVariant): StylesType => {
         fontSize: 32,
         lineHeight: 40,
       };
+
+    // --- Redesign type scale. Design letter spacing is in em, converted here to px (size * em).
+    case 'display-xl':
+      return { fontFamily: '$orbitron', fontWeight: '900', fontSize: 26, lineHeight: 32, letterSpacing: 1.04, textTransform: 'uppercase' };
+    // wordmark-lg is wordmark at 26/14 size, same 0.12em spacing, so scaling one lands exactly on the other
+    case 'wordmark-lg':
+      return { fontFamily: '$orbitron', fontWeight: '900', fontSize: 26, lineHeight: 32, letterSpacing: 3.12, textTransform: 'uppercase' };
+    case 'wordmark':
+      return { fontFamily: '$orbitron', fontWeight: '900', fontSize: 14, lineHeight: 18, letterSpacing: 1.68, textTransform: 'uppercase' };
+    case 'display-l':
+      return { fontFamily: '$orbitron', fontWeight: '900', fontSize: 22, lineHeight: 28, letterSpacing: 0.66, textTransform: 'uppercase' };
+    case 'display-m':
+      return { fontFamily: '$orbitron', fontWeight: '700', fontSize: 16, lineHeight: 22, letterSpacing: 0.64, textTransform: 'uppercase' };
+    case 'display-s':
+      return { fontFamily: '$orbitron', fontWeight: '700', fontSize: 13, lineHeight: 18, letterSpacing: 0.26, textTransform: 'uppercase' };
+    case 'label-button':
+      return { fontFamily: '$orbitron', fontWeight: '700', fontSize: 14, lineHeight: 18, letterSpacing: 1.12, textTransform: 'uppercase' };
+    case 'meta':
+      return { fontFamily: '$jura', fontWeight: '700', fontSize: 11, lineHeight: 14, letterSpacing: 1.54, textTransform: 'uppercase' };
+    case 'meta-s':
+      return { fontFamily: '$jura', fontWeight: '700', fontSize: 10, lineHeight: 12, letterSpacing: 1.4, textTransform: 'uppercase' };
+    case 'meta-pill':
+      return { fontFamily: '$jura', fontWeight: '700', fontSize: 12, lineHeight: 16, letterSpacing: 1.68, textTransform: 'uppercase' };
+    case 'body':
+      return { fontFamily: '$inter', fontWeight: '400', fontSize: 15, lineHeight: 24, letterSpacing: 0 };
+    case 'link':
+      return { fontFamily: '$inter', fontWeight: '600', fontSize: 14, lineHeight: 20, letterSpacing: 0 };
+    case 'body-s':
+      return { fontFamily: '$inter', fontWeight: '400', fontSize: 13, lineHeight: 18, letterSpacing: 0 };
     default:
       return baseStyles;
   }

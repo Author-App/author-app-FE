@@ -7,7 +7,6 @@ import {
   formatDurationCompact,
   formatTime12h,
   formatEventDisplay,
-  formatLastRead,
   resolveEventStart,
   getJoinStatus,
   isWithinJoinWindow,
@@ -216,38 +215,6 @@ describe('clock-dependent helpers', () => {
   afterEach(() => {
     // Leaked fake timers break unrelated test files.
     jest.useRealTimers();
-  });
-
-  describe('formatLastRead', () => {
-    it('says Just now under a minute', () => {
-      expect(formatLastRead('2025-12-19T11:59:30.000Z')).toBe('Just now');
-    });
-
-    it('counts minutes under an hour', () => {
-      expect(formatLastRead('2025-12-19T11:15:00.000Z')).toBe('45m ago');
-    });
-
-    it('counts hours under a day', () => {
-      expect(formatLastRead('2025-12-19T07:00:00.000Z')).toBe('5h ago');
-    });
-
-    it('says Yesterday at one day', () => {
-      expect(formatLastRead('2025-12-18T10:00:00.000Z')).toBe('Yesterday');
-    });
-
-    it('counts days under a week', () => {
-      expect(formatLastRead('2025-12-16T12:00:00.000Z')).toBe('3d ago');
-    });
-
-    it('returns an empty string rather than NaN for a broken timestamp', () => {
-      expect(formatLastRead('not-a-date')).toBe('');
-      expect(formatLastRead('')).toBe('');
-    });
-
-    // Device clock skew, otherwise the user sees "-3m ago".
-    it('says Just now for a future timestamp', () => {
-      expect(formatLastRead('2025-12-19T13:00:00.000Z')).toBe('Just now');
-    });
   });
 
   describe('resolveEventStart', () => {

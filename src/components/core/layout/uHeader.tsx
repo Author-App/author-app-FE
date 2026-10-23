@@ -5,6 +5,7 @@ import { ColorTokens, XStack, YStack, YStackProps } from 'tamagui';
 import USpacer from '@/src/components/core/layout/uSpacer';
 import UText, { UTextProps } from '@/src/components/core/text/uText';
 import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
+import UGradientText from '@/src/components/core/text/uGradientText';
 
 interface UHeaderProps extends YStackProps {
   title?: string;
@@ -15,7 +16,7 @@ interface UHeaderProps extends YStackProps {
   safeAreaDisabled?: boolean;
   textProps?: Partial<UTextProps>;
   headerColor?: ColorTokens | 'transparent';
-  /** Use new premium design with accent bar */
+  /** premium: the tab screen title (Explore, Library, Profile, Settings) */
   variant?: 'default' | 'premium';
   /** Animation delay in ms */
   animationDelay?: number;
@@ -36,37 +37,30 @@ const UHeader = ({
 }: UHeaderProps) => {
   const { top } = useSafeAreaInsets();
 
-  // Premium variant - new design with accent bar
+  // Premium: the tab screen title. Gradient Orbitron title, cyan Jura subtitle.
   if (variant === 'premium') {
     return (
       <YStack
-        pt={safeAreaDisabled ? 16 : top + 16}
+        pt={safeAreaDisabled ? 12 : top + 12}
         pb={20}
-        px={20}
+        px={16}
         bg={headerColor}
         {...props}
       >
         <UAnimatedView animation="fadeInUp" duration={400} delay={animationDelay}>
-          <YStack gap={4}>
-            <XStack ai="center" jc="space-between">
-              <XStack ai="center" gap={8} flex={1}>
-                <YStack w={4} h={28} bg="$brandCrimson" br={2} />
-                <UText variant="playfair-xl" color="$white" {...textProps}>
-                  {title}
-                </UText>
-              </XStack>
-              {rightControl && (
-                <XStack>{rightControl}</XStack>
-              )}
-            </XStack>
-            {subtitle && (
-              <XStack pl={12}>
-                <UText variant="text-sm" color="$neutral1" opacity={0.8}>
+          <XStack ai="center" jc="space-between" gap={12}>
+            <YStack flex={1} gap={6}>
+              <UGradientText variant="display-xl" accessibilityRole="header" {...textProps}>
+                {title}
+              </UGradientText>
+              {subtitle && (
+                <UText variant="meta-pill" fontWeight="600" color="$accentCyan">
                   {subtitle}
                 </UText>
-              </XStack>
-            )}
-          </YStack>
+              )}
+            </YStack>
+            {rightControl && <XStack>{rightControl}</XStack>}
+          </XStack>
         </UAnimatedView>
       </YStack>
     );

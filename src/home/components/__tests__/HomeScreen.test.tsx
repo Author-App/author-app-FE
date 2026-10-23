@@ -11,6 +11,13 @@ jest.mock('expo-router', () => ({
   router: { push: (...args: unknown[]) => mockPush(...args) },
 }));
 
+// The toast library is a boundary we do not own. The mock is what the refresh test reads.
+const mockToastShow = jest.fn();
+jest.mock('react-native-toast-message', () => ({
+  __esModule: true,
+  default: { show: (...args: unknown[]) => mockToastShow(...args), hide: jest.fn() },
+}));
+
 const renderHome = (store: HomeStore) => renderWithProviders(<HomeScreen />, { store });
 
 describe('HomeScreen', () => {
@@ -46,21 +53,23 @@ describe('HomeScreen', () => {
     release();
 
     await waitFor(() => expect(screen.getByText('Feed is down')).toBeOnTheScreen());
-    expect(screen.getByText('Try Again')).toBeOnTheScreen();
+    expect(screen.getByText('Retry')).toBeOnTheScreen();
+    // A first load has nothing stale to warn about: the error card already says it
+    expect(mockToastShow).not.toHaveBeenCalled();
   });
 
-  it('retries the request when the user presses Try Again', async () => {
+  it('retries the request when the user presses Retry', async () => {
     const first = mockFetchJson({ message: 'Feed is down' }, 500);
     renderHome(store);
     first.release();
-    await waitFor(() => expect(screen.getByText('Try Again')).toBeOnTheScreen());
+    await waitFor(() => expect(screen.getByText('Retry')).toBeOnTheScreen());
 
     const second = mockFetchJson(
       buildHomeFeed({
         trendingBooks: [{ id: 'b1', title: 'Dune', price: 9.99, currency: 'USD' }],
       })
     );
-    fireEvent.press(screen.getByText('Try Again'));
+    fireEvent.press(screen.getByText('Retry'));
     second.release();
 
     await waitFor(() => expect(screen.getByText('Dune')).toBeOnTheScreen());
@@ -78,15 +87,30 @@ describe('HomeScreen', () => {
     first.release();
     await waitFor(() => expect(screen.getByText('Dune')).toBeOnTheScreen());
 
+    // The failure is ready before the pull, like an offline phone: it lands in
+    // milliseconds, before any "refreshing" frame can render
     const second = mockFetchJson({ message: 'Feed is down' }, 500);
-    store.dispatch(homeApi.endpoints.getHomeFeed.initiate(undefined, { forceRefetch: true }));
     second.release();
+    // Pull to refresh. The section header sits in the feed's ScrollView, not a carousel.
+    fireEvent.scroll(screen.getByText('Featured Books'), {
+      nativeEvent: { contentOffset: { y: -100 } },
+    });
 
     await waitFor(() =>
       expect(store.getState().homeApi.queries['getHomeFeed(undefined)']?.status).toBe('rejected')
     );
     expect(screen.getByText('Dune')).toBeOnTheScreen();
-    expect(screen.queryByText('Try Again')).not.toBeOnTheScreen();
+    expect(screen.queryByText('Retry')).not.toBeOnTheScreen();
+    // The feed is stale now, so the user is told, with a way to try again
+    await waitFor(() =>
+      expect(mockToastShow).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'error',
+          text2: "Couldn't refresh. Showing saved content.",
+          props: { action: expect.objectContaining({ label: 'Retry' }) },
+        })
+      )
+    );
   });
 
   describe('tapping content', () => {

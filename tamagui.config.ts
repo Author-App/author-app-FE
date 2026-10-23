@@ -45,9 +45,9 @@ const bodyFont = createFont({
     1: 0.0,
   },
   face: {
-    700: { normal: 'InterBold' },
-    800: { normal: 'InterBold' },
-    900: { normal: 'InterBold' },
+    700: { normal: 'Inter-Bold' },
+    800: { normal: 'Inter-Bold' },
+    900: { normal: 'Inter-Bold' },
   },
 });
 
@@ -85,9 +85,9 @@ const headingFont = createFont({
     6: 'none',
   },
   face: {
-    700: { normal: 'InterBold' },
-    800: { normal: 'InterBold' },
-    900: { normal: 'InterBold' },
+    700: { normal: 'Inter-Bold' },
+    800: { normal: 'Inter-Bold' },
+    900: { normal: 'Inter-Bold' },
   },
 });
 
@@ -313,6 +313,34 @@ const interAltFont = createFont({
   },
 });
 
+// --- Redesign fonts. Sizes live in UText variants, so each font only maps weight to file.
+const orbitronFont = createFont({
+  family: 'Orbitron-Bold',
+  size: { true: 16 },
+  face: {
+    700: { normal: 'Orbitron-Bold' },
+    900: { normal: 'Orbitron-Black' },
+  },
+});
+
+const juraFont = createFont({
+  family: 'Jura-Bold',
+  size: { true: 12 },
+  face: {
+    700: { normal: 'Jura-Bold' },
+  },
+});
+
+const interFont = createFont({
+  family: 'Inter',
+  size: { true: 15 },
+  face: {
+    400: { normal: 'Inter' },
+    500: { normal: 'Inter-Medium' },
+    600: { normal: 'Inter-SemiBold' },
+    700: { normal: 'Inter-Bold' },
+  },
+});
 
 const tokens = createTokens({
   ...config.tokens,
@@ -331,7 +359,6 @@ const tokens = createTokens({
     brandGray: '#8E9BAE',
 
     // --- New theme
-    gold: "#D4AF37",
     bg: '#F8F2E6',
     bg2: '#F3E9D6',
     surface: '#FFFFFF',
@@ -339,7 +366,6 @@ const tokens = createTokens({
     border: '#E2D4B7',
 
     text: '#2A2A2A',
-    textMuted: '#6C6C6C',
     heading: '#0B2A4A',
 
     primary: '#0B2A4A',
@@ -366,7 +392,6 @@ const tokens = createTokens({
 
     success: '#3A955A',
     warning: '#D9A441',
-    danger: '#C34A4A',
 
     tabActive: '#0B2A4A',
     tabInactive: '#A8A19A',
@@ -430,7 +455,6 @@ const tokens = createTokens({
     negative0: '#FFEBEF',
     negative1: '#FFDBE1',
     negative2: '#FFA2B8',
-    negative3: '#FFC8E',
     negative4: '#FF3685',
     negative6: '#D20031',
     negative7: '#A60026',
@@ -554,6 +578,47 @@ const tokens = createTokens({
     transparent: 'transparent',
 
     facebook: '#1976D2',
+
+    // --- Redesign (dark only). Source: Claude Design "Stanley Paden App Redesign", Main.dc.html
+    bgPage: '#020103',
+    textPrimary: '#FFFFFF',
+    textSecondary: '#D1D5DB',
+    textMuted: '#9CA3AF',
+    accentPurple: '#D8B4FE',
+    accentCyan: '#67E8F9',
+    // glow colors are for shadows and borders, never text
+    glowPurple: '#8736F7',
+    glowCyan: '#00F0FF',
+    gold: '#F59E0B',
+    danger: '#F87171',
+    borderSoft: 'rgba(255,255,255,0.1)',
+    ctaStart: '#7C3AED',
+    ctaEnd: '#0E7490',
+
+    // Glass recipes. *Solid is the Android fill, where no BlurView is used.
+    glass: 'rgba(15,12,35,0.6)',
+    glassSolid: '#0F0C23',
+    glassBorder: 'rgba(255,255,255,0.08)',
+    glassGlowBorder: 'rgba(135,54,247,0.3)',
+    glassCyan: 'rgba(10,25,45,0.7)',
+    glassCyanBorder: 'rgba(0,240,255,0.3)',
+
+    // Gradient text: textPrimary → magentaGlow → glowPurple
+    magentaGlow: '#F2A8FF',
+    inputBorder: 'rgba(255,255,255,0.14)',
+    inputErrorBg: 'rgba(45,10,10,0.55)',
+    inputErrorBorder: 'rgba(248,113,113,0.7)',
+    errorText: '#FCA5A5',
+    footerBg: 'rgba(2,1,3,0.94)',
+    outlineCyan: 'rgba(103,232,249,0.6)',
+    track: 'rgba(255,255,255,0.1)',
+    dotInactive: 'rgba(255,255,255,0.25)',
+    coverBorder: 'rgba(255,255,255,0.12)',
+    errorToastText: '#FECACA',
+
+    tabBarBg: 'rgba(10,8,24,0.78)',
+    pillActiveBg: 'rgba(147,51,234,0.28)',
+    pillActiveBorder: 'rgba(192,132,252,0.55)',
   },
   size: {
     ...config.tokens.size,
@@ -580,6 +645,9 @@ const tamaguiConfig = createTamagui({
     interAlt: interAltFont,
     cormorantgaramond: cormorantGaramondFont,
     playfair: playfairFont,
+    orbitron: orbitronFont,
+    jura: juraFont,
+    inter: interFont,
   },
   settings: {
     allowedStyleValues: 'somewhat-strict-web',

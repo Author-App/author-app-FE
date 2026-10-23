@@ -103,7 +103,7 @@ Do not re-argue these.
 
 **Stack:** Expo SDK 54, React Native 0.81, Reanimated 4, RNTL 13.3, pnpm, Redux Toolkit with RTK Query, Expo Router, Tamagui, Stripe, Sentry.
 
-**Tests that exist:** 16 Jest suites, 175 tests, plus 1 Detox E2E test on a separate runner.
+**Tests that exist:** 17 Jest suites, 172 tests, plus 1 Detox E2E test on a separate runner.
 
 | File | Kind | State |
 |---|---|---|
@@ -119,8 +119,9 @@ Do not re-argue these.
 | `src/components/core/inputs/__tests__/uSearchbar.test.tsx` | component | Good. `changeText`, clear button, disabled. |
 | `src/store/selectors/__tests__/homeSelectors.test.ts` | unit, real store | Good. Seeds the RTK Query cache. |
 | `src/home/hooks/__tests__/useHomeData.test.tsx` | hook, async | Good. Real store, only `fetch` faked. |
-| `src/home/components/__tests__/HomeScreen.test.tsx` | integration | Good. Whole screen, real store, only `fetch` and `expo-router` faked. Covers loading, error, retry, stale-feed-on-failed-refresh, and navigation. |
+| `src/home/components/__tests__/HomeScreen.test.tsx` | integration | Good. Whole screen, real store, only `fetch` and `expo-router` faked. Covers loading, error, retry, stale-feed-on-failed-refresh (with the Retry toast, `react-native-toast-message` mocked locally), and navigation. |
 | `src/auth/login/components/__tests__/LoginScreen.test.tsx` | integration | Good. Whole login flow: validation, payload, navigation, toasts, failure keeping the form. Fakes `fetch`, `expo-router`, the toast and `expo-application`. |
+| `src/navigations/__tests__/bottomNavbar.test.tsx` | component | Good. Label only on the active tab, `selected` state, tab press navigates, re-tap resets every tab (product decision). Fakes React Navigation's `state` and `navigation` props; mocks `@expo/vector-icons` locally to stop async font `act()` warnings. |
 | `src/__tests__/smoke.test.tsx` | component | One test. Proves the render pipeline works. |
 | `e2e/login.test.js` | E2E, Detox | Good. Real Release build on a simulator, real backend, real account. Onboarding to login to home. |
 | `src/storage/__tests__/authStorage.test.ts` | unit | **Weak. Needs rewriting.** It mocks `../secureStorage`, which is his own code. Its "lifecycle" test tells a mock to return null then checks it returned null. Needs a fake store that actually holds state, with `expo-secure-store` as the only mock. |
@@ -180,6 +181,7 @@ The app was built fast. Core components are missing accessibility props. That is
 
 Never reach for `UNSAFE_getByType` or a `testID` to route around a missing label. The failing query is the signal.
 
+- `NeonButton`, the primary CTA on 12 screens, rendered `role="button"` without `accessible`, so VoiceOver read its text alone and never said "button". Found when `getByRole('button', { name: 'Sign In' })` failed. Fixed with `accessible`, `accessibilityRole` and `accessibilityState={{ busy }}`.
 - The bottom tab bar was icon-only with no label and no role, so a screen reader announced nothing. Fixed while adding `testID` for Detox: `accessible`, `accessibilityRole`, `accessibilityLabel`, `accessibilityState={{ selected }}`. A dead `accessibilityLabel` prop on `TabItem` was deleted at the same time.
 
 ### Accessibility debt found, not yet fixed
@@ -188,7 +190,7 @@ Never reach for `UNSAFE_getByType` or a `testID` to route around a missing label
 
 ### Layout debt found, not yet fixed
 
-- The Sign In button on `LoginScreen` sits in the outer `YStack` with `jc="space-between"`, outside `UKeyboardAvoidingView`. It never moves when the keyboard opens, so the primary button of the screen is covered while the user types. Not a blocker, the user can press Done or tap empty space to dismiss, but it is why the E2E cannot tap it.
+- None open. All six auth screens now dock their CTA above the keyboard through `AuthLayout` (`src/auth/components/`). The Detox login test still submits with `tapReturnKey()`, which keeps working.
 
 ## How to pick which components to test
 
@@ -210,6 +212,7 @@ He liked this shape. Keep it.
 - `formatEventDisplay` in `helper.ts` uses `Intl.DateTimeFormat` with a `timeZone` option. Node has full ICU so it works under Jest. Hermes on device may not. Tests could be green while the app is wrong. Unconfirmed on a real device.
 - `renderWithProviders` now has Redux, SafeAreaProvider and Tamagui. The real root in `app/_layout.tsx` also has GestureHandlerRootView, Stripe, PersistGate and FontProvider. A screen that needs one of those will fail and name it. **Do not add them pre-emptively.**
 - The E2E logs into the real backend with a real account. It is not hermetic. A backend outage fails it, and it writes real session data. This is why it must not run on every PR.
+- Onboarding, Login and every auth CTA now run endless Reanimated loops (the wordmark glitch and the `NeonButton scan` sweep). They pause on blur, but the screen under test is never idle. The Detox login flow has not been rerun since. If it times out on a screen that looks right, this is the cause: disable synchronisation for that step.
 - Only the elements the login flow touches carry a `testID`: `onboarding-login`, `login-email`, `login-password`, `home-screen`, `tab-*`. Add one only when an E2E actually needs it. Never add a `testID` to route around a missing accessibility label in a component test.
 
 ## Next targets, in order

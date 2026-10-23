@@ -7,7 +7,7 @@ import Animated, {
   withRepeat,
   withTiming,
 } from 'react-native-reanimated';
-import { getTokenValue, View, ViewProps } from 'tamagui';
+import { View, ViewProps } from 'tamagui';
 
 interface USkeletonProps extends ViewProps {
   colors?: [string, string, string];
@@ -19,11 +19,8 @@ interface USkeletonProps extends ViewProps {
 const AnimatedView = Animated.createAnimatedComponent(View);
 //This is a skeleton component that is used to display a loading state for a component. could be designed according to the component's design
 const USkeleton = ({
-  colors = [
-    getTokenValue('$primary0'),
-    getTokenValue('$neutral2'),
-    getTokenValue('$neutral1'),
-  ],
+  // Dark shimmer from the design system: faint white pulsing to a faint purple
+  colors = ['rgba(255,255,255,0.05)', 'rgba(135,54,247,0.12)', 'rgba(255,255,255,0.05)'],
   height = 20,
   width = 100,
   radius = 8,

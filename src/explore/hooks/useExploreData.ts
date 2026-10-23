@@ -44,8 +44,6 @@ interface UseExploreDataReturn {
   refetch: () => void;
   handleJoinCommunity: (id: string) => Promise<void>;
   handleExitCommunity: (id: string) => Promise<void>;
-  isJoining: boolean;
-  isExiting: boolean;
 }
 
 export const useExploreData = (): UseExploreDataReturn => {
@@ -74,8 +72,8 @@ export const useExploreData = (): UseExploreDataReturn => {
     skip: activeTab !== 'Community',
   });
 
-  const [joinCommunity, { isLoading: isJoining }] = useJoinCommunityMutation();
-  const [exitCommunity, { isLoading: isExiting }] = useExitCommunityMutation();
+  const [joinCommunity] = useJoinCommunityMutation();
+  const [exitCommunity] = useExitCommunityMutation();
 
   // Select data from cache using memoized selectors
   const articles = useAppSelector(selectArticles);
@@ -184,7 +182,7 @@ export const useExploreData = (): UseExploreDataReturn => {
     async (id: string) => {
       try {
         await joinCommunity(id).unwrap();
-        communitiesQuery.refetch();
+        await communitiesQuery.refetch();
       } catch (error) {
         console.error('Join community failed', error);
       }
@@ -196,7 +194,7 @@ export const useExploreData = (): UseExploreDataReturn => {
     async (id: string) => {
       try {
         await exitCommunity(id).unwrap();
-        communitiesQuery.refetch();
+        await communitiesQuery.refetch();
       } catch (error) {
         console.error('Exit community failed', error);
       }
@@ -221,7 +219,5 @@ export const useExploreData = (): UseExploreDataReturn => {
     refetch,
     handleJoinCommunity,
     handleExitCommunity,
-    isJoining,
-    isExiting,
   };
 };

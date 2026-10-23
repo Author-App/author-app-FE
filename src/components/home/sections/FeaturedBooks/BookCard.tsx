@@ -1,121 +1,55 @@
 import React, { memo } from 'react';
-import { YStack, XStack } from 'tamagui';
-import { Feather, Ionicons } from '@expo/vector-icons';
+import { YStack } from 'tamagui';
 
 import UText from '@/src/components/core/text/uText';
+import UBadge from '@/src/components/core/display/uBadge';
 import ULocalImage from '@/src/components/core/image/uLocalImage';
 import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
 import { formatPriceOrFree } from '@/src/utils/currency';
 import type { HomeBook } from '@/src/home/types/home.types';
-import { ITEM_GAP } from './constants';
+
+// Fixed 2:3 cover, the same on every phone; wider screens just show more of the row
+const COVER_WIDTH = 120;
+const COVER_HEIGHT = 180;
+export const BOOK_GAP = 14;
 
 export interface BookCardProps {
   item: HomeBook;
   onPress: () => void;
   index: number;
   isAudiobook?: boolean;
-  cardWidth: number;
-  imageHeight: number;
 }
 
-const BookCard = memo(({ item, onPress, index, isAudiobook, cardWidth, imageHeight }: BookCardProps) => {
+const BookCard = memo(({ item, onPress, index, isAudiobook }: BookCardProps) => {
+  const price = formatPriceOrFree(item.price, item.currency);
 
   return (
     <UAnimatedView animation="fadeInUp" delay={index * 80} duration={400}>
       <YStack
-        w={cardWidth}
-        mr={ITEM_GAP}
+        w={COVER_WIDTH}
+        gap={8}
         onPress={onPress}
         pressStyle={{ scale: 0.96, opacity: 0.9 }}
         animation="quick"
+        accessible
+        accessibilityRole="button"
+        accessibilityLabel={`${item.title}, ${item.hasAccess ? 'owned' : price}`}
       >
-        <YStack position="relative">
-          <YStack
-            w={cardWidth}
-            h={imageHeight}
-            borderRadius={12}
-            overflow="hidden"
-            shadowColor="$black"
-            shadowOffset={{ width: 0, height: 8 }}
-            shadowOpacity={0.25}
-            shadowRadius={16}
-            elevation={8}
-          >
-            <ULocalImage
-              source={{ uri: item.image }}
-              width={cardWidth}
-              height={imageHeight}
-              contentFit="cover"
-            />
+        {/* Shadow on the outer view: overflow hidden on the same view would clip it */}
+        <YStack w={COVER_WIDTH} h={COVER_HEIGHT} br={12} boxShadow="0 14px 28px rgba(0,0,0,0.7)">
+          <YStack flex={1} br={12} overflow="hidden" borderWidth={1} borderColor="$glassBorder">
+            <ULocalImage source={{ uri: item.image }} width="100%" height="100%" contentFit="cover" />
           </YStack>
-
-          {isAudiobook && (
-            <XStack
-              position="absolute"
-              top={8}
-              right={8}
-              bg="$brandCrimson"
-              px={8}
-              py={4}
-              borderRadius={6}
-              ai="center"
-              gap={4}
-            >
-              <Feather name="headphones" size={10} color="white" />
-              <UText variant="text-xs" color="$white" fontWeight="600">
-                Audio
-              </UText>
-            </XStack>
-          )}
-
-          {item.hasAccess && (
-            <XStack
-            position="absolute"
-            bottom={5}
-            left={10}
-            bg="#FFD700"
-            px={8}
-            py={4}
-            br={6}
-            ai="center"
-            gap={4}
-            zIndex={22}
-            shadowColor="#000"
-            shadowOffset={{ width: 0, height: 2 }}
-            shadowOpacity={0.4}
-            shadowRadius={3}
-            elevation={4}
-          >
-            <Ionicons name="checkmark-circle" size={12} color="#132440" />
-            <UText variant="text-xs" color="$brandNavy" fontWeight="700">
-              Owned
-            </UText>
-          </XStack>
-          )}
+          {isAudiobook && <UBadge label="Audio" tone="cyan" pos="absolute" top={8} right={8} />}
+          {item.hasAccess && <UBadge label="Owned" tone="purple" pos="absolute" bottom={8} left={8} />}
         </YStack>
 
-        <YStack mt={12} px={4} gap={4}>
-          <UText
-            variant="text-sm"
-            color="$white"
-            fontWeight="500"
-            numberOfLines={2}
-            lineHeight={18}
-          >
-            {item.title}
-          </UText>
-          <XStack
-            bg="rgba(59, 151, 151, 0.2)"
-            px={10}
-            py={4}
-            borderRadius={6}
-            alignSelf="flex-start"
-          >
-            <UText variant="text-sm" color="$brandTeal" fontWeight="600">
-              {formatPriceOrFree(item.price, item.currency)}
-            </UText>
-          </XStack>
-        </YStack>
+        <UText variant="display-s" fontSize={12} lineHeight={16} color="$textPrimary" numberOfLines={2}>
+          {item.title}
+        </UText>
+        <UText variant="body-s" fontSize={12} lineHeight={16} color="$textMuted">
+          {price}
+        </UText>
       </YStack>
     </UAnimatedView>
   );

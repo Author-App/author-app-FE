@@ -8,7 +8,7 @@ import USearchbar from '@/src/components/core/inputs/uSearchbar';
 import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
 import UButtonTabs, { TabItem } from '@/src/components/core/buttons/uButtonTabs';
 
-const EXPLORE_TABS: TabItem<ExploreTabType>[] = [
+export const EXPLORE_TABS: TabItem<ExploreTabType>[] = [
   { label: 'Blogs', icon: 'book-outline' },
   { label: 'Podcasts', icon: 'headset-outline' },
   { label: 'Videos', icon: 'play-circle-outline' },
@@ -31,7 +31,7 @@ const ExploreHeader: React.FC<ExploreHeaderProps> = ({
   ...props
 }) => {
   return (
-    <YStack gap={20} mb={16} {...props}>
+    <YStack gap={16} mb={16} {...props}>
       <UHeader
         variant="premium"
         title="Explore"
@@ -40,24 +40,21 @@ const ExploreHeader: React.FC<ExploreHeaderProps> = ({
         pb={0}
       />
 
-      <YStack px={20} gap={20}>
-        <UAnimatedView animation="fadeInUp" duration={400} delay={100}>
+      <UAnimatedView animation="fadeInUp" duration={400} delay={100}>
+        <YStack px={16}>
           <USearchbar
             search={search}
             onSearchChange={onSearchChange}
             placeholder={`Search ${activeTab.toLowerCase()}...`}
             onClear={() => onSearchChange('')}
           />
-        </UAnimatedView>
+        </YStack>
+      </UAnimatedView>
 
-        <UAnimatedView animation="fadeInUp" duration={400} delay={200}>
-          <UButtonTabs
-            tabs={EXPLORE_TABS}
-            activeTab={activeTab}
-            onTabChange={onTabChange}
-          />
-        </UAnimatedView>
-      </YStack>
+      {/* No side padding: the pills scroll edge to edge from the 16pt gutter */}
+      <UAnimatedView animation="fadeInUp" duration={400} delay={200}>
+        <UButtonTabs tabs={EXPLORE_TABS} activeTab={activeTab} onTabChange={onTabChange} />
+      </UAnimatedView>
     </YStack>
   );
 };

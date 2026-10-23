@@ -1,10 +1,13 @@
 import React, { memo } from 'react';
-import { Dimensions } from 'react-native';
-import { YStack } from 'tamagui';
+import { Dimensions, StyleSheet } from 'react-native';
+import { XStack, YStack } from 'tamagui';
 import { LinearGradient } from 'expo-linear-gradient';
 import UText from '@/src/components/core/text/uText';
+import UBadge from '@/src/components/core/display/uBadge';
+import UCtaGradient from '@/src/components/core/display/uCtaGradient';
 import ULocalImage from '@/src/components/core/image/uLocalImage';
-import type { BannerItem, BannerType } from '@/src/home/types/home.types';
+import type { BannerItem } from '@/src/home/types/home.types';
+import { HOME_GUTTER } from '@/src/components/home/sections/constants';
 
 interface BannerCardProps {
   item: BannerItem;
@@ -13,97 +16,85 @@ interface BannerCardProps {
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-const LABEL_TOKEN_KEYS: Record<BannerType, string> = {
-  book: '$brandCrimson',
-  audiobook: '$brandTeal',
-  event: '$brandOcean',
-  article: '$brandNavy',
-  paperback: '$brandOcean',
-  hardcover: '$brandNavy',
-};
-
-export const BANNER_HEIGHT = 380;
-export const HORIZONTAL_PADDING = 20;
-export const CARD_WIDTH = SCREEN_WIDTH - HORIZONTAL_PADDING * 2;
+const BANNER_HEIGHT = 212;
+export const CARD_WIDTH = SCREEN_WIDTH - HOME_GUTTER * 2;
 export const CARD_GAP = 12;
 
+// Same 2:3 cover as the book cards, 16 from the top and bottom of the card
+const COVER_WIDTH = 120;
+const COVER_HEIGHT = 180;
+const INSET = 20;
+
 const BannerCard = memo(({ item, onPress }: BannerCardProps) => {
-  const labelTokenKey = LABEL_TOKEN_KEYS[item.type];
+  const label = item.label || item.type;
 
   return (
+    // Glow on the outer view: overflow hidden on the same view would clip it
     <YStack
       w={CARD_WIDTH}
-      h={BANNER_HEIGHT - 60}
-      mr={CARD_GAP}
-      borderRadius={24}
-      overflow="hidden"
+      h={BANNER_HEIGHT}
+      br={24}
+      boxShadow="0 0 30px rgba(135,54,247,0.25)"
       onPress={onPress}
       pressStyle={{ scale: 0.98, opacity: 0.95 }}
       animation="quick"
+      accessible
+      accessibilityRole="button"
+      accessibilityLabel={`${label}: ${item.title}`}
     >
-      {/* Background Image */}
-      <ULocalImage
-        source={{ uri: item.image }}
-        width={CARD_WIDTH}
-        height={BANNER_HEIGHT - 60}
-        contentFit="cover"
-        style={{ position: 'absolute' }}
-      />
+      <YStack flex={1} br={24} overflow="hidden" borderWidth={1} borderColor="$glassGlowBorder">
+        <LinearGradient
+          colors={['#1B0F3F', '#0A1A30']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={StyleSheet.absoluteFill}
+        />
 
-      {/* Gradient Overlay */}
-      <LinearGradient
-        colors={['transparent', 'rgba(0,0,0,0.3)', 'rgba(0,0,0,0.85)']}
-        locations={[0, 0.5, 1]}
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: '70%',
-        }}
-      />
-
-      {/* Content */}
-      <YStack flex={1} jc="flex-end" p={24}>
-        {/* Type Label */}
+        {/* The banner image as a 2:3 cover. A wide image is centre-cropped to fill it. */}
         <YStack
-          alignSelf="flex-start"
-          bg={labelTokenKey as any}
-          px={12}
-          py={6}
-          borderRadius={6}
-          mb={12}
+          pos="absolute"
+          right={INSET}
+          top={16}
+          w={COVER_WIDTH}
+          h={COVER_HEIGHT}
+          br={10}
+          boxShadow="0 16px 32px rgba(0,0,0,0.7)"
         >
-          <UText
-            variant="text-xs"
-            color="$white"
-            fontWeight="600"
-            textTransform="uppercase"
-          >
-            {item.label || item.type}
-          </UText>
+          <YStack flex={1} br={10} overflow="hidden" borderWidth={1} borderColor="$coverBorder">
+            <ULocalImage source={{ uri: item.image }} width="100%" height="100%" contentFit="cover" />
+          </YStack>
         </YStack>
 
-        {/* Title */}
-        <UText
-          variant="playfair-xl"
-          color="$white"
-          numberOfLines={2}
-          mb={item.subtitle ? 8 : 0}
+        {/* Text column stops before the cover, so it never runs under it on narrow screens */}
+        <YStack
+          pos="absolute"
+          left={INSET}
+          top={INSET}
+          bottom={INSET}
+          right={INSET + COVER_WIDTH + 16}
+          jc="space-between"
         >
-          {item.title}
-        </UText>
+          <UBadge label={label} tone="cyan" />
 
-        {/* Subtitle */}
-        {item.subtitle && (
-          <UText
-            variant="text-sm"
-            color="rgba(255,255,255,0.7)"
-            numberOfLines={1}
-          >
-            {item.subtitle}
-          </UText>
-        )}
+          <YStack gap={6}>
+            <UText variant="display-m" fontSize={18} lineHeight={22} letterSpacing={0} color="$textPrimary" numberOfLines={2}>
+              {item.title}
+            </UText>
+            {item.subtitle && (
+              <UText variant="body-s" color="$textSecondary" numberOfLines={2}>
+                {item.subtitle}
+              </UText>
+            )}
+          </YStack>
+
+          {/* Looks like a button, but the whole card is the press target */}
+          <XStack alignSelf="flex-start" h={36} px={16} br={999} ai="center" boxShadow="0 0 16px rgba(135,54,247,0.45)">
+            <UCtaGradient radius={999} />
+            <UText variant="label-button" fontSize={11} lineHeight={14} letterSpacing={0.88} color="$textPrimary">
+              View
+            </UText>
+          </XStack>
+        </YStack>
       </YStack>
     </YStack>
   );
