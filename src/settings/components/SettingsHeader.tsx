@@ -9,6 +9,7 @@ const SettingsHeader: React.FC = () => {
       title="Settings"
       subtitle="Manage your account"
       safeAreaDisabled
+      pb={20}
     />
   );
 };

@@ -31,10 +31,7 @@ const HomeSkeleton = () => (
       <USkeleton width={150} height={16} radius={8} />
       <XStack gap={14}>
         {[0, 1, 2].map((i) => (
-          <YStack key={i} gap={8}>
-            <USkeleton width={120} height={180} radius={12} />
-            <USkeleton width={96} height={12} radius={6} />
-          </YStack>
+          <USkeleton key={i} width={136} height={250} radius={16} />
         ))}
       </XStack>
     </YStack>

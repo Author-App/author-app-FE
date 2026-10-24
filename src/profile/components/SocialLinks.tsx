@@ -3,8 +3,6 @@ import { Alert, Linking } from 'react-native';
 import { XStack, YStack, getTokenValue } from 'tamagui';
 import { Ionicons } from '@expo/vector-icons';
 
-import UText from '@/src/components/core/text/uText';
-import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
 import type { SocialLink } from '../types/profile.types';
 import haptics from '@/src/utils/haptics';
 
@@ -21,8 +19,6 @@ const PLATFORM_ICONS: Record<SocialLink['platform'], keyof typeof Ionicons.glyph
 };
 
 const SocialLinks: React.FC<SocialLinksProps> = ({ links }) => {
-  const white = getTokenValue('$white', 'color');
-
   const openLink = useCallback(async (url: string) => {
     haptics.medium();
     try {
@@ -38,36 +34,29 @@ const SocialLinks: React.FC<SocialLinksProps> = ({ links }) => {
   }, []);
 
   return (
-    <UAnimatedView animation="fadeInUp" duration={400} delay={200}>
-      <YStack gap={12}>
-        <UText variant="text-sm" color="$neutral1" fontWeight="500">
-          Connect with the Author
-        </UText>
-
-        <XStack gap={12}>
-          {links.map((link) => (
-            <YStack
-              key={link.id}
-              w={48}
-              h={48}
-              br={24}
-              bg="$brandOcean"
-              ai="center"
-              jc="center"
-              onPress={() => openLink(link.url)}
-              pressStyle={{ scale: 0.95, opacity: 0.8 }}
-              animation="quick"
-            >
-              <Ionicons
-                name={PLATFORM_ICONS[link.platform]}
-                size={22}
-                color={white}
-              />
-            </YStack>
-          ))}
-        </XStack>
-      </YStack>
-    </UAnimatedView>
+    <XStack gap={10} mt={4}>
+      {links.map((link) => (
+        <YStack
+          key={link.id}
+          w={44}
+          h={44}
+          br={22}
+          ai="center"
+          jc="center"
+          bg="rgba(255,255,255,0.05)"
+          borderWidth={1}
+          borderColor="rgba(255,255,255,0.12)"
+          onPress={() => openLink(link.url)}
+          pressStyle={{ scale: 0.95, opacity: 0.8 }}
+          animation="quick"
+          accessible
+          accessibilityRole="link"
+          accessibilityLabel={link.label}
+        >
+          <Ionicons name={PLATFORM_ICONS[link.platform]} size={20} color={getTokenValue('$accentPurple', 'color')} />
+        </YStack>
+      ))}
+    </XStack>
   );
 };
 

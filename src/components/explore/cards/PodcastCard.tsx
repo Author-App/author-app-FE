@@ -16,7 +16,7 @@ interface PodcastCardProps {
   onPress: (data: MediaResponse) => void;
 }
 
-const PodcastCard: React.FC<PodcastCardProps> = ({ data, onPress, ...props }) => {
+const PodcastCard: React.FC<PodcastCardProps> = ({ data, onPress }) => {
   const duration = formatDurationCompact(data.durationSec);
 
   const hasProgress = !!data.progress && data.progress.percentage > 0;

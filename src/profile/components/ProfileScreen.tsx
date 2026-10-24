@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React from 'react';
 import { ScrollView } from 'react-native';
 import { YStack } from 'tamagui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -6,7 +6,6 @@ import { useTabBarInset } from '@/src/navigations/hooks/useTabBarInset';
 
 import { useProfileData } from '../hooks/useProfileData';
 
-import AppLoader from '@/src/components/core/loaders/AppLoader';
 import UScreenLayout from '@/src/components/core/layout/UScreenLayout';
 import ProfileHeader from './ProfileHeader';
 import AuthorCard from './AuthorCard';
@@ -17,44 +16,17 @@ import WritingProcess from './WritingProcess';
 const ProfileScreen: React.FC = () => {
   const { top } = useSafeAreaInsets();
   const { clearance } = useTabBarInset();
-  const { author, isLoading, isError } = useProfileData();
-
-  if (isLoading) {
-    return (
-      <UScreenLayout>
-        <AppLoader />
-      </UScreenLayout>
-    );
-  }
-
-  // TODO: Add error state component when API is integrated
-  if (isError) {
-    return (
-      <UScreenLayout ai="center" jc="center">
-        {/* Error state */}
-        <></>
-      </UScreenLayout>
-    );
-  }
+  const { author } = useProfileData();
 
   return (
     <UScreenLayout pt={top}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          paddingBottom: clearance,
-        }}
-      >
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: clearance }}>
         <ProfileHeader />
 
-        <YStack px={20} gap={16}>
-          <AuthorCard
-            name={author.name}
-            title={author.title}
-            image={author.image}
-          />
-
-          <SocialLinks links={author.socialLinks} />
+        <YStack px={16} gap={20}>
+          <AuthorCard name={author.name} title={author.title} image={author.image}>
+            <SocialLinks links={author.socialLinks} />
+          </AuthorCard>
 
           <AboutSection bio={author.bio} />
 
@@ -68,4 +40,4 @@ const ProfileScreen: React.FC = () => {
   );
 };
 
-export default ProfileScreen
+export default ProfileScreen;

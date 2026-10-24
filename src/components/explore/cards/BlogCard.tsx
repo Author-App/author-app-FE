@@ -11,7 +11,7 @@ interface BlogCardProps {
   onPress: (data: ArticleResponse) => void;
 }
 
-const BlogCard: React.FC<BlogCardProps> = ({ data, onPress, ...props }) => {
+const BlogCard: React.FC<BlogCardProps> = ({ data, onPress }) => {
   const meta = [
     data.publishedAt ? formatDate(data.publishedAt) : null,
     data.readTime ? `${data.readTime.value} ${data.readTime.unit} read` : null,

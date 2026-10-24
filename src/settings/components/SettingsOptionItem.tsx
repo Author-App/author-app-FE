@@ -4,70 +4,71 @@ import { Ionicons } from '@expo/vector-icons';
 import { haptics } from '@/src/utils/haptics';
 
 import UText from '@/src/components/core/text/uText';
-import type { SettingsOption } from '../types/settings.types';
+import type { SettingsOption, SettingsOptionTone } from '../types/settings.types';
+
+const TILES = {
+  purple: { bg: 'rgba(135,54,247,0.16)', icon: '#D8B4FE' },
+  cyan: { bg: 'rgba(0,240,255,0.1)', icon: '#67E8F9' },
+  gold: { bg: 'rgba(245,158,11,0.14)', icon: '#FBBF24' },
+  muted: { bg: 'rgba(255,255,255,0.06)', icon: '#FECACA' },
+  danger: { bg: 'rgba(248,113,113,0.18)', icon: '#F87171' },
+} as const satisfies Record<SettingsOptionTone, { bg: string; icon: string }>;
 
 interface SettingsOptionItemProps {
   option: SettingsOption;
   rightComponent?: React.ReactNode;
+  /** Danger Zone rows use the red subtitle */
+  isDangerZone?: boolean;
 }
 
 const SettingsOptionItem: React.FC<SettingsOptionItemProps> = ({
   option,
   rightComponent,
+  isDangerZone,
 }) => {
-  const teal = getTokenValue('$brandTeal', 'color');
-  const crimson = getTokenValue('$brandCrimson', 'color');
-  const neutral = getTokenValue('$neutral1', 'color');
-
-  const iconColor = option.destructive ? crimson : teal;
-  const textColor = option.destructive ? '$brandCrimson' : '$white';
+  const tile = TILES[option.tone];
 
   return (
     <XStack
+      minHeight={64}
       px={16}
-      py={14}
+      py={12}
+      gap={14}
       ai="center"
-      jc="space-between"
       pressStyle={{ opacity: 0.7, bg: 'rgba(255,255,255,0.03)' }}
       onPress={() => {
         haptics.light();
         option.onPress?.();
       }}
+      // A row with a switch is not a button: the switch is the control
+      accessible={!rightComponent}
+      accessibilityRole={rightComponent ? undefined : 'button'}
+      accessibilityLabel={rightComponent ? undefined : `${option.label}, ${option.subtitle ?? ''}`}
     >
-      {/* Left: Icon + Label + Subtitle */}
-      <XStack ai="center" gap={14} flex={1}>
-        <YStack
-          w={36}
-          h={36}
-          br={12}
-          bg={option.destructive ? 'rgba(184, 64, 84, 0.15)' : '$brandOcean'}
-          ai="center"
-          jc="center"
-        >
-          <Ionicons
-            name={option.icon as any}
-            size={18}
-            color={iconColor}
-          />
-        </YStack>
-        <YStack flex={1} gap={2}>
-          <UText variant="text-md" color={textColor} fontWeight="500">
-            {option.label}
-          </UText>
-          {option.subtitle && (
-            <UText variant="text-xs" color="$neutral1" opacity={0.7}>
-              {option.subtitle}
-            </UText>
-          )}
-        </YStack>
-      </XStack>
+      <YStack w={36} h={36} br={12} ai="center" jc="center" bg={tile.bg}>
+        <Ionicons name={option.icon as any} size={18} color={tile.icon} />
+      </YStack>
 
-      {/* Right: Custom component or arrow */}
-      {rightComponent ? (
-        rightComponent
-      ) : option.showArrow !== false ? (
-        <Ionicons name="chevron-forward" size={18} color={neutral} />
-      ) : null}
+      <YStack flex={1} gap={2}>
+        <UText
+          variant="body"
+          fontWeight="600"
+          lineHeight={20}
+          color={option.tone === 'danger' ? '$danger' : '$textPrimary'}
+        >
+          {option.label}
+        </UText>
+        {option.subtitle && (
+          <UText variant="body-s" color={isDangerZone ? '$errorText' : '$textMuted'}>
+            {option.subtitle}
+          </UText>
+        )}
+      </YStack>
+
+      {rightComponent ??
+        (option.showArrow !== false && (
+          <Ionicons name="chevron-forward" size={18} color={getTokenValue('$textMuted', 'color')} />
+        ))}
     </XStack>
   );
 };

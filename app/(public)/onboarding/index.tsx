@@ -186,7 +186,7 @@ const OnboardingScreen = memo(() => {
           </UAnimatedView>
 
           <UAnimatedView animation="fadeInUp" delay={450}>
-            <NeonButton secondary onPress={handleSignupPress} title="Sign Up" />
+            <NeonButton tone="secondary" onPress={handleSignupPress} title="Sign Up" />
           </UAnimatedView>
         </YStack>
       </YStack>

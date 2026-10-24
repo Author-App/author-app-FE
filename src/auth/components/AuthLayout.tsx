@@ -52,7 +52,7 @@ const AuthLayout = ({ title, subtitle, children, footer }: AuthLayoutProps) => {
       </ScrollView>
 
       {/* The spacer is the keyboard height while it is open, the home indicator inset while closed */}
-      <YStack px={24} pt={12} bg="$footerBg" borderTopWidth={1} borderTopColor="$glassBorder">
+      <YStack px={24} pt={12}>
         <UAnimatedView animation="fadeInUp" delay={600}>
           {footer}
         </UAnimatedView>

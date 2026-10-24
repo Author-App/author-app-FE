@@ -93,7 +93,7 @@ export const FieldError = ({ message }: { message: string }) => (
 );
 
 const GlassInput = forwardRef<any, UInputProps>(
-  ({ label, error, secureTextEntry, onFocus, onBlur, ...props }, ref) => {
+  ({ label, error, secureTextEntry, multiline, onFocus, onBlur, ...props }, ref) => {
     const [focused, setFocused] = useState(false);
     const [hidden, setHidden] = useState(true);
 
@@ -108,11 +108,14 @@ const GlassInput = forwardRef<any, UInputProps>(
           </UText>
         )}
         <XStack
-          h={50}
+          // Multiline grows from 120; single line is fixed at 50
+          h={multiline ? undefined : 50}
+          minHeight={multiline ? 120 : undefined}
+          py={multiline ? 12 : 0}
           br={14}
           pl={14}
           pr={secureTextEntry ? 4 : 14}
-          ai="center"
+          ai={multiline ? 'flex-start' : 'center'}
           borderWidth={1}
           bg={state === 'error' ? '$inputErrorBg' : state === 'focused' ? '$glassCyan' : '$glass'}
           borderColor={
@@ -128,7 +131,10 @@ const GlassInput = forwardRef<any, UInputProps>(
             ref={ref}
             unstyled
             flex={1}
-            h="100%"
+            h={multiline ? undefined : '100%'}
+            minHeight={multiline ? 96 : undefined}
+            multiline={multiline}
+            textAlignVertical={multiline ? 'top' : 'center'}
             fontFamily="$inter"
             fontSize={15}
             color="$textPrimary"

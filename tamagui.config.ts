@@ -609,7 +609,6 @@ const tokens = createTokens({
     inputErrorBg: 'rgba(45,10,10,0.55)',
     inputErrorBorder: 'rgba(248,113,113,0.7)',
     errorText: '#FCA5A5',
-    footerBg: 'rgba(2,1,3,0.94)',
     outlineCyan: 'rgba(103,232,249,0.6)',
     track: 'rgba(255,255,255,0.1)',
     dotInactive: 'rgba(255,255,255,0.25)',

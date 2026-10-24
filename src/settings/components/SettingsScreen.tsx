@@ -1,11 +1,14 @@
 import React, { memo } from 'react';
 import { ScrollView } from 'react-native';
-import { YStack, Switch } from 'tamagui';
+import { YStack } from 'tamagui';
+import * as Application from 'expo-application';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTabBarInset } from '@/src/navigations/hooks/useTabBarInset';
 
 import AppLoader from '@/src/components/core/loaders/AppLoader';
 import UScreenLayout from '@/src/components/core/layout/UScreenLayout';
+import UText from '@/src/components/core/text/uText';
+import USwitch from '@/src/components/core/inputs/uSwitch';
 import SettingsHeader from './SettingsHeader';
 import UserProfileCard from './UserProfileCard';
 import SettingsSection from './SettingsSection';
@@ -37,30 +40,22 @@ const SettingsScreen = () => {
     submitBugReport,
   } = useSettingsData();
 
-  const renderOptionRightComponent = (optionId: string) => {
-    if (optionId === 'notifications') {
-      return (
-        <Switch
-          checked={notificationsEnabled}
-          onCheckedChange={toggleNotifications}
-          size="$3"
-          bg={notificationsEnabled ? '$brandTeal' : 'rgba(255,255,255,0.2)'}
-        >
-          <Switch.Thumb
-            animation="quick"
-            bg="$white"
-            elevate
-            borderRadius={20}
-          />
-        </Switch>
-      );
-    }
-    return undefined;
-  };
+  const renderOptionRightComponent = (optionId: string) =>
+    optionId === 'notifications' ? (
+      <USwitch
+        checked={notificationsEnabled}
+        onCheckedChange={toggleNotifications}
+        label="Push Notifications"
+      />
+    ) : undefined;
 
   // Loading state - only for initial load
   if (isLoading && !user) {
-    return <AppLoader />;
+    return (
+      <UScreenLayout jc="center" ai="center" pb={clearance}>
+        <AppLoader size={150} bg="transparent" />
+      </UScreenLayout>
+    );
   }
 
   return (
@@ -73,34 +68,37 @@ const SettingsScreen = () => {
       >
         <SettingsHeader />
 
-        {/* Profile Card - Handles error state internally */}
-        <YStack mt={8}>
+        <YStack px={16} gap={22}>
           <UserProfileCard user={user} isError={isError} onRetry={refetch} />
-        </YStack>
 
-        {/* Settings Sections */}
-        <YStack mt={28} px={20} gap={24}>
-          {settingsSections.map((section, sectionIndex) => (
-            <SettingsSection
-              key={section.id}
-              section={section}
-              animationDelay={200 + sectionIndex * 100}
-              isDangerZone={section.id === 'danger'}
-            >
-              {section.options.map((option, optionIndex) => (
-                <React.Fragment key={option.id}>
-                  <SettingsOptionItem
-                    option={option}
-                    rightComponent={renderOptionRightComponent(option.id)}
-                  />
-                  {/* Divider between items */}
-                  {optionIndex < section.options.length - 1 && (
-                    <YStack h={1} bg="rgba(255,255,255,0.05)" mx={16} />
-                  )}
-                </React.Fragment>
-              ))}
-            </SettingsSection>
-          ))}
+          {settingsSections.map((section, sectionIndex) => {
+            const isDangerZone = section.id === 'danger';
+            return (
+              <SettingsSection
+                key={section.id}
+                section={section}
+                animationDelay={200 + sectionIndex * 100}
+                isDangerZone={isDangerZone}
+              >
+                {section.options.map((option, optionIndex) => (
+                  <React.Fragment key={option.id}>
+                    <SettingsOptionItem
+                      option={option}
+                      isDangerZone={isDangerZone}
+                      rightComponent={renderOptionRightComponent(option.id)}
+                    />
+                    {optionIndex < section.options.length - 1 && (
+                      <YStack h={1} bg={isDangerZone ? 'rgba(255,60,60,0.2)' : '$glassBorder'} />
+                    )}
+                  </React.Fragment>
+                ))}
+              </SettingsSection>
+            );
+          })}
+
+          <UText variant="meta-s" color="$textMuted" textAlign="center">
+            Version {Application.nativeApplicationVersion}
+          </UText>
         </YStack>
       </ScrollView>
 

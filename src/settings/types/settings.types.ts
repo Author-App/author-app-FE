@@ -8,16 +8,17 @@
 // Re-export UserData from central types for backwards compatibility
 export type { UserData, GetMeResponse as GetMeResponseData, DeleteAccountResponse } from '@/src/types/api/user.types';
 
+// Icon tile tint. danger also turns the label red.
+export type SettingsOptionTone = 'purple' | 'cyan' | 'gold' | 'muted' | 'danger';
+
 // Settings option item
 export interface SettingsOption {
   id: string;
   label: string;
   icon: string; // Ionicons name
-  iconColor?: string;
+  tone: SettingsOptionTone;
   onPress: () => void;
-  rightComponent?: React.ReactNode;
   showArrow?: boolean;
-  destructive?: boolean;
   subtitle?: string;
 }
 
@@ -25,6 +26,5 @@ export interface SettingsOption {
 export interface SettingsSection {
   id: string;
   title: string;
-  icon?: string;
   options: SettingsOption[];
 }

@@ -57,12 +57,12 @@ const UImage = ({
         <XStack
           w="100%"
           h="100%"
-          bg="$brandCrimson"
+          bg="$glassSolid"
           ai="center"
           jc="center"
           flexGrow={1}
         >
-          <UText color="$white" variant="text-md">
+          <UText color="$textPrimary" variant="display-s" fontSize={16} lineHeight={20}>
             {fallBackText.slice(0, 3)}
           </UText>
         </XStack>

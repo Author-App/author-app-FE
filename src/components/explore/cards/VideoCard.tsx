@@ -1,9 +1,10 @@
 import React, { memo } from 'react';
-import { YStack, getTokenValue } from 'tamagui';
+import { XStack, YStack, getTokenValue } from 'tamagui';
 import { Ionicons } from '@expo/vector-icons';
 import UText from '@/src/components/core/text/uText';
 import ULocalImage from '@/src/components/core/image/uLocalImage';
 import UProgressBar from '@/src/components/core/display/uProgressBar';
+import UCtaGradient from '@/src/components/core/display/uCtaGradient';
 import { formatDuration } from '@/src/utils/helper';
 import type { MediaResponse } from '@/src/explore/types/explore.types';
 
@@ -12,7 +13,7 @@ interface VideoCardProps {
   onPress: (data: MediaResponse) => void;
 }
 
-const VideoCard: React.FC<VideoCardProps> = ({ data, onPress, ...props }) => {
+const VideoCard: React.FC<VideoCardProps> = ({ data, onPress }) => {
   const hasProgress = !!data.progress && data.progress.percentage > 0;
   const duration = formatDuration(data.durationSec);
 
@@ -41,18 +42,11 @@ const VideoCard: React.FC<VideoCardProps> = ({ data, onPress, ...props }) => {
           position="absolute"
         />
 
-        <YStack
-          w={56}
-          h={56}
-          br={28}
-          ai="center"
-          jc="center"
-          bg="rgba(2,1,3,0.55)"
-          borderWidth={1}
-          borderColor="rgba(255,255,255,0.25)"
-        >
-          <Ionicons name="play" size={22} color={getTokenValue('$textPrimary', 'color')} />
-        </YStack>
+        {/* Same play button as the podcast card */}
+        <XStack w={44} h={44} br={22} ai="center" jc="center" boxShadow="0 0 16px rgba(0,240,255,0.35)">
+          <UCtaGradient radius={22} />
+          <Ionicons name="play" size={18} color={getTokenValue('$textPrimary', 'color')} />
+        </XStack>
 
         <YStack pos="absolute" right={10} bottom={10} px={8} py={4} br={8} bg="rgba(2,1,3,0.75)">
           <UText variant="meta-s" color="$textPrimary">

@@ -23,7 +23,7 @@ type NeonButtonProps = ButtonProps & {
     style?: StyleProp<ViewStyle>
     children?: React.ReactNode
     title?: string
-    secondary?: boolean
+    tone?: NeonButtonTone
     /** A light band sweeps across every few seconds. Opt-in: it would distract on Buy or checkout */
     scan?: boolean
 }
@@ -92,25 +92,36 @@ const ScanSweep = () => {
     )
 }
 
-/** The primary CTA: gradient pill with a purple glow. secondary: cyan outline pill. */
+// Design system buttons. primary is the gradient CTA; the rest are flat fills.
+const TONES = {
+    primary: { bg: '$ctaStart', border: 'transparent', glow: '0 0 22px rgba(135,54,247,0.5)', text: '$textPrimary' },
+    secondary: { bg: 'transparent', border: '$outlineCyan', glow: 'none', text: '$accentCyan' },
+    danger: { bg: '#B91C1C', border: '#F87171', glow: '0 0 18px rgba(255,60,60,0.4)', text: '$textPrimary' },
+    neutral: { bg: 'rgba(255,255,255,0.06)', border: 'rgba(255,255,255,0.2)', glow: 'none', text: '$textPrimary' },
+} as const
+
+export type NeonButtonTone = keyof typeof TONES
+
 export function NeonButton({
     children,
     style,
     loading,
     title,
-    secondary,
+    tone = 'primary',
     scan,
     ...props }: NeonButtonProps) {
+    const colors = TONES[tone]
+
     return (
         <Button
             h={52}
             px={24}
             br={9999}
-            backgroundColor={secondary ? 'transparent' : '$ctaStart'}
-            borderWidth={secondary ? 1 : 0}
-            borderColor="$outlineCyan"
-            boxShadow={secondary ? undefined : '0 0 22px rgba(135,54,247,0.5)'}
-            pressStyle={{ opacity: 0.9, backgroundColor: secondary ? 'transparent' : '$ctaStart', borderColor: '$outlineCyan' }}
+            backgroundColor={colors.bg}
+            borderWidth={tone === 'primary' ? 0 : 1}
+            borderColor={colors.border}
+            boxShadow={colors.glow}
+            pressStyle={{ opacity: 0.9, backgroundColor: colors.bg, borderColor: colors.border }}
             // Tamagui sets role but not accessible; without it VoiceOver never says "button"
             accessible
             accessibilityRole="button"
@@ -120,12 +131,12 @@ export function NeonButton({
             // After the spread: a press while loading would submit twice
             disabled={loading || props.disabled}
         >
-            {!secondary && <UCtaGradient radius={9999} />}
+            {tone === 'primary' && <UCtaGradient radius={9999} />}
             {scan && !loading && <ScanSweep />}
             {loading ? (
-                <ActivityIndicator size="small" color={getTokenValue('$textPrimary', 'color')} />
+                <ActivityIndicator size="small" color={getTokenValue(colors.text, 'color')} />
             ) : title ? (
-                <UText variant="label-button" color={secondary ? '$accentCyan' : '$textPrimary'}>
+                <UText variant="label-button" color={colors.text}>
                     {title}
                 </UText>
             ) : (

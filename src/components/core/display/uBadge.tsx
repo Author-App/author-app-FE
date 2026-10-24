@@ -14,10 +14,12 @@ const TONES = {
 interface UBadgeProps extends XStackProps {
   label: string;
   tone?: keyof typeof TONES;
+  /** Over a photo or cover: a dark backing, since the tinted fill alone disappears */
+  onImage?: boolean;
 }
 
 /** Small uppercase pill chip: format, type, savings. */
-const UBadge = ({ label, tone = 'purple', ...props }: UBadgeProps) => {
+const UBadge = ({ label, tone = 'purple', onImage, ...props }: UBadgeProps) => {
   const colors = TONES[tone];
 
   return (
@@ -27,7 +29,7 @@ const UBadge = ({ label, tone = 'purple', ...props }: UBadgeProps) => {
       py={4}
       br={999}
       borderWidth={1}
-      bg={colors.bg}
+      bg={onImage ? 'rgba(2,1,3,0.8)' : colors.bg}
       borderColor={colors.border}
       {...props}
     >

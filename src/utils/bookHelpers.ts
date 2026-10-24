@@ -20,21 +20,10 @@ export const getBookTypeLabel = (type: BookType): string => {
 };
 
 /**
- * Get badge color token for book type
+ * Badge tone for book type: audio cyan, e-book purple, print gold
  */
-export const getBookTypeColor = (type: BookType): string => {
-  switch (type) {
-    case 'audiobook': return '$brandTeal';
-    case 'ebook': return '$brandCrimson';
-    case 'paperback': return '$brandOcean';
-    case 'hardcover': return '$brandNavy';
-    default: return '$brandCrimson';
-  }
-};
-
-/**
- * Get icon name for book type
- */
-export const getBookTypeIcon = (type: BookType): 'headset' | 'book' => {
-  return type === 'audiobook' ? 'headset' : 'book';
+export const getBookTypeTone = (type: BookType): 'cyan' | 'purple' | 'gold' => {
+  if (type === 'audiobook') return 'cyan';
+  if (isPrintBook(type)) return 'gold';
+  return 'purple';
 };

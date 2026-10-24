@@ -14,6 +14,7 @@ const LibraryHeader: React.FC = () => {
       title="Library"
       subtitle="Your personal collection"
       safeAreaDisabled
+      pb={16}
     />
   );
 };

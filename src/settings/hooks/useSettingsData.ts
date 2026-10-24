@@ -136,13 +136,13 @@ export const useSettingsData = () => {
     {
       id: 'account',
       title: 'Account',
-      icon: 'person-circle-outline',
       options: [
         {
           id: 'edit-profile',
           label: 'Edit Profile',
           subtitle: 'Update your personal information',
-          icon: 'create-outline',
+          icon: 'person-outline',
+          tone: 'purple',
           onPress: navigateToEditProfile,
           showArrow: true,
         },
@@ -150,7 +150,8 @@ export const useSettingsData = () => {
           id: 'change-password',
           label: 'Change Password',
           subtitle: 'Update your security credentials',
-          icon: 'key-outline',
+          icon: 'lock-closed-outline',
+          tone: 'purple',
           onPress: navigateToChangePassword,
           showArrow: true,
         },
@@ -159,13 +160,13 @@ export const useSettingsData = () => {
     {
       id: 'preferences',
       title: 'Preferences',
-      icon: 'options-outline',
       options: [
         {
           id: 'notifications',
           label: 'Push Notifications',
           subtitle: 'Receive updates and alerts',
           icon: 'notifications-outline',
+          tone: 'cyan',
           onPress: () => toggleNotifications(!notificationsEnabled),
           showArrow: false,
         },
@@ -173,7 +174,8 @@ export const useSettingsData = () => {
           id: 'subscription',
           label: 'Subscription',
           subtitle: 'Manage your premium plan',
-          icon: 'diamond-outline',
+          icon: 'star-outline',
+          tone: 'gold',
           onPress: navigateToSubscription,
           showArrow: true,
         },
@@ -182,13 +184,13 @@ export const useSettingsData = () => {
     {
       id: 'support',
       title: 'Support',
-      icon: 'help-circle-outline',
       options: [
         {
           id: 'report-bug',
           label: 'Report A Bug',
           subtitle: 'Help us improve the app',
           icon: 'bug-outline',
+          tone: 'purple',
           onPress: showBugReportModal,
           showArrow: true,
         },
@@ -197,24 +199,24 @@ export const useSettingsData = () => {
     {
       id: 'danger',
       title: 'Danger Zone',
-      icon: 'warning-outline',
       options: [
         {
           id: 'logout',
           label: 'Logout',
           subtitle: 'Sign out of your account',
           icon: 'log-out-outline',
+          tone: 'muted',
           onPress: handleLogout,
-          showArrow: true,
+          showArrow: false,
         },
         {
           id: 'delete-account',
           label: 'Delete Account',
           subtitle: 'Permanently remove your data',
           icon: 'trash-outline',
+          tone: 'danger',
           onPress: showDeleteModal,
-          showArrow: true,
-          destructive: true,
+          showArrow: false,
         },
       ],
     },

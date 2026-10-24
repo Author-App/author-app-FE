@@ -9,7 +9,7 @@ interface EventCardProps {
   onPress: (data: EventResponse) => void;
 }
 
-const EventCard: React.FC<EventCardProps> = ({ data, onPress, ...props }) => {
+const EventCard: React.FC<EventCardProps> = ({ data, onPress }) => {
   const isOnline = data.eventType === 'online';
   const display = formatEventDisplay({
     eventStartUtc: data.eventStartUtc,
