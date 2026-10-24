@@ -1,18 +1,16 @@
 import React, { memo, useState, useEffect, useCallback } from 'react';
 import { StyleSheet } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { XStack, YStack } from 'tamagui';
+import { XStack, YStack, getTokenValue } from 'tamagui';
 import Slider from '@react-native-community/slider';
+import { Ionicons } from '@expo/vector-icons';
 
-import IconPlayCircle from '@/assets/icons/iconPlayCircle';
-import IconPauseCircle from '@/assets/icons/iconPauseCircle';
 import IconRewind10 from '@/assets/icons/iconRewind10';
 import IconForward10 from '@/assets/icons/iconForward10';
 import UText from '@/src/components/core/text/uText';
+import UCtaGradient from '@/src/components/core/display/uCtaGradient';
 import haptics from '@/src/utils/haptics';
 
-import { useAudioPlayer } from './hooks/useAudioPlayer';
-import type { AudioProgressData } from './types/types';
+import type { AudioProgressData, UseAudioPlayerReturn } from './types/types';
 
 interface ProgressDisplayProps {
   isPlaying: boolean;
@@ -93,9 +91,9 @@ const ProgressDisplay = memo(function ProgressDisplay({
         value={displayProgress.progress}
         minimumValue={0}
         maximumValue={100}
-        minimumTrackTintColor="#8B1538"
-        maximumTrackTintColor="rgba(255, 255, 255, 0.2)"
-        thumbTintColor="#FFFFFF"
+        minimumTrackTintColor={getTokenValue('$accentCyan', 'color')}
+        maximumTrackTintColor={getTokenValue('$track', 'color')}
+        thumbTintColor={getTokenValue('$textPrimary', 'color')}
         onSlidingStart={handleSliderStart}
         onValueChange={handleSliderChange}
         onSlidingComplete={handleSliderComplete}
@@ -103,10 +101,10 @@ const ProgressDisplay = memo(function ProgressDisplay({
 
       {/* Time display */}
       <XStack jc="space-between" px={4}>
-        <UText variant="text-xs" color="$neutral3">
+        <UText variant="meta-s" color="$accentCyan">
           {displayProgress.positionText}
         </UText>
-        <UText variant="text-xs" color="$neutral3">
+        <UText variant="meta-s" color="$textMuted">
           {displayProgress.durationText}
         </UText>
       </XStack>
@@ -138,6 +136,9 @@ const PlayerControls = memo(function PlayerControls({
         ai="center"
         jc="center"
         onPress={onRewind}
+        accessible
+        accessibilityRole="button"
+        accessibilityLabel="Rewind 10 seconds"
         pressStyle={{ opacity: 0.7, scale: 0.95 }}
         animation="quick"
       >
@@ -151,24 +152,25 @@ const PlayerControls = memo(function PlayerControls({
         br={36}
         ai="center"
         jc="center"
-        overflow="hidden"
+        boxShadow="0 0 24px rgba(0,240,255,0.35)"
         opacity={isLoading ? 0.5 : 1}
         onPress={onPlayPause}
         disabled={isLoading}
+        accessible
+        accessibilityRole="button"
+        accessibilityLabel={isPlaying ? 'Pause' : 'Play'}
+        accessibilityState={{ disabled: isLoading, busy: isLoading }}
         pressStyle={{ opacity: 0.7, scale: 0.95 }}
         animation="quick"
       >
-        <LinearGradient
-          colors={['#A91D3A', '#8B1538', '#6B1028']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={StyleSheet.absoluteFill}
+        <UCtaGradient radius={36} />
+        {/* The play glyph sits a little left of centre, so nudge it */}
+        <Ionicons
+          name={isPlaying ? 'pause' : 'play'}
+          size={30}
+          color={getTokenValue('$textPrimary', 'color')}
+          style={isPlaying ? undefined : styles.playGlyph}
         />
-        {isPlaying ? (
-          <IconPauseCircle dimen={32} />
-        ) : (
-          <IconPlayCircle dimen={36} />
-        )}
       </YStack>
 
       {/* Forward 10s */}
@@ -178,6 +180,9 @@ const PlayerControls = memo(function PlayerControls({
         ai="center"
         jc="center"
         onPress={onForward}
+        accessible
+        accessibilityRole="button"
+        accessibilityLabel="Forward 10 seconds"
         pressStyle={{ opacity: 0.7, scale: 0.95 }}
         animation="quick"
       >
@@ -188,35 +193,12 @@ const PlayerControls = memo(function PlayerControls({
 });
 
 interface AudioPlayerProps {
-  audioUrl: string | undefined;
-  autoPlay?: boolean;
-  initialPosition?: number;
-  onProgressUpdate?: (data: AudioProgressData) => void;
-  onPlaybackComplete?: () => void;
+  /** From useAudioPlayer, called by the screen so other controls (the mini player) share one player */
+  audio: UseAudioPlayerReturn;
 }
 
-export const AudioPlayer = memo(function AudioPlayer({
-  audioUrl,
-  autoPlay = false,
-  initialPosition = 0,
-  onProgressUpdate,
-  onPlaybackComplete,
-}: AudioPlayerProps) {
-  const {
-    isPlaying,
-    isLoading,
-    togglePlayPause,
-    seekTo,
-    rewind,
-    forward,
-    progressRef,
-    formatTime,
-  } = useAudioPlayer(audioUrl, {
-    autoPlay,
-    initialPosition,
-    onProgressUpdate,
-    onPlaybackComplete,
-  });
+export const AudioPlayer = memo(function AudioPlayer({ audio }: AudioPlayerProps) {
+  const { isPlaying, isLoading, togglePlayPause, seekTo, rewind, forward, progressRef, formatTime } = audio;
 
   const handleRewind = useCallback(() => {
     haptics.light();
@@ -260,4 +242,5 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 40,
   },
+  playGlyph: { marginLeft: 3 },
 });

@@ -1,9 +1,9 @@
 import React, { memo } from 'react';
-import { YStack, XStack } from 'tamagui';
+import { YStack } from 'tamagui';
 
-import IconDuration from '@/assets/icons/iconDuration';
 import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
 import UText from '@/src/components/core/text/uText';
+import UBadge from '@/src/components/core/display/uBadge';
 
 interface VideoInfoProps {
   title: string;
@@ -11,52 +11,26 @@ interface VideoInfoProps {
   description?: string | null;
 }
 
-export const VideoInfo = memo(function VideoInfo({
-  title,
-  duration,
-  description,
-}: VideoInfoProps) {
+export const VideoInfo = memo(function VideoInfo({ title, duration, description }: VideoInfoProps) {
   return (
-    <YStack gap={16} px={16}>
-      {/* Title */}
-      <UAnimatedView animation="fadeInUp" delay={100}>
-        <UText variant="heading-h1" color="$white">
+    <UAnimatedView animation="fadeInUp" delay={100}>
+      <YStack gap={12} px={20}>
+        <UText variant="display-l" color="$textPrimary" accessibilityRole="header">
           {title}
         </UText>
-      </UAnimatedView>
+        <UBadge label={duration} tone="cyan" />
 
-      {/* Duration badge */}
-      <UAnimatedView animation="fadeInUp" delay={200}>
-        <XStack ai="center" gap={8}>
-          <XStack
-            ai="center"
-            gap={6}
-            bg="rgba(169, 29, 58, 0.15)"
-            px={12}
-            py={6}
-            br={20}
-          >
-            <IconDuration dimen={14} />
-            <UText variant="text-sm" color="$brandCrimson">
-              {duration}
+        {description && (
+          <YStack gap={10} mt={20}>
+            <UText variant="display-m" color="$textPrimary" accessibilityRole="header">
+              About this video
             </UText>
-          </XStack>
-        </XStack>
-      </UAnimatedView>
-
-      {/* Description */}
-      {description && (
-        <UAnimatedView animation="fadeInUp" delay={300}>
-          <YStack gap={8} mt={8}>
-            <UText variant="heading-h2" color="$white">
-              About this Video
-            </UText>
-            <UText variant="text-md" color="$neutral3">
+            <UText variant="body" color="$textSecondary">
               {description}
             </UText>
           </YStack>
-        </UAnimatedView>
-      )}
-    </YStack>
+        )}
+      </YStack>
+    </UAnimatedView>
   );
 });

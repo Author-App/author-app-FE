@@ -14,6 +14,8 @@ export function useAudioPlayer(
   } = options;
 
   const isMountedRef = useRef(true);
+  // Seek and autoplay run once per file, not on every status tick
+  const hasStartedRef = useRef(false);
   const player = useExpoAudioPlayer(fileUrl ? { uri: fileUrl } : null, {
     updateInterval: 500,
   });
@@ -43,8 +45,6 @@ export function useAudioPlayer(
           allowsRecording: false,
           interruptionMode: 'doNotMix',
         });
-        player.currentTime = initialPosition / 1000;
-        if (autoPlay) player.play();
       } catch (error) {
         console.error('Error loading audio:', error);
         if (isMountedRef.current) setIsLoading(false);
@@ -52,11 +52,29 @@ export function useAudioPlayer(
     };
 
     configureAudio();
+    hasStartedRef.current = false;
 
     return () => {
       isMountedRef.current = false;
     };
-  }, [autoPlay, fileUrl, initialPosition, player]);
+  }, [fileUrl]);
+
+  // Resume and autoplay once the file is loaded: a seek before that can be dropped.
+  // expo-audio's currentTime is read-only, so seekTo is the only way to move.
+  useEffect(() => {
+    if (!status.isLoaded || hasStartedRef.current) return;
+    hasStartedRef.current = true;
+
+    const start = async () => {
+      try {
+        if (initialPosition > 0) await player.seekTo(initialPosition / 1000);
+        if (autoPlay) player.play();
+      } catch (error) {
+        console.error('Error starting audio:', error);
+      }
+    };
+    start();
+  }, [status.isLoaded, autoPlay, initialPosition, player]);
 
   useEffect(() => {
     if (!isMountedRef.current) return;

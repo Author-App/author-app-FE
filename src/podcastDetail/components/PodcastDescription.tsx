@@ -8,17 +8,14 @@ interface PodcastDescriptionProps {
   description: string;
 }
 
-export const PodcastDescription = memo(function PodcastDescription({
-  description,
-}: PodcastDescriptionProps) {
-  
+export const PodcastDescription = memo(function PodcastDescription({ description }: PodcastDescriptionProps) {
   return (
     <UAnimatedView animation="fadeInUp" delay={300}>
-      <YStack mt={24} gap={12}>
-        <UText variant="heading-h2" color="$white">
-          About this Episode
+      <YStack mt={32} px={20} gap={10}>
+        <UText variant="display-m" color="$textPrimary" accessibilityRole="header">
+          About this episode
         </UText>
-        <UText variant="text-md" color="$neutral3" lineHeight={24}>
+        <UText variant="body" color="$textSecondary">
           {description}
         </UText>
       </YStack>
