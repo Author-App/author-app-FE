@@ -25,10 +25,6 @@ export function useSubscription() {
     ? PLAN_PRICING.monthly 
     : PLAN_PRICING.annually;
 
-  const priceLabel = billingPeriod === 'monthly' 
-    ? `$${PLAN_PRICING.monthly}/month`
-    : `$${PLAN_PRICING.annually}/year`;
-
   const handleSelectPlan = useCallback((plan: PlanType) => {
     setSelectedPlan(plan);
   }, []);
@@ -68,7 +64,6 @@ export function useSubscription() {
     // Pricing
     pricing: PLAN_PRICING,
     currentPrice,
-    priceLabel,
     // Actions
     handleSelectPlan,
     handleToggleBilling,

@@ -12,18 +12,27 @@ export function useChangePassword() {
 
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
   const errors = {
     oldPassword: !oldPassword ? 'Current password is required' : undefined,
-    newPassword: validatePassword(newPassword),
+    // UX only: the backend must still reject an unchanged password, since the API can be called directly
+    newPassword:
+      validatePassword(newPassword) ??
+      (newPassword === oldPassword ? 'New password must be different from the current one' : undefined),
+    confirmPassword: !confirmPassword
+      ? 'Please confirm your new password'
+      : confirmPassword !== newPassword
+        ? 'Passwords do not match'
+        : undefined,
   };
 
   const handleSubmit = useCallback(async () => {
     haptics.medium();
     setSubmitted(true);
 
-    if (errors.oldPassword || errors.newPassword) return;
+    if (errors.oldPassword || errors.newPassword || errors.confirmPassword) return;
 
     try {
       await changePassword({ oldPassword, newPassword }).unwrap();
@@ -40,8 +49,10 @@ export function useChangePassword() {
   return {
     oldPassword,
     newPassword,
+    confirmPassword,
     setOldPassword,
     setNewPassword,
+    setConfirmPassword,
     handleSubmit,
     isSubmitting: isLoading,
     errors,

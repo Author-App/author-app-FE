@@ -37,11 +37,8 @@ export const useCommunityDetail = (communityId: string | undefined) => {
         id: communityId,
         body: { message: message.trim() },
       }).unwrap();
-
-      // Refetch to get updated threads
-      refetch();
     },
-    [communityId, sendThreadMutation, refetch]
+    [communityId, sendThreadMutation]
   );
 
   const joinCommunity = useCallback(async () => {

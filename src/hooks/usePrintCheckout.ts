@@ -70,6 +70,10 @@ export function usePrintCheckout(options: UsePrintCheckoutOptions = {}): UsePrin
     shipping: ShippingAddress;
   } | null>(null);
 
+  // Only the newest quote request may set state: an older, slower response would
+  // otherwise overwrite it and the order would be placed with stale params
+  const latestQuoteRequest = useRef(0);
+
   // Stripe
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
 
@@ -91,10 +95,13 @@ export function usePrintCheckout(options: UsePrintCheckoutOptions = {}): UsePrin
       data: { bookId: params.bookId, shippingOption: params.shippingOption },
     });
 
+    const requestId = ++latestQuoteRequest.current;
+
     try {
       const result = await getPrintQuote(params).unwrap();
       const quoteData = result.data;
-      
+      if (requestId !== latestQuoteRequest.current) return null;
+
       setQuote(quoteData);
       setOrderParams(params);
       
@@ -106,6 +113,11 @@ export function usePrintCheckout(options: UsePrintCheckoutOptions = {}): UsePrin
       
       return quoteData;
     } catch (error: unknown) {
+      if (requestId !== latestQuoteRequest.current) return null;
+      // A failed quote must not leave the previous one payable
+      setQuote(null);
+      setOrderParams(null);
+
       sentryService.captureError(error, {
         tags: { type: 'print_quote_error' },
         extra: { bookId: params.bookId, params },

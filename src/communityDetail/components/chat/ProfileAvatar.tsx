@@ -9,36 +9,26 @@ interface ProfileAvatarProps {
   imageUrl?: string;
   userName: string;
   size?: number;
-  isSelf?: boolean; 
 }
 
-export const ProfileAvatar: React.FC<ProfileAvatarProps> = memo(({ imageUrl, userName, size = 36, isSelf = false }) => {
-  const initials = getInitials(userName || 'Unknown User');
-  const borderRadius = size / 2;
-
+export const ProfileAvatar = memo(function ProfileAvatar({ imageUrl, userName, size = 32 }: ProfileAvatarProps) {
   if (imageUrl) {
-    return (
-      <ULocalImage
-        source={{ uri: imageUrl }}
-        width={size}
-        height={size}
-        borderRadius={borderRadius}
-        contentFit="cover"
-      />
-    );
+    return <ULocalImage source={{ uri: imageUrl }} width={size} height={size} borderRadius={size / 2} contentFit="cover" />;
   }
 
   return (
     <YStack
       w={size}
       h={size}
-      br={borderRadius}
-      bg={isSelf ? "$brandCrimson" : "$brandTeal"}
+      br={size / 2}
       ai="center"
       jc="center"
+      bg="rgba(0,240,255,0.12)"
+      borderWidth={1}
+      borderColor="$glassCyanBorder"
     >
-      <UText variant="text-xs" color="$white" fontWeight="600">
-        {initials}
+      <UText variant="meta-s" color="$accentCyan">
+        {getInitials(userName || 'Unknown User')}
       </UText>
     </YStack>
   );

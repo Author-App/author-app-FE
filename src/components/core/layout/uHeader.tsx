@@ -16,7 +16,7 @@ interface UHeaderProps extends YStackProps {
   safeAreaDisabled?: boolean;
   textProps?: Partial<UTextProps>;
   headerColor?: ColorTokens | 'transparent';
-  /** premium: the tab screen title (Explore, Library, Profile, Settings) */
+  /** premium: the gradient screen title. Tab screens, or a pushed screen when given a leftControl */
   variant?: 'default' | 'premium';
   /** Animation delay in ms */
   animationDelay?: number;
@@ -49,6 +49,7 @@ const UHeader = ({
       >
         <UAnimatedView animation="fadeInUp" duration={400} delay={animationDelay}>
           <XStack ai="center" jc="space-between" gap={12}>
+            {leftControl}
             <YStack flex={1} gap={6}>
               <UGradientText variant="display-xl" accessibilityRole="header" {...textProps}>
                 {title}

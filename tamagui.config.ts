@@ -526,17 +526,6 @@ const tokens = createTokens({
     secondaryAlpha10: '#FF6A5FFF',
     secondaryAlpha11: '#A63B33FF',
 
-    // Gold/secondary0 alpha variants (for Pro plan theme)
-    goldAlpha2: '#FFD70033',
-
-    // Premium subscription colors
-    premiumTeal: '#14B8A6',
-    premiumCoral: '#FF6B6B',
-    premiumNavyLight: '#1A4D7A',
-    premiumCardBg: 'rgba(255,255,255,0.05)',
-    premiumCardBorder: 'rgba(255,255,255,0.08)',
-    premiumIconBg: 'rgba(20, 184, 166, 0.15)',
-
     positive5: '#00FF66',
     positiveAlpha0: '#00FF6600',
     positiveAlpha1: '#00FF661A',

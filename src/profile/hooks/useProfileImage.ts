@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { launchImageLibrary, Asset } from 'react-native-image-picker';
 import { useUploadProfileImageMutation } from '@/src/store/api/userApi';
 import { haptics } from '@/src/utils/haptics';
+import { showErrorToast } from '@/src/utils/toast';
 
 interface UseProfileImageConfig {
   initialImageUrl: string | null;
@@ -45,9 +46,14 @@ export function useProfileImage({ initialImageUrl }: UseProfileImageConfig): Use
       type: asset.type ?? 'image/jpeg',
     } as any);
 
-    await uploadProfileImage(formData).unwrap();
-    haptics.success();
-    setImageUri(asset.uri);
+    try {
+      await uploadProfileImage(formData).unwrap();
+      haptics.success();
+      setImageUri(asset.uri);
+    } catch (error: any) {
+      haptics.error();
+      showErrorToast(error?.data?.message || 'Could not upload your photo. Please try again.');
+    }
   }, [uploadProfileImage]);
 
   return {

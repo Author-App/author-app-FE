@@ -4,22 +4,16 @@ import { YStack } from 'tamagui';
 import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
 import UText from '@/src/components/core/text/uText';
 
-interface EventDescriptionProps {
-  description?: string;
-}
-
-export const EventDescription = memo(function EventDescription({
-  description,
-}: EventDescriptionProps) {
+export const EventDescription = memo(function EventDescription({ description }: { description?: string }) {
   if (!description) return null;
 
   return (
     <UAnimatedView animation="fadeInUp" delay={300}>
-      <YStack mt={24} gap={12}>
-        <UText variant="heading-h2" color="$white">
-          About this Event
+      <YStack mt={28} gap={10}>
+        <UText variant="display-m" color="$textPrimary" accessibilityRole="header">
+          About this event
         </UText>
-        <UText variant="text-md" color="$neutral3" lh={24}>
+        <UText variant="body" color="$textSecondary">
           {description}
         </UText>
       </YStack>

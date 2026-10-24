@@ -1,108 +1,95 @@
 import React from 'react';
-import { ScrollView } from 'react-native';
-import { YStack, XStack } from 'tamagui';
+import { XStack, YStack } from 'tamagui';
+import Animated, { useAnimatedScrollHandler, useDerivedValue, useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import UText from '@/src/components/core/text/uText';
+import UBadge from '@/src/components/core/display/uBadge';
+import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
+import UScreenLayout from '@/src/components/core/layout/UScreenLayout';
+import UStickyTitleBar, { STICKY_BAR_HEIGHT } from '@/src/components/core/layout/uStickyTitleBar';
+import { DETAIL_HERO_HEIGHT, UDetailHero } from '@/src/components/core/layout/uDetailHero';
 import { NeonButton } from '@/src/components/core/buttons/neonButton';
-import { CommunityHero } from './CommunityHero';
-import { CommunityDescription } from './CommunityDescription';
 import type { CommunityDetailResponse } from '@/src/types/api/community.types';
+
+// Clears the fixed action bar: 14 top + 52 button + the home indicator, plus room to breathe
+const ACTION_BAR_CLEARANCE = 120;
 
 interface CommunityAboutViewProps {
   community: CommunityDetailResponse;
-  onJoin?: () => void;
-  onViewDiscussions?: () => void;
-  isJoining?: boolean;
+  onJoin: () => void;
+  isJoining: boolean;
+  /** Joined members came here from the chat, so back and the CTA both return to it */
+  onShowChat?: () => void;
 }
 
-export const CommunityAboutView: React.FC<CommunityAboutViewProps> = ({
-  community,
-  onJoin,
-  onViewDiscussions,
-  isJoining,
-}) => {
-  const { bottom } = useSafeAreaInsets();
+export function CommunityAboutView({ community, onJoin, isJoining, onShowChat }: CommunityAboutViewProps) {
+  const { top, bottom } = useSafeAreaInsets();
+  const threadCount = community.threads.length;
 
-  // Show action button at bottom if not joined or if can view discussions
-  const showBottomAction = !community.isJoined || onViewDiscussions;
-  const scrollPaddingBottom = showBottomAction ? bottom + 100 : bottom + 20;
+  const scrollY = useSharedValue(0);
+  const titleBottom = useSharedValue(DETAIL_HERO_HEIGHT);
+  const showTitleAt = useDerivedValue(() => titleBottom.value - (top + STICKY_BAR_HEIGHT));
+  const onScroll = useAnimatedScrollHandler((e) => {
+    scrollY.value = e.contentOffset.y;
+  });
 
   return (
-    <YStack flex={1} backgroundColor="$brandNavy">
-      <ScrollView
-        contentContainerStyle={{ flexGrow: 1, paddingBottom: scrollPaddingBottom }}
+    <UScreenLayout>
+      <UStickyTitleBar scrollY={scrollY} showTitleAt={showTitleAt} title={community.title} onBack={onShowChat} />
+
+      <Animated.ScrollView
+        contentContainerStyle={{ paddingBottom: bottom + ACTION_BAR_CLEARANCE }}
         showsVerticalScrollIndicator={false}
+        onScroll={onScroll}
+        scrollEventThrottle={16}
       >
-        <CommunityHero
-          title={community.title}
-          thumbnail={community.thumbnail}
-          threadCount={community.threads.length}
-          isJoined={community.isJoined}
-        />
+        <UDetailHero thumbnail={community.thumbnail} icon="people-outline" />
 
-        <YStack px={20} pt={20}>
-          <CommunityDescription description={community.description} />
-
-          {/* Stats section */}
-          <YStack
-            bg="rgba(255, 255, 255, 0.08)"
-            borderWidth={1}
-            borderColor="rgba(255, 255, 255, 0.12)"
-            br={16}
-            p={16}
-            mb={20}
-          >
-            <UText variant="heading-h2" color="$white" mb={12}>
-              Community Stats
-            </UText>
-            <XStack gap={20}>
-              <YStack flex={1} ai="center">
-                <UText variant="heading-h1" color="$brandCrimson">
-                  {community.threads.length}
-                </UText>
-                <UText variant="text-xs" color="$neutral4">
-                  Discussions
-                </UText>
-              </YStack>
-              <YStack
-                w={1}
-                bg="rgba(255, 255, 255, 0.1)"
-              />
-              <YStack flex={1} ai="center">
-                <UText variant="heading-h1" color="$brandCrimson">
-                  {community.isJoined ? '✓' : '—'}
-                </UText>
-                <UText variant="text-xs" color="$neutral4">
-                  {community.isJoined ? 'Joined' : 'Not Joined'}
-                </UText>
-              </YStack>
+        <YStack px={20} mt={-70}>
+          <YStack gap={12} pb={24} onLayout={(e) => (titleBottom.value = DETAIL_HERO_HEIGHT - 70 + e.nativeEvent.layout.height)}>
+            <XStack gap={8}>
+              <UBadge label={`${threadCount} ${threadCount === 1 ? 'discussion' : 'discussions'}`} tone="purple" onImage />
+              {community.isJoined && <UBadge label="Joined" tone="cyan" onImage />}
             </XStack>
+            <UText variant="display-l" color="$textPrimary" accessibilityRole="header">
+              {community.title}
+            </UText>
           </YStack>
-        </YStack>
-      </ScrollView>
 
-      {/* Bottom action */}
-      {showBottomAction && (
-        <YStack
-          position="absolute"
-          bottom={0}
-          left={0}
-          right={0}
-          bg="$brandNavy"
-          borderTopWidth={1}
-          borderColor="rgba(255, 255, 255, 0.1)"
-          px={20}
-          pt={16}
-          pb={bottom + 16}
-        >
-          {community.isJoined ? (
-            <NeonButton onPress={onViewDiscussions} title='View Discussions' />
-          ) : (
-            <NeonButton onPress={onJoin} loading={isJoining} title='Join Community' />
+          {community.description && (
+            <UAnimatedView animation="fadeInUp" delay={200}>
+              <YStack gap={10}>
+                <UText variant="display-m" color="$textPrimary" accessibilityRole="header">
+                  About
+                </UText>
+                <UText variant="body" color="$textSecondary">
+                  {community.description}
+                </UText>
+              </YStack>
+            </UAnimatedView>
           )}
         </YStack>
-      )}
-    </YStack>
+      </Animated.ScrollView>
+
+      <XStack
+        pos="absolute"
+        left={0}
+        right={0}
+        bottom={0}
+        pt={14}
+        px={16}
+        pb={Math.max(bottom, 16)}
+        bg="rgba(7,5,18,0.88)"
+        borderTopWidth={1}
+        borderTopColor="$glassBorder"
+      >
+        {community.isJoined ? (
+          <NeonButton flex={1} onPress={onShowChat} title="View Discussions" />
+        ) : (
+          <NeonButton flex={1} onPress={onJoin} loading={isJoining} title="Join Community" />
+        )}
+      </XStack>
+    </UScreenLayout>
   );
-};
+}

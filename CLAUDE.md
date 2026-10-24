@@ -149,6 +149,8 @@ Do not re-argue these.
 2. **Synchronisation.** Detox waits for the app to be idle before every match. `HeroBanner` runs `setInterval(4000)` forever, so idle never comes and `waitFor` times out while the screen looks correct. Fixed with a narrow `device.disableSynchronization()` before the home assertions only, never at launch.
 3. **Keychain.** `expo-secure-store` writes to the iOS keychain, which survives an app reinstall. Without `device.clearKeychain()` the app can boot already logged in and the test proves nothing.
 
+**Every bug fixed goes in `docs/BUG_LOG.md`**, in the same session, with Symptom, Cause, Fix, Say it, and Term. He uses it to prepare interview answers. Mark anything not checked on a device as _(not yet verified on device)_.
+
 **Keep this section current.** After a test file lands, update the table, the "what he knows" list, and the next targets. A stale CLAUDE.md misdirects the next session. This file has already been wrong once.
 
 ## Component test setup, and how to debug it

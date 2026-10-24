@@ -1,15 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { LayoutChangeEvent } from 'react-native';
+import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated';
 import { XStack, YStack } from 'tamagui';
-import Animated, {
-  useAnimatedStyle,
-  withTiming,
-} from 'react-native-reanimated';
-import { haptics } from '@/src/utils/haptics';
 
 import UText from '@/src/components/core/text/uText';
+import haptics from '@/src/utils/haptics';
 import type { BillingPeriod } from '../types/subscription.types';
 
-const AnimatedYStack = Animated.createAnimatedComponent(YStack);
+const PADDING = 4;
+const OPTIONS: { value: BillingPeriod; label: string }[] = [
+  { value: 'monthly', label: 'Monthly' },
+  { value: 'annually', label: 'Annual' },
+];
 
 interface BillingToggleProps {
   billingPeriod: BillingPeriod;
@@ -17,99 +19,73 @@ interface BillingToggleProps {
   annualSavings: string;
 }
 
-export function BillingToggle({
-  billingPeriod,
-  onToggle,
-  annualSavings,
-}: BillingToggleProps) {
+export function BillingToggle({ billingPeriod, onToggle, annualSavings }: BillingToggleProps) {
+  const [segmentWidth, setSegmentWidth] = useState(0);
   const isAnnual = billingPeriod === 'annually';
 
-  const indicatorStyle = useAnimatedStyle(() => ({
-    transform: [
-      {
-        translateX: withTiming(isAnnual ? 1 : 0, { duration: 250 }) as unknown as number,
-      },
-    ],
-    left: withTiming(isAnnual ? '50%' : '1%', { duration: 250 }),
+  const onLayout = (e: LayoutChangeEvent) => setSegmentWidth((e.nativeEvent.layout.width - PADDING * 3) / 2);
+
+  const pillStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: withTiming(isAnnual ? segmentWidth + PADDING : 0, { duration: 250 }) }],
   }));
 
   return (
-    <YStack ai="center" gap={12}>
-      <XStack
-        bg="$color3"
-        br={30}
-        p={4}
-        pos="relative"
-        w={280}
-        bw={1}
-        bc="$color5"
-      >
-        <AnimatedYStack
-          position="absolute"
-          top={4}
-          width="50%"
-          height="100%"
-          bg="$brandCrimson"
-          br={26}
-          style={indicatorStyle}
-        />
+    <XStack
+      h={52}
+      p={PADDING}
+      gap={PADDING}
+      br={999}
+      bg="rgba(15,12,35,0.6)"
+      borderWidth={1}
+      borderColor="$glassBorder"
+      onLayout={onLayout}
+      accessibilityRole="radiogroup"
+      accessibilityLabel="Billing period"
+    >
+      {segmentWidth > 0 && (
+        <Animated.View style={[{ position: 'absolute', top: PADDING, bottom: PADDING, left: PADDING, width: segmentWidth }, pillStyle]}>
+          <YStack
+            flex={1}
+            br={999}
+            bg="rgba(147,51,234,0.3)"
+            borderWidth={1}
+            borderColor="rgba(192,132,252,0.55)"
+            boxShadow="0 0 16px rgba(135,54,247,0.4)"
+          />
+        </Animated.View>
+      )}
 
-        <YStack
-          flex={1}
-          py={12}
-          ai="center"
-          onPress={() => {
-            haptics.selection();
-            onToggle('monthly');
-          }}
-          pressStyle={{ opacity: 0.8 }}
-          zIndex={1}
-        >
-          <UText
-            variant="text-sm"
-            color={!isAnnual ? '$white' : '$brandCrimson'}
-            fontWeight={!isAnnual ? '700' : '400'}
+      {OPTIONS.map(({ value, label }) => {
+        const isSelected = billingPeriod === value;
+        return (
+          <XStack
+            key={value}
+            flex={1}
+            ai="center"
+            jc="center"
+            gap={8}
+            onPress={() => {
+              if (isSelected) return;
+              haptics.selection();
+              onToggle(value);
+            }}
+            accessible
+            accessibilityRole="radio"
+            accessibilityState={{ checked: isSelected }}
           >
-            Monthly
-          </UText>
-        </YStack>
-
-        <YStack
-          flex={1}
-          py={12}
-          ai="center"
-          onPress={() => {
-            haptics.selection();
-            onToggle('annually');
-          }}
-          pressStyle={{ opacity: 0.8 }}
-          zIndex={1}
-        >
-          <UText
-            variant="text-sm"
-            color={isAnnual ? '$white' : '$brandCrimson'}
-            fontWeight={isAnnual ? '700' : '400'}
-          >
-            Annually
-          </UText>
-        </YStack>
-
-        <XStack
-          position="absolute"
-          top={-10}
-          right={-8}
-          bg="$secondary0"
-          px={8}
-          py={4}
-          br={6}
-          zIndex={10}
-          style={{ transform: [{ rotate: '12deg' }] }}
-        >
-          <UText variant="text-sm" color="$brandCrimson">
-            {annualSavings}
-          </UText>
-        </XStack>
-      </XStack>
-    </YStack>
+            <UText variant="meta" fontWeight="700" color={isSelected ? '$textPrimary' : '$textSecondary'}>
+              {label}
+            </UText>
+            {value === 'annually' && (
+              <YStack px={7} py={3} br={999} bg="rgba(245,158,11,0.18)" borderWidth={1} borderColor="rgba(245,158,11,0.5)">
+                <UText variant="meta-s" fontSize={9} color="#FCD34D">
+                  {annualSavings}
+                </UText>
+              </YStack>
+            )}
+          </XStack>
+        );
+      })}
+    </XStack>
   );
 }

@@ -1,4 +1,4 @@
-import { useMemo, useState, useCallback, useEffect } from 'react';
+import { useMemo, useState, useCallback, useEffect, useRef } from 'react';
 import { useRouter } from 'expo-router';
 import { useGetMeQuery, useUpdateProfileMutation } from '@/src/store/api/userApi';
 import { showSuccessToast, showErrorToast } from '@/src/utils/toast';
@@ -18,6 +18,7 @@ interface UseEditProfileDataReturn {
   handleSubmit: () => Promise<void>;
   isLoading: boolean;
   isSubmitting: boolean;
+  hasChanges: boolean;
   errors: { fullName?: string };
   showErrors: boolean;
 }
@@ -43,13 +44,15 @@ export function useEditProfileData(): UseEditProfileDataReturn {
     };
   }, [data]);
 
-  // Sync fullName when user data loads
+  const savedName = user ? [user.firstName, user.lastName].filter(Boolean).join(' ') : '';
+
+  // Once only: a later refetch (an avatar upload invalidates 'User') must not overwrite what is being typed
+  const hasPrefilled = useRef(false);
   useEffect(() => {
-    if (user) {
-      const name = [user.firstName, user.lastName].filter(Boolean).join(' ');
-      setFullName(name);
-    }
-  }, [user]);
+    if (!user || hasPrefilled.current) return;
+    hasPrefilled.current = true;
+    setFullName(savedName);
+  }, [user, savedName]);
 
   const errors = {
     fullName: !fullName.trim() ? 'Full name is required' : undefined,
@@ -61,7 +64,7 @@ export function useEditProfileData(): UseEditProfileDataReturn {
 
     if (errors.fullName) return;
 
-    const nameParts = fullName.trim().split(' ');
+    const nameParts = fullName.trim().split(/\s+/);
     const firstName = nameParts[0];
     const lastName = nameParts.slice(1).join(' ');
 
@@ -85,6 +88,7 @@ export function useEditProfileData(): UseEditProfileDataReturn {
     handleSubmit,
     isLoading,
     isSubmitting: isUpdating,
+    hasChanges: fullName.trim() !== savedName,
     errors,
     showErrors: submitted,
   };

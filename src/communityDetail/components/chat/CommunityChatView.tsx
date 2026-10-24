@@ -1,10 +1,11 @@
-import React, { useRef, useCallback, useState } from 'react';
+import React from 'react';
 import { YStack } from 'tamagui';
 
 import { CommunityChatHeader } from './CommunityChatHeader';
-import ThreadCard  from './ThreadCard';
+import ThreadCard from './ThreadCard';
 import { ThreadInput } from './ThreadInput';
-import UText from '@/src/components/core/text/uText';
+import UEmptyState from '@/src/components/core/feedback/UEmptyState';
+import UScreenLayout from '@/src/components/core/layout/UScreenLayout';
 import { URefreshableList } from '@/src/components/core/layout/uRefreshableList';
 import UKeyboardAvoidingView from '@/src/components/core/layout/uKeyboardAvoidingView';
 import type { CommunityDetailResponse, ThreadResponse } from '@/src/types/api/community.types';
@@ -14,85 +15,38 @@ interface CommunityChatViewProps {
   isSending: boolean;
   onSendThread: (message: string) => Promise<void>;
   onHeaderPress: () => void;
-  onRefresh: () => Promise<void> | void;
+  onRefresh: () => Promise<void>;
 }
 
-export const CommunityChatView: React.FC<CommunityChatViewProps> = ({
-  community,
-  isSending,
-  onSendThread,
-  onHeaderPress,
-  onRefresh,
-}) => {
-  const listRef = useRef<any>(null);
+const renderThread = ({ item }: { item: ThreadResponse }) => <ThreadCard thread={item} />;
 
-  const handleSendThread = useCallback(async (message: string) => {
-    await onSendThread(message);
-  }, [onSendThread]);
-
-  const handleContentSizeChange = useCallback(() => {
-      setTimeout(() => {
-        listRef.current?.scrollToEnd({ animated: true });
-      }, 100);
-    }, []);
-
-  const renderThread = ({ item }: { item: ThreadResponse }) => (
-    <ThreadCard thread={item} />
-  );
-
-  const renderEmptyState = () => (
-    <YStack
-      flex={1}
-      bg="rgba(255, 255, 255, 0.05)"
-      br={16}
-      p={24}
-      ai="center"
-      jc="center"
-      mx={16}
-      mt={16}
-    >
-      <UText variant="text-md" color="$neutral4" textAlign="center">
-        No discussions yet. Be the first to start a conversation!
-      </UText>
-    </YStack>
-  );
-
-
+export function CommunityChatView({ community, isSending, onSendThread, onHeaderPress, onRefresh }: CommunityChatViewProps) {
   return (
-    <UKeyboardAvoidingView dismissOnTap={false}>
-      <YStack flex={1} backgroundColor="$brandNavy">
-        {/* Chat-like header */}
-        <CommunityChatHeader
-          title={community.title}
-          thumbnail={community.thumbnail}
-          onPress={onHeaderPress}
-        />
+    <UScreenLayout>
+      <UKeyboardAvoidingView dismissOnTap={false}>
+        <CommunityChatHeader title={community.title} thumbnail={community.thumbnail} onPress={onHeaderPress} />
 
-        {/* Thread list with URefreshableList */}
         <URefreshableList
-          ref={listRef}
           data={community.threads}
           renderItem={renderThread}
           keyExtractor={(item, index) => item.id ?? index.toString()}
-          contentContainerStyle={{
-            paddingBottom: 10,
-            paddingTop: 10,
-            flexGrow: 1
-          }}
-          ListEmptyComponent={renderEmptyState}
+          // Opens at the newest message and follows new ones only while you are near the bottom,
+          // so a background poll never yanks you away from older messages you are reading
+          maintainVisibleContentPosition={{ startRenderingFromBottom: true, autoscrollToBottomThreshold: 0.2 }}
+          contentContainerStyle={{ paddingTop: 12, paddingBottom: 4, flexGrow: 1 }}
+          ListEmptyComponent={
+            <YStack flex={1} jc="center">
+              <UEmptyState icon="chatbubbles-outline" title="No discussions yet" message="Be the first to start a conversation." />
+            </YStack>
+          }
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="interactive"
           onRefresh={onRefresh}
-          onContentSizeChange={handleContentSizeChange}
         />
 
-        {/* Input */}
-        <ThreadInput
-          onSend={handleSendThread}
-          isSending={isSending}
-          isJoined={true}
-        />
-      </YStack>
-    </UKeyboardAvoidingView>
+        <ThreadInput onSend={onSendThread} isSending={isSending} />
+      </UKeyboardAvoidingView>
+    </UScreenLayout>
   );
-};
+}

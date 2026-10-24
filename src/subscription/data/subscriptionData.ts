@@ -3,7 +3,7 @@ import type { Benefit, PlanPricing } from '../types/subscription.types';
 export const FREE_PLAN_BENEFITS: Benefit[] = [
   { id: 1, label: 'Read limited books' },
   { id: 2, label: 'Community Access' },
-  { id: 3, label: 'No offline downloads' },
+  { id: 3, label: 'No offline downloads', included: false },
 ];
 
 export const PREMIUM_BENEFITS: Benefit[] = [
