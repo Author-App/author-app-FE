@@ -33,6 +33,7 @@ These were built and typechecked, but not yet checked on the simulator.
   - Save Changes is grey until the name differs from the saved one.
   - Upload a photo in airplane mode: a toast shows.
   - The keyboard never covers the button, on a small phone too.
+- [ ] **Double tap**: tap Read Now, a book card, and a video card twice quickly. Each opens once, and one back press returns. Watch Metro for a "No route named" warning, which would mean a name in `SINGULAR_SCREENS` is wrong.
 - [ ] **Detox E2E** before merging. The looping animations on onboarding and login may block synchronisation (see CLAUDE.md).
 
 ## Features deferred

@@ -10,6 +10,23 @@ import WelcomeModal from '@/src/components/home/WelcomeModal';
 
 const BRAND_NAVY = "#132440";
 
+// Pushed from cards and CTAs. Readers and players have one instance at most, whatever the book.
+const SINGULAR_SCREENS = [
+  'article/[id]/index',
+  'book/[bookId]/index',
+  'podcast/[podcastId]/index',
+  'video/[videoId]/index',
+  'events/[eventId]/index',
+  'community/[communityId]/index',
+  'checkout/[bookId]/index',
+  'ebookReader',
+  'audiobookPlayer/index',
+  'subscription/index',
+  'editProfile/index',
+  'changePassword/index',
+  'notifications/index',
+];
+
 export default function AppLayout() {
   // Welcome banner state
   const user = useAppSelector(selectCurrentUser);
@@ -38,6 +55,10 @@ export default function AppLayout() {
         }}
       >
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        {/* One instance per route and id: a fast double tap would otherwise push the same screen twice */}
+        {SINGULAR_SCREENS.map((name) => (
+          <Stack.Screen key={name} name={name} dangerouslySingular />
+        ))}
       </Stack>
 
       {/* Welcome Modal - shown for new users after login */}

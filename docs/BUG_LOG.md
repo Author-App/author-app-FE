@@ -192,6 +192,18 @@ _(not yet verified on device)_
 - **Cause.** The banner's `article` case routed to the book detail screen (since commit `eb46407`).
 - **Fix.** It routes to `/(app)/article/[id]`.
 
+### 4.5 A double tap pushed the same screen twice
+
+_(not yet verified on device)_
+
+- **Symptom.** Tap Read Now, or any card, twice quickly. Two copies of the screen open, so back has to be pressed twice.
+- **Cause.** `router.push` always adds a new screen. Two taps before the first transition finishes mean two pushes.
+- **Fix.** `dangerouslySingular` on every pushed screen in `app/(app)/_layout.tsx`. Expo Router then gives each screen an id from its route and path params. A push whose id already exists moves to that screen instead of adding another.
+- **Why there, not in each button.** There are dozens of `router.push` calls. A guard in each one, like a debounce or an `isNavigating` flag, misses the next button someone adds. One rule on the navigator covers all of them.
+- **Say it.** "Double-tap navigation is a common mobile bug. Instead of debouncing every button, I made the navigator itself refuse duplicates: each screen gets an id from its route params, and pushing an id that is already in the stack goes to it instead."
+- **Term.** Idempotent navigation. Route identity (`getId`).
+- **Side effect.** Opening a book that is already deeper in the stack goes back to it instead of stacking a second copy.
+
 ---
 
 ## 5. Lists and rendering
