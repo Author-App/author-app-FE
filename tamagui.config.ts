@@ -581,6 +581,9 @@ const tokens = createTokens({
 
     // --- Redesign (dark only). Source: Claude Design "Stanley Paden App Redesign", Main.dc.html
     bgPage: '#020103',
+    // Long-form reading: article body and ebook reader. No glow on these surfaces.
+    bgReading: '#05030C',
+    textReading: '#E5E7EB',
     textPrimary: '#FFFFFF',
     textSecondary: '#D1D5DB',
     textMuted: '#9CA3AF',
@@ -612,6 +615,7 @@ const tokens = createTokens({
     outlineCyan: 'rgba(103,232,249,0.6)',
     track: 'rgba(255,255,255,0.1)',
     dotInactive: 'rgba(255,255,255,0.25)',
+    starEmpty: 'rgba(245,158,11,0.3)',
     coverBorder: 'rgba(255,255,255,0.12)',
     errorToastText: '#FECACA',
 

@@ -30,7 +30,7 @@ function UStarRating({
   size = 22,
   gap = 4,
   filledColor = '$gold',
-  emptyColor = '$neutral3',
+  emptyColor = '$starEmpty',
 }: UStarRatingProps) {
   return (
     <XStack

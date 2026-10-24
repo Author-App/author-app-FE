@@ -2,8 +2,7 @@ import { memo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Image } from 'expo-image';
 
-// ponytail: comparing two versions; switch 01 to 02, then delete the one not picked
-const authScreenBg = require('@/assets/images/authScreenBg02.jpg');
+const authScreenBg = require('@/assets/images/authScreenBg.jpg');
 
 /** Full-bleed background for onboarding and every auth screen. */
 const AuthBackground = () => (

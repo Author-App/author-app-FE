@@ -10,7 +10,7 @@ interface AboutTabContentProps {
 export function AboutTabContent({ description }: AboutTabContentProps) {
   return (
     <YStack>
-      <UText variant="text-md" color="$neutral1">
+      <UText variant="body" color="$textSecondary">
         {description || 'No description available.'}
       </UText>
     </YStack>

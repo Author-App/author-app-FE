@@ -54,7 +54,7 @@ const HomeScreen: React.FC = () => {
         router.push(`/(app)/book/${id}` as Href);
         break;
       case 'article':
-        router.push(`/(app)/book/${id}` as Href);
+        router.push(`/(app)/article/${id}` as Href);
         break;
       case 'event':
         router.push(`/(app)/events/${id}` as Href);

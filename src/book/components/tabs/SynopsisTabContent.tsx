@@ -10,7 +10,7 @@ interface SynopsisTabContentProps {
 export function SynopsisTabContent({ synopsis }: SynopsisTabContentProps) {
   return (
     <YStack minHeight={200}>
-      <UText variant="text-md" color="$neutral1" lineHeight={24}>
+      <UText variant="body" color="$textSecondary">
         {synopsis || 'No synopsis available.'}
       </UText>
     </YStack>
