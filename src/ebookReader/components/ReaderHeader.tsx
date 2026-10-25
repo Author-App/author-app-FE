@@ -1,10 +1,8 @@
 import React from 'react';
-import { XStack, YStack, getTokenValue } from 'tamagui';
+import { XStack, YStack } from 'tamagui';
 
 import UText from '@/src/components/core/text/uText';
-import UIconButton from '@/src/components/core/buttons/uIconButtonVariants';
-import IconArrowLeft from '@/assets/icons/iconArrowLeft';
-import { haptics } from '@/src/utils/haptics';
+import UBackButton from '@/src/components/core/buttons/uBackButton';
 
 interface ReaderHeaderProps {
   title: string;
@@ -13,42 +11,32 @@ interface ReaderHeaderProps {
   onBack: () => void;
 }
 
-export function ReaderHeader({
-  title,
-  author,
-  paddingTop,
-  onBack,
-}: ReaderHeaderProps) {
-  
+export function ReaderHeader({ title, author, paddingTop, onBack }: ReaderHeaderProps) {
   return (
     <XStack
-      position="absolute"
+      pos="absolute"
       top={0}
       left={0}
       right={0}
       ai="center"
+      gap={12}
       px={16}
-      pb={12}
-      bg="$brandNavy"
+      pb={10}
       pt={paddingTop + 8}
+      bg="rgba(7,5,18,0.92)"
+      borderBottomWidth={1}
+      borderBottomColor="$glassBorder"
     >
-      <UIconButton
-        variant="glass-md"
-        icon={IconArrowLeft}
-        onPress={onBack}
-      />
-      <YStack flex={1} mx={16}>
-        <UText
-          variant="text-sm"
-          color="$white"
-          numberOfLines={1}
-          fontWeight="600"
-        >
+      <UBackButton variant="glass-md" onPress={onBack} />
+      <YStack flex={1} gap={2}>
+        <UText variant="display-s" color="$textPrimary" numberOfLines={1}>
           {title}
         </UText>
-        <UText variant="text-xs" color="$neutral4">
-          {author}
-        </UText>
+        {author ? (
+          <UText variant="body-s" color="$textSecondary" numberOfLines={1}>
+            {author}
+          </UText>
+        ) : null}
       </YStack>
     </XStack>
   );

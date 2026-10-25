@@ -1,11 +1,10 @@
 import React, { memo } from 'react';
-import { ScrollView } from 'react-native';
-import { YStack } from 'tamagui';
+import { ActivityIndicator, ScrollView } from 'react-native';
+import { YStack, getTokenValue } from 'tamagui';
 import * as Application from 'expo-application';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTabBarInset } from '@/src/navigations/hooks/useTabBarInset';
 
-import AppLoader from '@/src/components/core/loaders/AppLoader';
 import UScreenLayout from '@/src/components/core/layout/UScreenLayout';
 import UText from '@/src/components/core/text/uText';
 import USwitch from '@/src/components/core/inputs/uSwitch';
@@ -53,7 +52,7 @@ const SettingsScreen = () => {
   if (isLoading && !user) {
     return (
       <UScreenLayout jc="center" ai="center" pb={clearance}>
-        <AppLoader size={150} bg="transparent" />
+        <ActivityIndicator size="large" color={getTokenValue('$accentCyan', 'color')} />
       </UScreenLayout>
     );
   }

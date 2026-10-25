@@ -12,16 +12,6 @@ export type ReaderStatus =
   | 'error'        // Error occurred
   | 'no-access';   // User doesn't have access
 
-export interface ReaderState {
-  status: ReaderStatus;
-  errorMessage?: string;
-  localPdfUri: string | null;
-  currentPage: number;
-  totalPages: number;
-  initialPage: number;
-  isControlsVisible: boolean;
-}
-
 export interface ReaderBookInfo {
   id: string;
   title: string;

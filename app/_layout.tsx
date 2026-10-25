@@ -28,14 +28,14 @@ initSentry({
   tracesSampleRate: 0.2,
 });
 
-// Brand colors
-const BRAND_NAVY = '#132440';
+// $bgPage, as a literal: this renders before the Tamagui provider. Matches the splash background.
+const BG_PAGE = '#020103';
 
 export default sentryWrap(function RootLayout() {
   return (
     <SentryErrorBoundary>
-      <SafeAreaProvider style={{ backgroundColor: BRAND_NAVY }}>
-        <GestureHandlerRootView style={{ flex: 1, backgroundColor: BRAND_NAVY }}>
+      <SafeAreaProvider style={{ backgroundColor: BG_PAGE }}>
+        <GestureHandlerRootView style={{ flex: 1, backgroundColor: BG_PAGE }}>
           <AppHead />
           <Provider store={store}>
             <PersistGate loading={null} persistor={persistor}>
@@ -65,7 +65,7 @@ function AppHead() {
   return (
     <Head>
       <title>Author App</title>
-      <meta name="theme-color" content="#132440" />
+      <meta name="theme-color" content="#020103" />
     </Head>
   );
 }

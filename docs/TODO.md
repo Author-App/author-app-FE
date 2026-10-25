@@ -33,6 +33,17 @@ These were built and typechecked, but not yet checked on the simulator.
   - Save Changes is grey until the name differs from the saved one.
   - Upload a photo in airplane mode: a toast shows.
   - The keyboard never covers the button, on a small phone too.
+- [ ] **Ebook reader**
+  - Read a few pages, swipe back, open again: same page. Check Continue Reading on Home shows it too.
+  - Airplane mode halfway through a first download: an error with Retry. Retry with network: it downloads fresh.
+  - Tap the page: header, footer and status bar hide. Tap again: back. With VoiceOver on, they never hide.
+- [ ] **Notification sheet** (real device only, it skips simulators)
+  - Fresh install: the sheet shows once. Not Now, kill the app, reopen: it does not show again.
+  - Deny in the system popup, relaunch: no sheet for 7 days. Settings toggle still opens system Settings.
+  - On a small phone the sheet fits its content and nothing is cut off.
+- [ ] **Splash and boot** (needs a native rebuild: `npx expo prebuild --clean` then `pnpm ios`, or an EAS build; app.json changes do not ship over OTA)
+  - Cold start: the gradient wordmark on near-black, then the boot screen with the wordmark in the same place and a spinner. No jump, no navy flash.
+  - Push and pop a few screens: no navy behind the transition.
 - [ ] **Double tap**: tap Read Now, a book card, and a video card twice quickly. Each opens once, and one back press returns. Watch Metro for a "No route named" warning, which would mean a name in `SINGULAR_SCREENS` is wrong.
 - [ ] **Detox E2E** before merging. The looping animations on onboarding and login may block synchronisation (see CLAUDE.md).
 

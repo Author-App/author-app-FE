@@ -4,50 +4,40 @@ import { useRouter } from 'expo-router';
 
 import { useLazyGetBookDetailQuery, useUpdateEbookProgressMutation } from '@/src/store/api/libraryApi';
 import type { BookResponse } from '@/src/types/api/library.types';
-import { 
-  getPdfProgress, 
+import {
+  getPdfProgress,
   savePdfProgress,
   getCachedSignedUrl,
   cacheSignedUrl,
+  clearCachedSignedUrl,
 } from '@/src/storage/bookProgress';
-import type { 
-  ReaderStatus, 
-  ReadingProgress,
-  ReaderBookInfo,
-} from '../types/ebookReader.types';
+import type { ReaderStatus, ReadingProgress, ReaderBookInfo } from '../types/ebookReader.types';
 
-const PDF_CACHE_DIR = 'books/';
+const PDF_CACHE_DIR = `${FileSystem.documentDirectory}books/`;
 const MIN_VALID_FILE_SIZE = 1000; // bytes
 
+const pdfPath = (bookId: string) => `${PDF_CACHE_DIR}${bookId}.pdf`;
 
-interface UseEbookReaderOptions {
-  bookId: string | undefined;
+/**
+ * Downloads to a temp file and only moves it into place on HTTP 200. downloadAsync does not throw
+ * on an HTTP error, so writing straight to the final path could cache an error body or a partial
+ * file that every later open would reuse.
+ */
+async function downloadPdf(url: string, fileUri: string, onProgress: (percent: number) => void) {
+  const tempUri = `${fileUri}.download`;
+  await FileSystem.makeDirectoryAsync(PDF_CACHE_DIR, { intermediates: true });
+  const result = await FileSystem.createDownloadResumable(url, tempUri, {}, ({ totalBytesWritten, totalBytesExpectedToWrite }) => {
+    if (totalBytesExpectedToWrite > 0) onProgress(Math.round((totalBytesWritten / totalBytesExpectedToWrite) * 100));
+  }).downloadAsync();
+
+  if (result?.status !== 200) {
+    await FileSystem.deleteAsync(tempUri, { idempotent: true });
+    throw new Error(`PDF download failed with status ${result?.status}`);
+  }
+  await FileSystem.moveAsync({ from: tempUri, to: fileUri });
 }
 
-interface UseEbookReaderReturn {
-  // Book info
-  book: ReaderBookInfo | null;
-  
-  // Reader state
-  status: ReaderStatus;
-  errorMessage: string | null;
-  localPdfUri: string | null;
-  
-  // Progress
-  currentPage: number;
-  totalPages: number;
-  initialPage: number;
-  progressPercent: number;
-  
-  // Actions
-  onPageChanged: (page: number, pages: number) => void;
-  onPdfError: (error: object) => void;
-  saveProgressAndGoBack: () => void;
-  refetch: () => void;
-}
-
-export function useEbookReader({ bookId }: UseEbookReaderOptions): UseEbookReaderReturn {
-
+export function useEbookReader({ bookId }: { bookId: string | undefined }) {
   const router = useRouter();
   const [fetchBookDetail] = useLazyGetBookDetailQuery();
   const [updateEbookProgress] = useUpdateEbookProgressMutation();
@@ -55,203 +45,185 @@ export function useEbookReader({ bookId }: UseEbookReaderOptions): UseEbookReade
   const [status, setStatus] = useState<ReaderStatus>('loading');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [localPdfUri, setLocalPdfUri] = useState<string | null>(null);
+  const [downloadPercent, setDownloadPercent] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
   const [initialPage, setInitialPage] = useState(1);
   const [book, setBook] = useState<ReaderBookInfo | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
 
-  // Refs
-  const lastSavedPage = useRef(1);
-  const isInitialized = useRef(false);
+  const latestPage = useRef(1);
+  const serverPage = useRef<number | null>(null);
+  const localUpdatedAt = useRef(0);
 
-  const syncServerProgress = useCallback((bookData: Pick<BookResponse, 'progress' | 'totalPages'>) => {
-    const serverPage = bookData.progress?.currentPage;
-    
-    if (!serverPage || serverPage <= 0) return;
-    
-    setInitialPage(serverPage);
-    setCurrentPage(serverPage);
-    lastSavedPage.current = serverPage;
-    
-    // Persist to local storage for offline access
-    if (bookId && bookData.totalPages) {
-      savePdfProgress(bookId, serverPage, bookData.totalPages);
-    }
-  }, [bookId]);
+  const jumpTo = (page: number) => {
+    setInitialPage(page);
+    setCurrentPage(page);
+    latestPage.current = page;
+  };
+
+  // Newest wins: the server only moves the reader if it was read more recently elsewhere,
+  // so a page saved locally (offline, or a save that failed) is never thrown away
+  const applyServerProgress = useCallback(
+    (bookData: Pick<BookResponse, 'progress' | 'totalPages'>) => {
+      const page = bookData.progress?.currentPage;
+      if (!page || page <= 0) return;
+      serverPage.current = page;
+      const serverReadAt = Date.parse(bookData.progress?.lastReadAt ?? '') || 0;
+      if (serverReadAt <= localUpdatedAt.current) return;
+      jumpTo(page);
+      if (bookId && bookData.totalPages) savePdfProgress(bookId, page, bookData.totalPages);
+    },
+    [bookId]
+  );
 
   useEffect(() => {
-    if (!bookId || isInitialized.current) return;
-    isInitialized.current = true;
+    if (!bookId) return;
+    let cancelled = false;
+
+    const toBookInfo = (b: BookResponse, fallbackUrl: string | null): ReaderBookInfo => ({
+      id: b.id,
+      title: b.title,
+      author: b.author,
+      masterUrl: b.master ?? fallbackUrl,
+      hasAccess: b.hasAccess,
+      totalPages: b.totalPages,
+    });
 
     (async () => {
       try {
         setStatus('loading');
+        setErrorMessage(null);
 
-        // 1. Load reading progress from local storage (fallback)
         const localProgress: ReadingProgress | null = await getPdfProgress(bookId);
         if (localProgress?.page) {
-          setInitialPage(localProgress.page);
-          setCurrentPage(localProgress.page);
-          lastSavedPage.current = localProgress.page;
+          jumpTo(localProgress.page);
+          localUpdatedAt.current = localProgress.updatedAt ?? 0;
         }
 
-        // 2. Check for cached signed URL (valid for ~55 min)
-        const cachedUrl = await getCachedSignedUrl(bookId);
-        
-        // 3. Check if PDF is already downloaded
-        const dir = `${FileSystem.documentDirectory}${PDF_CACHE_DIR}`;
-        const fileUri = `${dir}${bookId}.pdf`;
+        const fileUri = pdfPath(bookId);
         const fileInfo = await FileSystem.getInfoAsync(fileUri);
         const pdfExists = fileInfo.exists && (fileInfo.size ?? 0) > MIN_VALID_FILE_SIZE;
+        const cachedUrl = await getCachedSignedUrl(bookId);
 
-        // 4. If we have cached URL AND PDF file exists, we're ready!
+        // Recently opened and on disk: open now, refresh details and progress in the background
         if (cachedUrl && pdfExists) {
+          if (cancelled) return;
           setBook({ id: bookId, title: '', author: '', masterUrl: cachedUrl, hasAccess: true });
           setLocalPdfUri(fileUri);
           setStatus('ready');
-          
-          // Fetch book details in background for title/author and server progress
           fetchBookDetail(bookId).then((result) => {
-            if (result.data?.data?.book) {
-              const b = result.data.data.book;
-              setBook({
-                id: b.id,
-                title: b.title,
-                author: b.author,
-                masterUrl: b.master ?? cachedUrl,
-                hasAccess: b.hasAccess,
-                totalPages: b.totalPages,
-              });
-              // Sync server progress (takes priority over local)
-              syncServerProgress(b);
-            }
+            const b = result.data?.data?.book;
+            if (!b || cancelled) return;
+            setBook(toBookInfo(b, cachedUrl));
+            applyServerProgress(b);
           });
           return;
         }
 
-        // 5. Need to fetch fresh URL from API
-        const result = await fetchBookDetail(bookId).unwrap();
-        const bookData = result?.data?.book;
-
+        const bookData = (await fetchBookDetail(bookId).unwrap())?.data?.book;
+        if (cancelled) return;
         if (!bookData) {
           setStatus('error');
           setErrorMessage('Book not found');
           return;
         }
 
-        setBook({
-          id: bookData.id,
-          title: bookData.title,
-          author: bookData.author,
-          masterUrl: bookData.master ?? null,
-          hasAccess: bookData.hasAccess,
-          totalPages: bookData.totalPages,
-        });
+        setBook(toBookInfo(bookData, null));
+        applyServerProgress(bookData);
 
-        // Sync server progress (takes priority over local)
-        syncServerProgress(bookData);
-
-        // 6. Check access
         if (!bookData.master) {
-          if (!bookData.hasAccess) {
-            setStatus('no-access');
-            setErrorMessage('You need to purchase this book to read it');
-          } else {
-            setStatus('error');
-            setErrorMessage('This book is not available for reading yet');
-          }
+          setStatus(bookData.hasAccess ? 'error' : 'no-access');
+          setErrorMessage(
+            bookData.hasAccess ? 'This book is not available for reading yet' : 'You need to buy this book to read it'
+          );
           return;
         }
 
-        // 7. Cache the new signed URL
         await cacheSignedUrl(bookId, bookData.master);
 
-        // 8. Download PDF if needed
-        setStatus('downloading');
-        await FileSystem.makeDirectoryAsync(dir, { intermediates: true });
-
         if (!pdfExists) {
-          await FileSystem.downloadAsync(bookData.master, fileUri);
+          setDownloadPercent(0);
+          setStatus('downloading');
+          await downloadPdf(bookData.master, fileUri, (percent) => !cancelled && setDownloadPercent(percent));
         }
 
+        if (cancelled) return;
         setLocalPdfUri(fileUri);
         setStatus('ready');
-
       } catch (err) {
         console.error('[useEbookReader] Error:', err);
+        if (cancelled) return;
         setStatus('error');
-        setErrorMessage('Failed to load book. Please try again.');
+        setErrorMessage('Failed to load the book. Please try again.');
       }
     })();
-  }, [bookId, fetchBookDetail]);
 
-  const refetch = useCallback(async () => {
-    if (!bookId) return;
-    
-    isInitialized.current = false;
-    setStatus('loading');
-    
-    // Clear cached URL to force refresh
-    await cacheSignedUrl(bookId, ''); // This will be invalid and trigger refetch
-  }, [bookId]);
+    return () => {
+      cancelled = true;
+    };
+  }, [bookId, fetchBookDetail, applyServerProgress, reloadKey]);
 
-  const onPageChanged = useCallback((page: number, pages: number) => {
-    setCurrentPage(page);
-    setTotalPages(pages);
+  const refetch = useCallback(() => setReloadKey((key) => key + 1), []);
 
-    if (bookId && page !== lastSavedPage.current) {
-      lastSavedPage.current = page;
-      savePdfProgress(bookId, page, pages);
-    }
-  }, [bookId]);
-
-  // Save progress to server and navigate back
-  const saveProgressAndGoBack = useCallback(async () => {
-    if (bookId) {
-      try {
-        // Get progress from local storage
-        const progress = await getPdfProgress(bookId);
-        
-        if (progress?.page && progress.page > 0) {
-          // Save to server
-          await updateEbookProgress({
-            bookId,
-            currentPage: progress.page,
-          }).unwrap();
-        }
-      } catch (error) {
-        console.warn('[useEbookReader] Failed to save progress to server:', error);
+  const onPageChanged = useCallback(
+    (page: number, pages: number) => {
+      setCurrentPage(page);
+      setTotalPages(pages);
+      if (bookId && page !== latestPage.current) {
+        latestPage.current = page;
+        localUpdatedAt.current = Date.now();
+        savePdfProgress(bookId, page, pages);
       }
+    },
+    [bookId]
+  );
+
+  const saveToServer = useCallback(async () => {
+    const page = latestPage.current;
+    if (!bookId || page <= 0 || page === serverPage.current) return;
+    try {
+      await updateEbookProgress({ bookId, currentPage: page }).unwrap();
+      serverPage.current = page;
+    } catch (error) {
+      console.warn('[useEbookReader] Failed to save progress to server:', error);
     }
+  }, [bookId, updateEbookProgress]);
+
+  // Swipe back and the Android back button skip saveProgressAndGoBack, so save on unmount too
+  useEffect(() => () => void saveToServer(), [saveToServer]);
+
+  const saveProgressAndGoBack = useCallback(async () => {
+    await saveToServer();
     router.back();
-  }, [bookId, updateEbookProgress, router]);
+  }, [saveToServer, router]);
 
-  const onPdfError = useCallback((error: object) => {
-    console.error('[useEbookReader] PDF error:', error);
-    setStatus('error');
-    setErrorMessage('Failed to load PDF. The file may be corrupted.');
-  }, []);
+  // A file that cannot be rendered is deleted, so Retry downloads a fresh copy instead of reopening it
+  const onPdfError = useCallback(
+    (error: object) => {
+      console.error('[useEbookReader] PDF error:', error);
+      if (bookId) {
+        FileSystem.deleteAsync(pdfPath(bookId), { idempotent: true });
+        clearCachedSignedUrl(bookId);
+      }
+      setStatus('error');
+      setErrorMessage('This book could not be opened. Please try again.');
+    },
+    [bookId]
+  );
 
-  const progressPercent = totalPages > 0 
-    ? Math.round((currentPage / totalPages) * 100) 
-    : 0;
-  
+  const progressPercent = totalPages > 0 ? Math.round((currentPage / totalPages) * 100) : 0;
+
   return {
-    // Book info
     book,
-    
-    // Reader state
     status,
     errorMessage,
     localPdfUri,
-    
-    // Progress
+    downloadPercent,
     currentPage,
     totalPages,
     initialPage,
     progressPercent,
-    
-    // Actions
     onPageChanged,
     onPdfError,
     saveProgressAndGoBack,

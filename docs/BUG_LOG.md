@@ -139,6 +139,18 @@ _(not yet verified on device)_
 - **Cause.** `fullName.split(' ')` on "John  Doe" gives `['John', '', 'Doe']`, so the last name became " Doe".
 - **Fix.** `split(/\s+/)`.
 
+### 2.6 The ebook reader lost your place
+
+_(not yet verified on device)_
+
+- **Symptom.** Read to page 50, swipe back, open the book again. It opens on page 10.
+- **Cause.** Two bugs together.
+  - Progress was sent to the server only from the back button. Swipe back and the Android back button skipped it, so the server kept page 10.
+  - On open, server progress always won over the page saved on the phone. So the stale server page replaced the newer local one.
+- **Fix.** Save on unmount as well as on the back button. On open, compare timestamps: the server's `lastReadAt` against the local `updatedAt`. The newest wins. `src/ebookReader/hooks/useEbookReader.ts`.
+- **Say it.** "Progress had two copies, one on the device and one on the server, and the rule was 'server always wins'. But the server copy could be stale, because one exit path never saved. I made every exit save, and resolved the conflict by timestamp instead of by source."
+- **Term.** Sync conflict resolution. Last-write-wins by timestamp.
+
 ---
 
 ## 3. Native modules and library migrations
@@ -162,6 +174,19 @@ _(not yet verified on device)_
 
 - **Cause.** `Dimensions.get('window')` at the top of the file. It runs once, so rotating the device used old values.
 - **Fix.** `useWindowDimensions()`, which updates on rotation.
+
+### 3.4 A broken PDF download was cached forever
+
+_(not yet verified on device)_
+
+- **Symptom.** A book fails with "the file may be corrupted", every time, until the app is reinstalled.
+- **Cause.** `FileSystem.downloadAsync` wrote straight to the final path, and it does not throw on an HTTP error. An expired signed URL or a dropped connection left an error page or half a PDF at that path. Every later open saw the file existed and reused it. Retry did nothing either, because `refetch` reset a ref but nothing re-ran the load effect.
+- **Fix.**
+  - Download to a temp file, check for HTTP 200, then move it into place.
+  - If the PDF viewer cannot render the file, delete it and the cached URL.
+  - Retry now bumps a key in the load effect's dependencies, so it really reloads.
+- **Say it.** "Never write a download straight to the path you treat as the cache. Download to a temp file, check the status, then move it. A move is effectively atomic, so the cache only ever holds complete files."
+- **Term.** Atomic write. Cache poisoning.
 
 ---
 
@@ -258,6 +283,7 @@ _(not yet verified on device)_
 
 - **Community send and join:** errors were only logged. Now there is a toast, and a failed message stays in the box so you can retry.
 - **Event links:** `Linking.openURL` errors were silent. A live event with no meeting link showed an enabled button that did nothing. Now there is an alert on error, and the button is disabled without a link.
+- **Ebook reader:** the loading and downloading screens had no back button. On a large book you were stuck until the download finished. Now both have one, and the download shows a percentage.
 - **Profile photo upload:** an upload error was an unhandled promise rejection, with no message. Now there is a toast.
 - **Checkout, book load:** a network error showed "Book Not Found". Now it shows the error screen with Retry.
 
@@ -282,7 +308,28 @@ Found because RNTL queries by role and label. When the query failed, the app was
 
 ## 8. UX bugs
 
+### 8.1 The welcome message came back on every launch
+
+_(not yet verified on device)_
+
+- **Symptom.** The launch welcome modal, shown to the emails in the backend's `welcome_banner` config, appeared again on every app launch.
+- **Cause.** Closing it only set local state. The API call that records the dismissal was commented out behind a TODO, so `getMe` kept returning `showWelcomeBanner: true`.
+- **Fix.** Call the dismiss endpoint on close. The backend sets `welcomeBannerDismissedAt`, and the `User` tag refetches `getMe`, which then returns false. `app/(app)/_layout.tsx`.
+- **Say it.** "A 'show once' flag lived only in component state, which resets on every launch. 'Once' has to be stored somewhere that outlives the session. Here the server already supported it, and the call was just never switched on."
+- **Term.** Persisted versus session state.
+
+### 8.0 The notification prompt came back on every launch
+
+_(not yet verified on device)_
+
+- **Symptom.** Tap "Not Now" on the notification sheet, or deny notifications once. The sheet appears again on every single app launch.
+- **Cause.** The sheet only checked the system permission. After "Not Now" it is still `undetermined`, and after a denial it stays `denied`, so the check passed every time. Nothing remembered that we had already asked.
+- **Fix.** Store when the sheet was last shown, and do not show it again for 7 days. People who change their mind can use the Push Notifications toggle in Settings. `src/notifications/components/NotificationPermissionSheet.tsx`.
+- **Say it.** "A permission soft prompt has to remember that it asked. Otherwise 'Not now' means 'ask me again in five seconds', which trains people to deny and can get flagged in App Store review."
+- **Term.** Soft prompt or pre-permission prompt. Prompt fatigue.
+
 - **Chat bubbles were reversed.** Your own messages were on the left, which is the opposite of every chat app. They are now on the right.
+- **Navy behind every screen.** The root view and the app stack still used the old navy `#132440`. It showed through during screen transitions, under overscroll, and between the splash and the first screen. Both now use the page colour `#020103`, the same as the new splash. _(not yet verified on device)_
 - **An ended in-person event** still showed an active "Open in Maps" button. It now says "Event has ended".
 
 ---

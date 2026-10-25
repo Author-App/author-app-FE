@@ -9,6 +9,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import LottieView from 'lottie-react-native';
+import { getTokenValue } from 'tamagui';
 
 import { haptics } from '@/src/utils/haptics';
 
@@ -22,9 +23,7 @@ const CARD_MAX_WIDTH = 440;
 
 interface WelcomeModalProps {
   visible: boolean;
-  firstName?: string;
   onDismiss: () => void;
-  isDismissing?: boolean;
 }
 
 const WelcomeModal: React.FC<WelcomeModalProps> = ({ visible, onDismiss }) => {
@@ -51,9 +50,9 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ visible, onDismiss }) => {
   }, [onDismiss]);
 
   return (
-    <Modal visible={visible} animationType="fade" statusBarTranslucent transparent>
+    <Modal visible={visible} animationType="fade" statusBarTranslucent transparent onRequestClose={handleDismiss}>
       {/* Backdrop: tapping outside the card dismisses (mainly relevant on tablet). */}
-      <Pressable style={styles.backdrop} onPress={handleDismiss}>
+      <Pressable style={[styles.backdrop, { backgroundColor: getTokenValue('$bgPage', 'color') }]} onPress={handleDismiss}>
         <ScrollView
           style={styles.scroll}
           contentContainerStyle={styles.scrollContent}
@@ -91,7 +90,6 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ visible, onDismiss }) => {
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: '#000B33',
   },
   scroll: {
     flex: 1,

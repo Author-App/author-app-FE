@@ -21,8 +21,7 @@ import Animated, {
   interpolate,
 } from 'react-native-reanimated';
 import AuthBackground from '@/src/auth/components/AuthBackground';
-import UGradientText from '@/src/components/core/text/uGradientText';
-import UText from '@/src/components/core/text/uText';
+import UGlitchWordmark, { burst } from '@/src/components/core/text/uGlitchWordmark';
 
 // The wordmark shrinks to Login's wordmark: 14px there, 26px here, same spacing, same left gutter
 const EXIT_SCALE = 14 / 26;
@@ -30,15 +29,6 @@ const EXIT_SCALE = 14 / 26;
 const WORDMARK_WIDTH_EM = 11.55;
 const WORDMARK_SIZE = 26;
 const GUTTER = 24;
-
-const burst = (scale = 1) =>
-  withSequence(
-    withTiming(1 * scale, { duration: 60 }),
-    withTiming(-1 * scale, { duration: 60 }),
-    withTiming(0.6 * scale, { duration: 50 }),
-    withTiming(-0.4 * scale, { duration: 50 }),
-    withTiming(0, { duration: 80 })
-  );
 
 // glitch: -1..1 drives the RGB split and the jitter, 0 at rest. Uneven gaps so it is not mechanical
 const loopGlitch = (glitch: SharedValue<number>) => {
@@ -52,46 +42,6 @@ const loopGlitch = (glitch: SharedValue<number>) => {
 };
 
 const WORDMARK = 'Stanley Paden';
-
-/** Cyan and magenta copies sit behind the gradient wordmark and split apart during a burst. */
-const GlitchWordmark = ({ glitch }: { glitch: SharedValue<number> }) => {
-  const cyanStyle = useAnimatedStyle(() => ({
-    opacity: Math.abs(glitch.value) * 0.8,
-    transform: [{ translateX: glitch.value * -4 }],
-  }));
-  const magentaStyle = useAnimatedStyle(() => ({
-    opacity: Math.abs(glitch.value) * 0.8,
-    transform: [{ translateX: glitch.value * 4 }],
-  }));
-  const baseStyle = useAnimatedStyle(() => ({
-    transform: [{ translateX: glitch.value * 1.5 }],
-  }));
-
-  return (
-    <>
-      {/* Decoration only: hidden from screen readers so the name is read once */}
-      <Animated.View
-        style={[StyleSheet.absoluteFill, cyanStyle]}
-        accessibilityElementsHidden
-        importantForAccessibility="no-hide-descendants"
-      >
-        <UText variant="wordmark-lg" color="$glowCyan">{WORDMARK}</UText>
-      </Animated.View>
-      <Animated.View
-        style={[StyleSheet.absoluteFill, magentaStyle]}
-        accessibilityElementsHidden
-        importantForAccessibility="no-hide-descendants"
-      >
-        <UText variant="wordmark-lg" color="$magentaGlow">{WORDMARK}</UText>
-      </Animated.View>
-      <Animated.View style={baseStyle}>
-        <UGradientText variant="wordmark-lg" accessibilityRole="header">
-          {WORDMARK}
-        </UGradientText>
-      </Animated.View>
-    </>
-  );
-};
 
 const OnboardingScreen = memo(() => {
   const router = useRouter();
@@ -169,7 +119,7 @@ const OnboardingScreen = memo(() => {
               ref={wordmarkRef}
               style={[styles.wordmark, { width: wordmarkWidth }, animatedWordmarkStyle]}
             >
-              <GlitchWordmark glitch={glitch} />
+              <UGlitchWordmark glitch={glitch}>{WORDMARK}</UGlitchWordmark>
             </Animated.View>
           </UAnimatedView>
           <LinearGradient
