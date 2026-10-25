@@ -1,0 +1,97 @@
+# Lane 1 helper: tells you on the PR whether it changes native code.
+#
+# Native code (native libraries, permissions, config plugins, splash, icon) can only
+# reach users through a store release. JS reaches them over the air. This compares
+# the Expo fingerprint (a hash of everything native) of the PR against its base.
+
+name: Native Check
+
+on:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  fingerprint:
+    name: Native change check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'pnpm'
+
+      - name: Fingerprint of this PR
+        run: |
+          pnpm install --frozen-lockfile
+          npx @expo/fingerprint fingerprint:generate > /tmp/head.json
+
+      - name: Fingerprint of the base branch
+        run: |
+          git checkout --quiet ${{ github.event.pull_request.base.sha }}
+          pnpm install --frozen-lockfile
+          npx @expo/fingerprint fingerprint:generate > /tmp/base.json
+
+      - name: Comment on the PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          git checkout --quiet "$HEAD_SHA"
+          BASE=$(node -p "require('/tmp/base.json').hash")
+          HEAD=$(node -p "require('/tmp/head.json').hash")
+
+          if [ "$BASE" = "$HEAD" ]; then
+            echo "No native change. Ships over the air after merge."
+            # Only rewrites an earlier warning on this PR; never adds a comment to a clean PR
+            gh pr comment "$PR" --edit-last --body "### ✅ No native change
+
+          A later push removed the native change. This PR ships over the air after merge." 2>/dev/null || true
+            exit 0
+          fi
+
+          BASE_VERSION=$(git show "${{ github.event.pull_request.base.sha }}:app.json" | node -p "JSON.parse(require('fs').readFileSync(0)).expo.version")
+          HEAD_VERSION=$(node -p "require('./app.json').expo.version")
+          CHANGED=$(node -e "
+            const base = new Set(require('/tmp/base.json').sources.map(s => s.hash));
+            const head = require('/tmp/head.json').sources.filter(s => !base.has(s.hash));
+            console.log(head.map(s => '- ' + (s.filePath || s.id)).slice(0, 15).join('\n'));
+          ")
+
+          if [ "$BASE_VERSION" = "$HEAD_VERSION" ]; then
+            NOTE="**The app.json version is still $HEAD_VERSION.** Bump it in this PR, or the over-the-air update after merge would reach phones running the old binary, which do not have this native code."
+          else
+            NOTE="Version bumped $BASE_VERSION → $HEAD_VERSION. After merge, ship it with \`git tag v$HEAD_VERSION && git push --tags\`."
+          fi
+
+          gh pr comment "$PR" --edit-last --create-if-none --body "### ⚠️ This PR changes native code
+
+          It can only reach users through a new store release (Lane 3).
+
+          $NOTE
+
+          <details><summary>What changed</summary>
+
+          $CHANGED
+          </details>"
+
+          # A native change without a version bump is the one dangerous case: fail the check
+          if [ "$BASE_VERSION" = "$HEAD_VERSION" ]; then exit 1; fi

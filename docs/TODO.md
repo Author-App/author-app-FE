@@ -47,6 +47,13 @@ These were built and typechecked, but not yet checked on the simulator.
 - [ ] **Double tap**: tap Read Now, a book card, and a video card twice quickly. Each opens once, and one back press returns. Watch Metro for a "No route named" warning, which would mean a name in `SINGULAR_SCREENS` is wrong.
 - [ ] **Detox E2E** before merging. The looping animations on onboarding and login may block synchronisation (see CLAUDE.md).
 
+## CI/CD first run
+
+- [ ] Run **Actions > EAS Build**, profile `preview`, for the current version. Install it on your phone (`eas device:create` first for iOS). Until it exists, `eas-update.yml` fails on every merge.
+- [ ] Open a test PR that changes `app.json` plugins without a version bump: Native Check comments and fails. Bump the version: it passes.
+- [ ] Merge a JS-only change: the update lands on the preview phone only. Run **EAS Promote**: it reaches a production install.
+- [ ] Next release: `git tag vX.Y.Z && git push --tags`, confirm both stores receive the build and a matching preview build appears.
+
 ## Features deferred
 
 - [ ] **App-wide mini player.** Keep audio and video playing after leaving the screen, docked above the tab bar, reusable for every media type. Needs the player owned at the app root, not the screen. Progress saving in `useSaveMediaProgress` currently relies on the screen unmounting, so that has to move too. Design it before building it.

@@ -1,18 +1,19 @@
-# EAS Build Workflow
-# Triggers EAS builds for preview and production releases
+# Lane 3: a store release, started only by pushing a version tag.
+#
+#   1. Bump "version" in app.json (in the PR, the Native Check comment reminds you)
+#   2. Merge, then on main:  git tag v1.1.0 && git push --tags
+#   3. This builds iOS and Android and submits exactly those builds to the stores
+#      (App Store Connect / Play internal track). Going public is still your click there.
+#   4. It also builds a preview binary of the same version for tester phones, so
+#      Lane 2 updates for this version have somewhere to land.
+#
+# A merge to main never builds a binary. Manual runs stay available for one-off builds.
 
 name: EAS Build
 
 on:
   push:
-    branches: [main]
-    paths:
-      - 'package.json'
-      - 'app.json'
-      - 'eas.json'
-      - 'ios/**'
-      - 'android/**'
-      - 'plugins/**'
+    tags: ['v*']
   workflow_dispatch:
     inputs:
       platform:
@@ -20,50 +21,40 @@ on:
         required: true
         default: 'all'
         type: choice
-        options:
-          - ios
-          - android
-          - all
+        options: [all, ios, android]
       profile:
-        description: 'Build profile'
+        description: 'Build profile (production here builds without submitting)'
         required: true
         default: 'preview'
         type: choice
-        options:
-          - development
-          - preview
-          - production
-      version_confirmed:
-        description: '⚠️ Is app version updated in app.json? (Required for App Store releases)'
-        required: true
-        type: boolean
-        default: false
+        options: [development, preview, production]
+
+# One release at a time: a second tag waits instead of racing the first
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
 
 jobs:
-  build:
-    name: EAS Build
+  release:
+    name: Store release
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: 📋 Check version (Manual builds)
-        if: github.event_name == 'workflow_dispatch' && inputs.profile == 'production'
+      - name: Check the tag matches app.json
         run: |
-          VERSION=$(cat app.json | jq -r '.expo.version')
-          echo "📦 Current app version: $VERSION"
-          echo ""
-          if [ "${{ inputs.version_confirmed }}" != "true" ]; then
-            echo "❌ ERROR: Production build requires version confirmation!"
-            echo "Please check the 'version_confirmed' checkbox after verifying app.json version."
+          VERSION=$(node -p "require('./app.json').expo.version")
+          if [ "${GITHUB_REF_NAME}" != "v$VERSION" ]; then
+            echo "::error::Tag ${GITHUB_REF_NAME} does not match app.json version $VERSION. Expected v$VERSION."
             exit 1
           fi
-          echo "✅ Version confirmed: $VERSION"
+          echo "Releasing $VERSION"
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        # Version comes from the packageManager field in package.json.
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -79,20 +70,41 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # Build on push to main (production)
-      - name: Build for Production (iOS)
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: eas build --platform ios --profile production --non-interactive
+      - name: Create Google Service Account JSON
+        run: echo '${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}' > google-service-account.json
 
-      - name: Build for Production (Android)
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: eas build --platform android --profile production --non-interactive
+      # --auto-submit submits the build this command made, never "the latest build on EAS"
+      - name: Build and submit to the stores
+        run: eas build --platform all --profile production --auto-submit --non-interactive
 
-      # Manual builds
-      - name: Build (Manual - iOS)
-        if: github.event_name == 'workflow_dispatch' && (inputs.platform == 'ios' || inputs.platform == 'all')
-        run: eas build --platform ios --profile production --non-interactive --clear-cache
+      - name: Build the matching tester binary
+        run: eas build --platform all --profile preview --non-interactive --no-wait
 
-      - name: Build (Manual - Android)
-        if: github.event_name == 'workflow_dispatch' && (inputs.platform == 'android' || inputs.platform == 'all')
-        run: eas build --platform android --profile ${{ inputs.profile }} --non-interactive
+  manual:
+    name: Manual build
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Setup Expo
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: eas build --platform ${{ inputs.platform }} --profile ${{ inputs.profile }} --non-interactive

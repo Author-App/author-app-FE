@@ -1,0 +1,56 @@
+# Lane 2, step 2: send the update testers have been running to EVERYONE.
+#
+# Republish copies the latest update on the "preview" branch to the "production" branch.
+# It is the same JS bundle, byte for byte, not a rebuild, so store users get exactly
+# what was tested. Run it from Actions > EAS Promote > Run workflow.
+
+name: EAS Promote
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: 'Platform to promote'
+        required: true
+        default: 'all'
+        type: choice
+        options: [all, ios, android]
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  promote:
+    name: Promote preview to production
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Setup Expo
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Promote
+        run: |
+          eas update:republish \
+            --branch preview \
+            --destination-branch production \
+            --platform ${{ inputs.platform }} \
+            --message "Promoted from preview by ${{ github.actor }}" \
+            --non-interactive

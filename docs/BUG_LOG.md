@@ -334,6 +334,25 @@ _(not yet verified on device)_
 
 ---
 
+## 9. CI/CD
+
+### 9.1 Two quick merges could submit the wrong build
+
+_(not yet verified in CI)_
+
+- **Symptom.** Merge two PRs with native changes a few minutes apart. The store could receive build B under the run for A, and the release tag could point at a commit that was not in the store.
+- **Cause.** Native builds started on every merge that touched certain paths, with no `concurrency` group, so two builds ran at once. The submit workflow used `eas submit --latest`, which means "the newest build on EAS", not "the build this run made".
+- **Fix.** Store releases start only from a `v*` tag, one at a time (`concurrency`), and use `eas build --auto-submit`, which submits the build that command produced. Merges to main only ship OTA, to testers first, then a Promote button copies the same bundle to everyone.
+- **Say it.** "The pipeline built and submitted on merge, and the submit step picked 'latest'. With two merges close together, latest could be the other build. I moved store releases behind an explicit tag, made them run one at a time, and submit the exact build. Merges only ship over-the-air, to testers first."
+- **Term.** Race condition in CI. Release tagging. Staged rollout.
+
+### 9.2 A native change without a version bump had no guard
+
+- **Cause.** OTA updates reach phones by runtime version, which here is the `app.json` version. If a PR changed native code but not the version, the OTA guard saw "a build with this version exists" and published JS to phones that did not have the new native code.
+- **Fix.** `native-check.yml` compares the Expo fingerprint of the PR against its base and fails the PR when native changed and the version did not.
+- **Say it.** "OTA safety depended on a human remembering to bump the version. I turned that into a failing PR check by hashing the native layer."
+- **Term.** Runtime version. Expo fingerprint.
+
 ## How to add an entry
 
 When a bug is fixed, add it under the right section with the same parts: Symptom, Cause, Fix, Say it, Term. Mark it _(not yet verified on device)_ until you have checked it on a device. Then add it to `docs/TODO.md` if it needs a device check.
