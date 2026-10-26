@@ -40,7 +40,6 @@ const ContinueReadingCard = memo(({ item, index, onPress, ...props }: ContinueRe
         borderWidth={1}
         borderColor="$glassBorder"
         pressStyle={{ scale: 0.98, opacity: 0.9 }}
-        animation="quick"
         onPress={onPress}
         accessible
         accessibilityRole="button"

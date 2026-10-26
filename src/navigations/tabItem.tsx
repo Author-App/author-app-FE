@@ -58,7 +58,6 @@ const TabItem = ({ routeName, focused, onPress }: TabItemProps) => {
       jc="center"
       onPress={onPress}
       pressStyle={{ opacity: 0.7, scale: 0.92 }}
-      animation="quick"
       // Inactive tabs are icon only: the label is the only name a screen reader has
       accessible
       accessibilityRole="button"

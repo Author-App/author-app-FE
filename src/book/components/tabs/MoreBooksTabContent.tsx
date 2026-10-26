@@ -44,7 +44,6 @@ const RelatedBookGridCard = memo(
         borderColor="$glassBorder"
         onPress={onPress}
         pressStyle={{ scale: 0.96, opacity: 0.9 }}
-        animation="quick"
         accessible
         accessibilityRole="button"
         accessibilityLabel={book.title}

@@ -5,14 +5,13 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
-import Toast from 'react-native-toast-message';
 
 import { persistor, store } from '@/src/store';
 import AppTamaguiProvider from '@/src/components/providers/appTamaguiProvider';
 import FontProvider from '@/src/components/providers/fontProvider';
 import { AppStripeProvider } from '@/src/components/providers/appStripeProvider';
 import { OTAUpdateTracker } from '@/src/components/providers/OTAUpdateTracker';
-import toastConfig from '@/src/components/core/toast/toastConfig';
+import { ToastHost } from '@/src/components/core/toast/toast';
 import { NotificationDeepLinkHandler } from '@/src/notifications';
 import {
   initSentry,
@@ -47,7 +46,7 @@ export default sentryWrap(function RootLayout() {
                     <SentryUserSync />
                     <NotificationDeepLinkHandler />
                     <Slot />
-                    <Toast config={toastConfig} topOffset={0} />
+                    <ToastHost />
                   </FontProvider>
                 </AppTamaguiProvider>
               </AppStripeProvider>

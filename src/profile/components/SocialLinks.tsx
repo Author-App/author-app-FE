@@ -48,7 +48,6 @@ const SocialLinks: React.FC<SocialLinksProps> = ({ links }) => {
           borderColor="rgba(255,255,255,0.12)"
           onPress={() => openLink(link.url)}
           pressStyle={{ scale: 0.95, opacity: 0.8 }}
-          animation="quick"
           accessible
           accessibilityRole="link"
           accessibilityLabel={link.label}

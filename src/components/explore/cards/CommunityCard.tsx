@@ -41,7 +41,6 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
         ai="center"
         onPress={() => onPress(data)}
         pressStyle={{ scale: 0.98, opacity: 0.9 }}
-        animation="quick"
         accessible
         accessibilityRole="button"
         accessibilityLabel={`${data.title}, ${threads}`}

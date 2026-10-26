@@ -38,7 +38,6 @@ const BookCard = memo(({ item, onPress, index, isAudiobook }: BookCardProps) => 
         borderColor="$glassBorder"
         onPress={onPress}
         pressStyle={{ scale: 0.96, opacity: 0.9 }}
-        animation="quick"
         accessible
         accessibilityRole="button"
         accessibilityLabel={`${item.title}, ${item.hasAccess ? 'owned' : price}`}

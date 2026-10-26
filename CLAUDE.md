@@ -119,8 +119,8 @@ Do not re-argue these.
 | `src/components/core/inputs/__tests__/uSearchbar.test.tsx` | component | Good. `changeText`, clear button, disabled. |
 | `src/store/selectors/__tests__/homeSelectors.test.ts` | unit, real store | Good. Seeds the RTK Query cache. |
 | `src/home/hooks/__tests__/useHomeData.test.tsx` | hook, async | Good. Real store, only `fetch` faked. |
-| `src/home/components/__tests__/HomeScreen.test.tsx` | integration | Good. Whole screen, real store, only `fetch` and `expo-router` faked. Covers loading, error, retry, stale-feed-on-failed-refresh (with the Retry toast, `react-native-toast-message` mocked locally), and navigation. |
-| `src/auth/login/components/__tests__/LoginScreen.test.tsx` | integration | Good. Whole login flow: validation, payload, navigation, toasts, failure keeping the form. Fakes `fetch`, `expo-router`, the toast and `expo-application`. |
+| `src/home/components/__tests__/HomeScreen.test.tsx` | integration | Good. Whole screen, real store, only `fetch` and `expo-router` faked. Covers loading, error, retry, stale-feed-on-failed-refresh (with the Retry toast: the real `ToastHost` is rendered next to the screen and the toast is found by its text), and navigation. |
+| `src/auth/login/components/__tests__/LoginScreen.test.tsx` | integration | Good. Whole login flow: validation, payload, navigation, toasts, failure keeping the form. Fakes `fetch`, `expo-router` and `expo-application`. Renders the real `ToastHost` and reads toasts by text. |
 | `src/navigations/__tests__/bottomNavbar.test.tsx` | component | Good. Label only on the active tab, `selected` state, tab press navigates, re-tap resets every tab (product decision). Fakes React Navigation's `state` and `navigation` props; mocks `@expo/vector-icons` locally to stop async font `act()` warnings. |
 | `src/__tests__/smoke.test.tsx` | component | One test. Proves the render pipeline works. |
 | `e2e/login.test.js` | E2E, Detox | Good. Real Release build on a simulator, real backend, real account. Onboarding to login to home. |
@@ -148,6 +148,10 @@ Do not re-argue these.
 1. **Hittability.** Detox refuses to tap a view a finger could not reach. The Sign In button is covered by the keyboard, so the test submits with `tapReturnKey()` instead. RNTL would have pressed it happily, because RNTL has no keyboard and no screen.
 2. **Synchronisation.** Detox waits for the app to be idle before every match. `HeroBanner` runs `setInterval(4000)` forever, so idle never comes and `waitFor` times out while the screen looks correct. Fixed with a narrow `device.disableSynchronization()` before the home assertions only, never at launch.
 3. **Keychain.** `expo-secure-store` writes to the iOS keychain, which survives an app reinstall. Without `device.clearKeychain()` the app can boot already logged in and the test proves nothing.
+
+**One animation system: Reanimated.** Never use Tamagui's `animation` prop on views (`animation="quick"` and similar). Its driver is React Native's old `Animated`, which updates views with `setNativeProps` from the JS thread and crashed the app when it collided with Reanimated (BUG_LOG 5.6). `pressStyle` without `animation` is fine, it just applies instantly. The only exception is `Sheet`, which needs the driver. Toasts are our own `Toast`/`ToastHost` (`src/components/core/toast/toast.tsx`) on Reanimated; `react-native-toast-message` was removed because its Android slide used the JS driver.
+
+**`getByRole` only matches accessible elements.** A `queryByRole(...)` that expects "not on screen" on a non-accessible element passes whatever happens. Query toasts by their text.
 
 **Every bug fixed goes in `docs/BUG_LOG.md`**, in the same session, with Symptom, Cause, Fix, Say it, and Term. He uses it to prepare interview answers. Mark anything not checked on a device as _(not yet verified on device)_.
 

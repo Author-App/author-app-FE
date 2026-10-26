@@ -140,7 +140,6 @@ const PlayerControls = memo(function PlayerControls({
         accessibilityRole="button"
         accessibilityLabel="Rewind 10 seconds"
         pressStyle={{ opacity: 0.7, scale: 0.95 }}
-        animation="quick"
       >
         <IconRewind10 dimen={36} />
       </YStack>
@@ -161,7 +160,6 @@ const PlayerControls = memo(function PlayerControls({
         accessibilityLabel={isPlaying ? 'Pause' : 'Play'}
         accessibilityState={{ disabled: isLoading, busy: isLoading }}
         pressStyle={{ opacity: 0.7, scale: 0.95 }}
-        animation="quick"
       >
         <UCtaGradient radius={36} />
         {/* The play glyph sits a little left of centre, so nudge it */}
@@ -184,7 +182,6 @@ const PlayerControls = memo(function PlayerControls({
         accessibilityRole="button"
         accessibilityLabel="Forward 10 seconds"
         pressStyle={{ opacity: 0.7, scale: 0.95 }}
-        animation="quick"
       >
         <IconForward10 dimen={36} />
       </YStack>

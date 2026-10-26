@@ -1,5 +1,4 @@
-import Toast from "react-native-toast-message";
-import type { ToastAction } from "@/src/components/core/toast/toastConfig";
+import { Toast, type ToastAction } from "@/src/components/core/toast/toast";
 
 /** Pass title '' for a one-line toast. action adds a button, such as Retry. */
 export const showErrorToast = (error: string, title?: string, action?: ToastAction) => {

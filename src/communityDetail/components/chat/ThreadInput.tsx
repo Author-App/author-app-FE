@@ -3,7 +3,7 @@ import { Platform, ActivityIndicator } from 'react-native';
 import { XStack, YStack, getTokenValue } from 'tamagui';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Toast from 'react-native-toast-message';
+import { Toast } from '@/src/components/core/toast/toast';
 
 import UInput from '@/src/components/core/inputs/uInput';
 import UCtaGradient from '@/src/components/core/display/uCtaGradient';

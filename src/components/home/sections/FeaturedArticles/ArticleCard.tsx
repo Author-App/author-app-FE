@@ -26,7 +26,6 @@ const ArticleCard = memo(({ item, index, onPress, ...props }: ArticleCardProps) 
       borderWidth={1}
       borderColor="$glassBorder"
       pressStyle={{ scale: 0.98, opacity: 0.9 }}
-      animation="quick"
       onPress={onPress}
       accessible
       accessibilityRole="button"

@@ -1,6 +1,7 @@
 import { renderWithProviders, screen, waitFor, fireEvent } from '@/src/test-utils/render';
 
 import HomeScreen from '../HomeScreen';
+import { ToastHost } from '@/src/components/core/toast/toast';
 import { homeApi } from '@/src/store/api/homeApi';
 import { buildHomeFeed } from '@/src/test-utils/homeFeed.fixture';
 import { makeHomeStore, mockFetchJson, type HomeStore } from '@/src/test-utils/homeStore';
@@ -11,14 +12,15 @@ jest.mock('expo-router', () => ({
   router: { push: (...args: unknown[]) => mockPush(...args) },
 }));
 
-// The toast library is a boundary we do not own. The mock is what the refresh test reads.
-const mockToastShow = jest.fn();
-jest.mock('react-native-toast-message', () => ({
-  __esModule: true,
-  default: { show: (...args: unknown[]) => mockToastShow(...args), hide: jest.fn() },
-}));
-
-const renderHome = (store: HomeStore) => renderWithProviders(<HomeScreen />, { store });
+// The toast is our own component now, so it is rendered for real, as at the app root
+const renderHome = (store: HomeStore) =>
+  renderWithProviders(
+    <>
+      <HomeScreen />
+      <ToastHost />
+    </>,
+    { store }
+  );
 
 describe('HomeScreen', () => {
   let store: HomeStore;
@@ -55,7 +57,7 @@ describe('HomeScreen', () => {
     await waitFor(() => expect(screen.getByText('Feed is down')).toBeOnTheScreen());
     expect(screen.getByText('Retry')).toBeOnTheScreen();
     // A first load has nothing stale to warn about: the error card already says it
-    expect(mockToastShow).not.toHaveBeenCalled();
+    expect(screen.queryByText("Couldn't refresh. Showing saved content.")).not.toBeOnTheScreen();
   });
 
   it('retries the request when the user presses Retry', async () => {
@@ -100,17 +102,11 @@ describe('HomeScreen', () => {
       expect(store.getState().homeApi.queries['getHomeFeed(undefined)']?.status).toBe('rejected')
     );
     expect(screen.getByText('Dune')).toBeOnTheScreen();
-    expect(screen.queryByText('Retry')).not.toBeOnTheScreen();
+    // No error card: that one shows the server message
+    expect(screen.queryByText('Feed is down')).not.toBeOnTheScreen();
     // The feed is stale now, so the user is told, with a way to try again
-    await waitFor(() =>
-      expect(mockToastShow).toHaveBeenCalledWith(
-        expect.objectContaining({
-          type: 'error',
-          text2: "Couldn't refresh. Showing saved content.",
-          props: { action: expect.objectContaining({ label: 'Retry' }) },
-        })
-      )
-    );
+    expect(await screen.findByText("Couldn't refresh. Showing saved content.")).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'Retry' })).toBeOnTheScreen();
   });
 
   describe('tapping content', () => {

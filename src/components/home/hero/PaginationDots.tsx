@@ -24,7 +24,6 @@ const PaginationDots = memo(({ total, activeIndex }: PaginationDotsProps) => (
           bg={active ? '$accentCyan' : '$dotInactive'}
           // Both states set a value: an animated prop that goes undefined keeps its old value
           boxShadow={active ? '0 0 8px rgba(0,240,255,0.6)' : 'none'}
-          animation="quick"
         />
       );
     })}

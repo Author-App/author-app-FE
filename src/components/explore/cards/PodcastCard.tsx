@@ -33,7 +33,6 @@ const PodcastCard: React.FC<PodcastCardProps> = ({ data, onPress }) => {
       boxShadow="0 0 24px rgba(0,240,255,0.15)"
       onPress={() => onPress(data)}
       pressStyle={{ scale: 0.98, opacity: 0.9 }}
-      animation="quick"
       accessible
       accessibilityRole="button"
       accessibilityLabel={`Play ${data.name}, ${duration}`}

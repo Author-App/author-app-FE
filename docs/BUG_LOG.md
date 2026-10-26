@@ -14,7 +14,21 @@ Each entry has the same parts:
 
 ---
 
+## How performance was measured
+
+Every performance entry follows the same loop, so the numbers can be defended:
+
+1. **Pick one action** and do it the same way every time (idle 10 seconds, one pull to refresh, one tab switch).
+2. **Baseline:** Perf Monitor for JS and UI fps, React DevTools Profiler for commits, with "Record why each component rendered" on.
+3. **Find the cause** from "why did this render": hook changed, props changed, parent rendered, or context changed.
+4. **Change one thing**, then repeat the same action in the same build.
+5. **Log before and after**, saying which build and which filter, so the comparison is fair.
+
+Dev build numbers are slower than release in absolute terms, but render counts are exact in both, and relative changes hold.
+
 ## The five best stories
+
+(Strong addition: 5.6, a native crash diagnosed from crash reports, with a before and after.)
 
 Use these first. Each one has a clear cause, a real cost, and a fix you can explain in under a minute.
 
@@ -268,6 +282,71 @@ _(not yet verified on device)_
 - **Cause.** A margin on a `stickyHeaderIndices` child sticks with it, and shows as a gap.
 - **Fix.** Put the spacing on the element above, as padding.
 
+### 5.6 Native crash: two animation systems writing to the same view tree
+
+_(verified in the iOS simulator, dev build; not yet checked in a release build or in Sentry)_
+
+- **Symptom.** The app closed with no error screen while scrolling Home fast, pulling to refresh, and switching tabs during the refresh. It took 4 to 5 tries to reproduce. The carousel dots also visibly lagged when they changed.
+- **Evidence.** Three crash reports, all `EXC_BAD_ACCESS (SIGSEGV)`, "possible pointer authentication failure", which is a read of freed memory. In all three:
+  - **UI thread:** Reanimated, `performOperations`, `commitUpdates`, `cloneShadowTreeWithNewProps`, copying a view's props.
+  - **JS thread, at the same moment:** `UIManager::setNativeProps_DEPRECATED`, replacing props in the same tree.
+- **Cause.** The app ran two animation systems.
+  - Reanimated drives our fades, skeletons and sticky bars from the UI thread.
+  - Tamagui's `animation="quick"` prop runs on React Native's old `Animated` API (`@tamagui/animations-react-native`). Tamagui only uses the native driver when every style key can be animated natively. Our cards and dots also set width, colour and shadow, so they ran on the JS thread and pushed every frame through `setNativeProps` (`react-native/Libraries/Animated/nodes/AnimatedValue.js`).
+  - Two threads cloned the same shadow tree. One freed props the other was still copying.
+  - The carousel `PaginationDots` animated width and colour every 4 seconds, with no touch needed, so the collision chance was always there on Home.
+- **How it was narrowed down.**
+  1. Read the full `.ips` crash report in `~/Library/Logs/DiagnosticReports`, not just its tail.
+  2. Compared the threads across three reports: the same pair every time.
+  3. Searched for who calls `setNativeProps`: not our code, but React Native `Animated`, used by Tamagui's driver.
+  4. First experiment, `animations: undefined` in the Tamagui config, broke the app (`Sheet` needs a driver, and the hook order changed). The lesson: switch off one thing at a time, and only things the app can run without.
+  5. Second experiment: removed `animation="quick"` from the six Home and tab bar components only. No crash in about 15 tries, and the dots stopped lagging.
+- **Fix.** Removed `animation="quick"` everywhere (19 places). Press styles still apply, instantly. `USwitch`'s thumb slide moved to Reanimated. The Tamagui driver stays configured only because `Sheet` requires it.
+- **Measured.** Before: crash in 4 to 5 tries, dots lag visible. After: 0 crashes in about 15 tries, dots smooth.
+- **Follow-up, same root cause.** `react-native-toast-message` slid in with React Native `Animated`, and on Android its native driver was off (`Platform.select({ ios: true, default: false })`), so every frame went through `setNativeProps`. The "couldn't refresh" toast appears exactly while Reanimated runs the refresh spinner. Replaced it with our own `Toast` and `ToastHost` on Reanimated layout animations, keeping the same `Toast.show` call shape so the 16 call sites only changed their import. _(Android not yet verified on a device.)_
+- **A fake assertion found on the way.** The Home test asserted `queryByRole('alert')` was not on screen. RNTL only matches roles on accessible elements, and the toast container is not one, so that assertion passed no matter what. The tests now find toasts by their text.
+- **Say it.** "The app crashed natively under load, with no JS error. The crash reports showed Reanimated cloning the view tree on the UI thread while React Native's old Animated API called setNativeProps on the JS thread. Tamagui's animation prop used that old API. I proved it by removing the prop from just the Home components: the crash stopped and the carousel got smoother. Then I removed it everywhere, so only one animation system touches the view tree."
+- **Term.** Use-after-free. Race condition between threads. Native crash report (`.ips`) and symbolicated stack traces. JS-driven versus native-driven animation.
+
+### 5.7 Home re-rendered while nobody touched it
+
+_(measured in the iOS simulator, dev build, React DevTools Profiler)_
+
+- **Symptom.** Home sitting idle for 10 seconds produced 23 commits. The banner only advances every 4 seconds, so about 3 were expected.
+- **How it was found.** Profiler with "Record why each component rendered". The top component in most commits was `HeroBanner`, with the reason "Hook 1 changed", which is its `activeIndex` state. The slowest part was a card `YStack` with "Props changed".
+- **Cause.** Three problems on top of each other.
+  - **Two writers.** The timer set `activeIndex`, and `onViewableItemsChanged` set it again while the list slid to the next card, sometimes passing through the old index first. One step gave 2 or 3 renders.
+  - **Each render rebuilt the list.** `contentContainerStyle={{ ... }}` was a new object every render and each card got a new `onPress`, so the `FlatList` and every `BannerCard` re-rendered for what was only a dots change.
+  - **A side effect inside a state updater.** The timer scrolled the list inside `setActiveIndex(prev => ...)`. Updaters must be pure, because React may call them more than once.
+- **Fix.** `src/components/home/hero/HeroBanner.tsx`.
+  - One entry point, `goTo(index)`, which ignores the index it already has. The timer calls it, and a manual swipe calls it once when the swipe settles (`onMomentumScrollEnd`). `onViewableItemsChanged` is gone.
+  - The style is a module constant, and the `FlatList` element is memoized, so a dots change re-renders only `HeroBanner` and `PaginationDots`.
+  - The index lives in a ref for the timer; the scroll happens outside the updater.
+- **Measured.** React DevTools Profiler, iOS simulator, dev build. The "before" numbers were taken with every commit counted, so the fair comparison is the "all commits" column. The second column hides commits under 1 ms, which are too cheap to matter.
+
+  | Scenario | Before (all commits) | After (all commits) | After (commits over 1 ms) |
+  |---|---|---|---|
+  | Home idle for 10 seconds | 23 | 16 | 3, one per 4-second banner step, about 5 ms each |
+  | One pull to refresh | 55 | 18 | 4: refresh starts, banner, new sections, banner step |
+
+  In each banner step only `HeroBanner` and `PaginationDots` render now; the list and its cards stay grey in the Profiler. In a refresh, the sections render once, when the new data arrives.
+- **How to quote it honestly.** "Refresh went from 55 commits to 18, and only 4 of those take more than a millisecond." Compare like with like: do not put the filtered 4 next to the unfiltered 55.
+- **Say it.** "The Profiler showed the banner re-rendering more than twice per slide while idle. Two places wrote the same state, and every render rebuilt the list because I passed a new style object and new functions. I made one entry point that ignores duplicates, and memoized the list, so a slide costs one 5 ms render that touches only the dots."
+- **Term.** Re-render cascade. Referential equality. Single source of truth. Pure state updaters.
+
+### 5.8 Fast tab switching left a tab black
+
+_(verified in the iOS simulator by hand: reproduced before, not reproducible after)_
+
+- **Symptom.** Switching tabs quickly, at random, one tab showed only black with its tab selected.
+- **How it was narrowed down.** With the app stuck, the Element Inspector and React DevTools both highlighted the screen's elements: they were mounted but invisible, so something had left them at opacity 0. `UAnimatedView` was the first suspect, but it only fades a screen on its first mount, and already-visited tabs went black too. The one animation that ran on every switch was the tab navigator's own `animation: 'shift'`.
+- **Cause (most likely).** `shift` fades each tab scene's opacity between 0 and 1 with React Native `Animated` on the native driver. A fast switch interrupts the running animation, and inactive tabs are detached from the view tree (`detachInactiveScreens`). An update sent to a detached scene can be lost, so it returns with opacity 0.
+- **Fix.** Removed `animation: 'shift'` from the tab navigator. Tabs switch instantly, as native iOS tab bars do. `src/navigations/bottomNavTabLayout.tsx`.
+- **Measured.** Before: reproduced by hand within a few seconds of fast switching. After: not reproducible.
+- **Options not taken.** `detachInactiveScreens={false}`, a newer `@react-navigation/bottom-tabs`, or our own Reanimated transition that snaps to visible when interrupted.
+- **Say it.** "Screens went black after fast tab switches. The inspector showed the views were there but invisible. The tab transition animated opacity on the native driver, and an interrupted animation on a detached screen could leave it at zero. I removed the transition, which also matches how native iOS tabs behave."
+- **Term.** Native-driven animation. Interrupted animation. Detached inactive screens.
+
 ---
 
 ## 6. Requests and feedback
@@ -305,6 +384,17 @@ Found because RNTL queries by role and label. When the query failed, the app was
 - **Say it.** "My tests query the way a screen reader does, by role and label. When a query failed, that was the app telling me it was not accessible. I fixed the component, never the query."
 
 ---
+
+### 7.1 The tab bar was invisible to iOS accessibility
+
+_(found and verified with Maestro's view hierarchy on the simulator; VoiceOver not yet checked by hand)_
+
+- **Symptom.** Maestro could not find any `tab-*` button, though the tab bar was on screen and the same IDs work in Detox. Maestro reads the iOS accessibility tree, the same tree VoiceOver uses, so the tabs were likely unreachable for VoiceOver users too.
+- **Cause.** The tab bar's outer wrapper (`UAnimatedView`, for its fade-in) had no size of its own. Every child inside it, the scrim and the tab capsule, was `position: absolute`, so the wrapper measured zero height. iOS accessibility skips the children of a zero-size container.
+- **Fix.** The wrapper gets a real box: `pos="absolute" left={0} right={0} bottom={0} h={150}`, with `pointerEvents="box-none"` so the page under it stays touchable. The fade-in is unchanged. `src/navigations/bottomNavbar.tsx`.
+- **Measured.** `maestro hierarchy` before: no `tab-*` IDs. After: all five.
+- **Say it.** "My UI test tool could not see the tab bar. Its wrapper had zero height because everything inside was absolutely positioned, and iOS accessibility skips children of a zero-size view. Giving it a real size fixed the tests and, more importantly, screen reader access."
+- **Term.** Accessibility tree. Zero-size container.
 
 ## 8. UX bugs
 

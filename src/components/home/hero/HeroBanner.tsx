@@ -1,5 +1,5 @@
-import React, { memo, useCallback, useRef, useState, useEffect } from 'react';
-import { FlatList, ViewToken } from 'react-native';
+import React, { memo, useCallback, useMemo, useRef, useState, useEffect } from 'react';
+import { FlatList, NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 import { YStack } from 'tamagui';
 import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
 import type { BannerItem } from '@/src/home/types/home.types';
@@ -7,39 +7,39 @@ import BannerCard, { CARD_GAP, CARD_WIDTH } from './BannerCard';
 import { HOME_GUTTER } from '@/src/components/home/sections/constants';
 import PaginationDots from './PaginationDots';
 
+const STEP = CARD_WIDTH + CARD_GAP;
+const CONTENT_STYLE = { paddingHorizontal: HOME_GUTTER, gap: CARD_GAP };
+
 interface HeroBannerProps {
   items: BannerItem[];
   onPressItem?: (item: BannerItem) => void;
   autoPlayInterval?: number;
 }
 
-const HeroBanner: React.FC<HeroBannerProps> = ({ 
-  items, 
-  onPressItem,
-  autoPlayInterval = 4000,
-}) => {
+const HeroBanner: React.FC<HeroBannerProps> = ({ items, onPressItem, autoPlayInterval = 4000 }) => {
+  // One source of truth: the timer and a settled swipe are the only writers, and a ref
+  // mirrors the state so the timer never needs a side effect inside a setState updater
   const [activeIndex, setActiveIndex] = useState(0);
+  const indexRef = useRef(0);
   const flatListRef = useRef<FlatList<BannerItem>>(null);
   const autoPlayTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isUserScrollingRef = useRef(false);
 
-  // Auto-play functionality
+  const goTo = useCallback((index: number) => {
+    if (index === indexRef.current) return;
+    indexRef.current = index;
+    setActiveIndex(index);
+  }, []);
+
   const startAutoPlay = useCallback(() => {
     if (items.length <= 1) return;
-    
     autoPlayTimerRef.current = setInterval(() => {
       if (isUserScrollingRef.current) return;
-      
-      setActiveIndex((prevIndex) => {
-        const nextIndex = (prevIndex + 1) % items.length;
-        flatListRef.current?.scrollToOffset({
-          offset: nextIndex * (CARD_WIDTH + CARD_GAP),
-          animated: true,
-        });
-        return nextIndex;
-      });
+      const next = (indexRef.current + 1) % items.length;
+      flatListRef.current?.scrollToOffset({ offset: next * STEP, animated: true });
+      goTo(next);
     }, autoPlayInterval);
-  }, [items.length, autoPlayInterval]);
+  }, [items.length, autoPlayInterval, goTo]);
 
   const stopAutoPlay = useCallback(() => {
     if (autoPlayTimerRef.current) {
@@ -47,12 +47,6 @@ const HeroBanner: React.FC<HeroBannerProps> = ({
       autoPlayTimerRef.current = null;
     }
   }, []);
-
-  // Reset auto-play when user finishes scrolling
-  const resetAutoPlay = useCallback(() => {
-    stopAutoPlay();
-    startAutoPlay();
-  }, [stopAutoPlay, startAutoPlay]);
 
   useEffect(() => {
     startAutoPlay();
@@ -66,58 +60,52 @@ const HeroBanner: React.FC<HeroBannerProps> = ({
 
   const onScrollEndDrag = useCallback(() => {
     isUserScrollingRef.current = false;
-    resetAutoPlay();
-  }, [resetAutoPlay]);
+    stopAutoPlay();
+    startAutoPlay();
+  }, [stopAutoPlay, startAutoPlay]);
 
-  const onViewableItemsChanged = useCallback(
-    ({ viewableItems }: { viewableItems: ViewToken[] }) => {
-      if (viewableItems.length > 0 && viewableItems[0].index !== null) {
-        setActiveIndex(viewableItems[0].index);
-      }
-    },
-    []
+  // Fires once when a swipe settles, not on every frame the cards pass a visibility line
+  const onMomentumScrollEnd = useCallback(
+    (e: NativeSyntheticEvent<NativeScrollEvent>) => goTo(Math.round(e.nativeEvent.contentOffset.x / STEP)),
+    [goTo]
   );
 
-  const viewabilityConfig = useRef({
-    itemVisiblePercentThreshold: 50,
-  }).current;
-
   const renderItem = useCallback(
-    ({ item }: { item: BannerItem }) => (
-      <BannerCard
-        item={item}
-        onPress={() => onPressItem?.(item)}
-      />
-    ),
+    ({ item }: { item: BannerItem }) => <BannerCard item={item} onPress={() => onPressItem?.(item)} />,
     [onPressItem]
   );
 
   const keyExtractor = useCallback((item: BannerItem) => item.id, []);
+
+  // Memoized element: a dots-only change re-renders HeroBanner, but React reuses this
+  // element as is, so the list and its cards are skipped
+  const list = useMemo(
+    () => (
+      <FlatList
+        ref={flatListRef}
+        data={items}
+        renderItem={renderItem}
+        keyExtractor={keyExtractor}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        snapToInterval={STEP}
+        decelerationRate="fast"
+        contentContainerStyle={CONTENT_STYLE}
+        onScrollBeginDrag={onScrollBeginDrag}
+        onScrollEndDrag={onScrollEndDrag}
+        onMomentumScrollEnd={onMomentumScrollEnd}
+      />
+    ),
+    [items, renderItem, keyExtractor, onScrollBeginDrag, onScrollEndDrag, onMomentumScrollEnd]
+  );
 
   if (!items.length) return null;
 
   return (
     <UAnimatedView animation="fadeInUp" duration={500}>
       <YStack gap={12}>
-        <FlatList
-          ref={flatListRef}
-          data={items}
-          renderItem={renderItem}
-          keyExtractor={keyExtractor}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          snapToInterval={CARD_WIDTH + CARD_GAP}
-          decelerationRate="fast"
-          contentContainerStyle={{ paddingHorizontal: HOME_GUTTER, gap: CARD_GAP }}
-          onViewableItemsChanged={onViewableItemsChanged}
-          viewabilityConfig={viewabilityConfig}
-          onScrollBeginDrag={onScrollBeginDrag}
-          onScrollEndDrag={onScrollEndDrag}
-        />
-
-        {items.length > 1 && (
-          <PaginationDots total={items.length} activeIndex={activeIndex} />
-        )}
+        {list}
+        {items.length > 1 && <PaginationDots total={items.length} activeIndex={activeIndex} />}
       </YStack>
     </UAnimatedView>
   );

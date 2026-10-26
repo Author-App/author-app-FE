@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { useDispatch } from 'react-redux';
-import Toast from 'react-native-toast-message';
+import { Toast } from '@/src/components/core/toast/toast';
 import type { Href } from 'expo-router';
 import { haptics } from '@/src/utils/haptics';
 

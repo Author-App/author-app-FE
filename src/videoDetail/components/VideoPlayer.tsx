@@ -141,7 +141,6 @@ export const VideoPlayer = memo(function VideoPlayer({ player, isLoading, scroll
             right={isFullscreen ? 60 : 16}
             onPress={toggleFullscreen}
             pressStyle={{ opacity: 0.7, scale: 0.95 }}
-            animation="quick"
           >
             <YStack
               bg="rgba(2,1,3,0.7)"

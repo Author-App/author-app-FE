@@ -80,7 +80,6 @@ export const AudioMiniPlayer = memo(function AudioMiniPlayer({
             onTogglePlay();
           }}
           pressStyle={{ scale: 0.94 }}
-          animation="quick"
           accessible
           accessibilityRole="button"
           accessibilityLabel={isPlaying ? 'Pause' : 'Play'}

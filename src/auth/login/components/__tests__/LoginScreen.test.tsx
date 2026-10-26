@@ -1,24 +1,20 @@
 import { renderWithProviders, screen, waitFor, fireEvent } from '@/src/test-utils/render';
 
 import { LoginScreen } from '../LoginScreen';
+import { ToastHost } from '@/src/components/core/toast/toast';
 import { authApi } from '@/src/store/api/authApi';
 import { userApi } from '@/src/store/api/userApi';
 import { buildLoginResponse, buildMeResponse } from '@/src/test-utils/auth.fixture';
 import { makeAuthStore, mockFetchRoutes, type AuthStore } from '@/src/test-utils/authStore';
 
-// expo-router and the toast are boundaries. They are also what proves the
-// success and failure paths, so the mocks double as assertion targets.
+// expo-router is a boundary, and the mock doubles as the assertion target for navigation.
+// The toast is our own component, rendered for real as at the app root.
 const mockReplace = jest.fn();
 const mockPush = jest.fn();
 jest.mock('expo-router', () => ({
   useRouter: () => ({ replace: mockReplace, push: mockPush }),
 }));
 
-const mockToastShow = jest.fn();
-jest.mock('react-native-toast-message', () => ({
-  __esModule: true,
-  default: { show: (...args: unknown[]) => mockToastShow(...args) },
-}));
 
 // getDeviceInfo reads the device id for the login payload.
 jest.mock('expo-application', () => ({
@@ -30,7 +26,13 @@ const EMAIL = 'reader@example.com';
 const PASSWORD = 'correct-horse';
 
 const renderLogin = (store: AuthStore) =>
-  renderWithProviders(<LoginScreen />, { store });
+  renderWithProviders(
+    <>
+      <LoginScreen />
+      <ToastHost />
+    </>,
+    { store }
+  );
 
 const fillForm = (email = EMAIL, password = PASSWORD) => {
   fireEvent.changeText(screen.getByLabelText('Email'), email);
@@ -153,14 +155,7 @@ describe('LoginScreen', () => {
       submit();
       release();
 
-      await waitFor(() =>
-        expect(mockToastShow).toHaveBeenCalledWith(
-          expect.objectContaining({
-            type: 'success',
-            text2: "You've logged in successfully",
-          })
-        )
-      );
+      expect(await screen.findByText("You've logged in successfully")).toBeOnTheScreen();
     });
   });
 
@@ -178,11 +173,7 @@ describe('LoginScreen', () => {
       submit();
       release();
 
-      await waitFor(() =>
-        expect(mockToastShow).toHaveBeenCalledWith(
-          expect.objectContaining({ type: 'error', text2: 'Invalid credentials' })
-        )
-      );
+      expect(await screen.findByText('Invalid credentials')).toBeOnTheScreen();
     });
 
     it('stays on the login screen', async () => {
@@ -193,7 +184,7 @@ describe('LoginScreen', () => {
       submit();
       release();
 
-      await waitFor(() => expect(mockToastShow).toHaveBeenCalled());
+      await screen.findByText('Invalid credentials');
       expect(mockReplace).not.toHaveBeenCalled();
     });
 
@@ -206,7 +197,7 @@ describe('LoginScreen', () => {
       submit();
       release();
 
-      await waitFor(() => expect(mockToastShow).toHaveBeenCalled());
+      await screen.findByText('Invalid credentials');
       expect(screen.getByDisplayValue(EMAIL)).toBeOnTheScreen();
       expect(screen.getByDisplayValue(PASSWORD)).toBeOnTheScreen();
     });

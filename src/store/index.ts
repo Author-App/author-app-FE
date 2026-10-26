@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { combineReducers, configureStore } from '@reduxjs/toolkit';
-import Toast from 'react-native-toast-message';
+import { Toast } from '@/src/components/core/toast/toast';
 import { persistReducer, persistStore } from 'redux-persist';
 
 import { authApi } from './api/authApi';

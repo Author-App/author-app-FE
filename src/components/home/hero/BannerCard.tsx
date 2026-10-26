@@ -29,15 +29,12 @@ const BannerCard = memo(({ item, onPress }: BannerCardProps) => {
   const label = item.label || item.type;
 
   return (
-    // Glow on the outer view: overflow hidden on the same view would clip it
     <YStack
       w={CARD_WIDTH}
       h={BANNER_HEIGHT}
       br={24}
-      boxShadow="0 0 30px rgba(135,54,247,0.25)"
       onPress={onPress}
       pressStyle={{ scale: 0.98, opacity: 0.95 }}
-      animation="quick"
       accessible
       accessibilityRole="button"
       accessibilityLabel={`${label}: ${item.title}`}

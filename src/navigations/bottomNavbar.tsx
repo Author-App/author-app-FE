@@ -42,7 +42,9 @@ const BottomNavbar = React.memo(({ state, navigation }: BottomTabBarProps) => {
   );
 
   return (
-    <UAnimatedView animation="fadeInUp" duration={400}>
+    // A real box, not zero height: iOS accessibility (VoiceOver, XCUITest, Maestro) skipped the tabs
+    // while every child was absolutely positioned inside an empty wrapper
+    <UAnimatedView animation="fadeInUp" duration={400} pos="absolute" left={0} right={0} bottom={0} h={150} pointerEvents="box-none">
       {/* Fades scrolling content out behind the bar on every tab */}
       <LinearGradient
         colors={['rgba(2,1,3,0)', 'rgba(2,1,3,0.92)']}

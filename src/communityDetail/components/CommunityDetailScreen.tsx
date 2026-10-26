@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { YStack } from 'tamagui';
 import { useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Toast from 'react-native-toast-message';
+import { Toast } from '@/src/components/core/toast/toast';
 
 import UBackButton from '@/src/components/core/buttons/uBackButton';
 import UScreenLayout from '@/src/components/core/layout/UScreenLayout';

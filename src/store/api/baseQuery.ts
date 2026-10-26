@@ -1,5 +1,5 @@
 import { fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import Toast from 'react-native-toast-message';
+import { Toast } from '@/src/components/core/toast/toast';
 import { ENV } from '@/src/config/env';
 import type { RootState } from '@/src/store';
 import { logOut, updateTokens } from '@/src/store/slices/authSlice';

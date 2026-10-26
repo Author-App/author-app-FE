@@ -7,7 +7,6 @@ const BottomNavTabLayout = () => {
       initialRouteName="(home)"
       screenOptions={{
         headerShown: false,
-        animation: 'shift',
       }}
       tabBar={(props) => <BottomNavbar {...props} />}
     >
