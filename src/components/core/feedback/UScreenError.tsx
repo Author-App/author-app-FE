@@ -62,7 +62,7 @@ const UScreenError: React.FC<UScreenErrorProps> = ({
         </UText>
 
         {showRetry && onRetry && (
-          <NeonButton tone="secondary" h={44} px={22} onPress={onRetry}>
+          <NeonButton tone="secondary" h={44} px={22} accessibilityLabel={retryLabel} onPress={onRetry}>
             <XStack gap={8} ai="center">
               <Ionicons name="refresh" size={18} color={getTokenValue('$accentCyan', 'color')} />
               <UText variant="label-button" fontSize={12} lineHeight={16} letterSpacing={0.96} color="$accentCyan">

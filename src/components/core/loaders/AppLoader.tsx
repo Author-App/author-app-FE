@@ -39,7 +39,7 @@ const AppLoader = () => {
   }, [glitch, reduceMotion]);
 
   return (
-    <YStack flex={1} bg="$bgPage" ai="center" jc="center" accessible accessibilityLabel="Loading">
+    <YStack flex={1} bg="$bgPage" ai="center" jc="center" accessible accessibilityRole="text" accessibilityLabel="Loading">
       <YStack>
         <UGlitchWordmark glitch={glitch} size={fontSize} lineHeight={fontSize * 1.15} textAlign="center">
           {'STANLEY\nPADEN'}

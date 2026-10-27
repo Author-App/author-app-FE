@@ -11,6 +11,7 @@ const PaginationDots = memo(({ total, activeIndex }: PaginationDotsProps) => (
     gap={6}
     jc="center"
     accessible
+    accessibilityRole="text"
     accessibilityLabel={`Slide ${activeIndex + 1} of ${total}`}
   >
     {Array.from({ length: total }).map((_, index) => {

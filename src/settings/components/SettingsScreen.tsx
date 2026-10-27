@@ -45,6 +45,7 @@ const SettingsScreen = () => {
         checked={notificationsEnabled}
         onCheckedChange={toggleNotifications}
         label="Push Notifications"
+        hint="Receive updates and alerts"
       />
     ) : undefined;
 

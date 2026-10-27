@@ -106,7 +106,7 @@ const RatingModal = ({
         />
       </YStack>
 
-      <NeonButton w="100%" mt={6} onPress={handleSubmit} disabled={rating === 0} opacity={rating === 0 ? 0.5 : 1}>
+      <NeonButton w="100%" mt={6} accessibilityLabel="Submit Review" onPress={handleSubmit} disabled={rating === 0} opacity={rating === 0 ? 0.5 : 1}>
         <XStack ai="center" gap={8}>
           <Ionicons name="star" size={16} color={getTokenValue('$textPrimary', 'color')} />
           <UText variant="label-button" color="$textPrimary">

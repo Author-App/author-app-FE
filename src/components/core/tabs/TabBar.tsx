@@ -49,7 +49,8 @@ export function TabBar<T extends string>({
               onPress={() => onTabPress(tab.key)}
               onLayout={(e) => onTabLayout(tab.key, e)}
               style={styles.tab}
-              accessibilityRole="tab"
+              // "tab" drops the element from the iOS accessibility tree; a selected button reads the same
+              accessibilityRole="button"
               accessibilityState={{ selected: isActive }}
             >
               <UText variant="meta-pill" color={isActive ? '$textPrimary' : '$textMuted'}>

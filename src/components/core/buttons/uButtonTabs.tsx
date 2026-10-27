@@ -53,18 +53,9 @@ const UButtonTabItem = memo(<T extends string>({
   }, []);
 
   return (
-    <AnimatedXStack
-      style={animatedStyle}
-      ai="center"
-      jc="center"
-      gap={6}
-      h={40}
-      px={16}
-      br={999}
-      borderWidth={1}
-      backgroundColor={isActive ? '$pillActiveBg' : 'rgba(255,255,255,0.04)'}
-      borderColor={isActive ? '$pillActiveBorder' : '$borderSoft'}
-      boxShadow={isActive ? '0 0 16px rgba(135,54,247,0.4)' : 'none'}
+    // Press and accessibility live on a plain view: through the animated wrapper the
+    // selected state never reached iOS, and "tab" dropped the chip from the tree entirely
+    <XStack
       onPress={onPress}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
@@ -72,17 +63,31 @@ const UButtonTabItem = memo(<T extends string>({
       // 40pt pill, 44pt touch target
       hitSlop={{ top: 2, bottom: 2 }}
       accessible
-      accessibilityRole="tab"
+      accessibilityRole="button"
       accessibilityState={{ selected: isActive }}
       accessibilityLabel={item.label}
     >
-      {showIcon && item.icon && (
-        <Ionicons name={item.icon} size={16} color={iconColor} />
-      )}
-      <UText variant="meta-pill" color={isActive ? '$accentCyan' : '$textSecondary'}>
-        {item.label}
-      </UText>
-    </AnimatedXStack>
+      <AnimatedXStack
+        style={animatedStyle}
+        ai="center"
+        jc="center"
+        gap={6}
+        h={40}
+        px={16}
+        br={999}
+        borderWidth={1}
+        backgroundColor={isActive ? '$pillActiveBg' : 'rgba(255,255,255,0.04)'}
+        borderColor={isActive ? '$pillActiveBorder' : '$borderSoft'}
+        boxShadow={isActive ? '0 0 16px rgba(135,54,247,0.4)' : 'none'}
+      >
+        {showIcon && item.icon && (
+          <Ionicons name={item.icon} size={16} color={iconColor} />
+        )}
+        <UText variant="meta-pill" color={isActive ? '$accentCyan' : '$textSecondary'}>
+          {item.label}
+        </UText>
+      </AnimatedXStack>
+    </XStack>
   );
 }) as (<T extends string>(props: UButtonTabItemProps<T>) => React.ReactElement) & { displayName?: string };
 

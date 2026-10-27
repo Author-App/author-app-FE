@@ -196,16 +196,21 @@ Never reach for `UNSAFE_getByType` or a `testID` to route around a missing label
 - `NeonButton`, the primary CTA on 12 screens, rendered `role="button"` without `accessible`, so VoiceOver read its text alone and never said "button". Found when `getByRole('button', { name: 'Sign In' })` failed. Fixed with `accessible`, `accessibilityRole` and `accessibilityState={{ busy }}`.
 - The bottom tab bar was icon-only with no label and no role, so a screen reader announced nothing. Fixed while adding `testID` for Detox: `accessible`, `accessibilityRole`, `accessibilityLabel`, `accessibilityState={{ selected }}`. A dead `accessibilityLabel` prop on `TabItem` was deleted at the same time.
 
-### Accessibility debt found, not yet fixed
+### Accessibility rules (from the app-wide pass, BUG_LOG 7.2 to 7.7)
 
-- `UIconButton` does not forward `disabled` to the host element as `accessibilityState`. Tamagui blocks the press with `pointerEvents: none`, so it works, but a screen reader does not announce the button as dimmed.
+- **Never `accessibilityRole="tab"`.** React Native maps it to `UIAccessibilityTraitNone` on iOS, so VoiceOver never says the chip is tappable. Use `"button"` with `accessibilityState={{ selected }}`; it reads "Blogs, selected, button". `tablist` on the container is fine.
+- **Every `accessible` view needs a role.** Information rows use `"text"`. Without a role the view has no trait at all.
+- **Icons are hidden globally** (`app/_layout.tsx`, `Ionicons` and `Feather` `defaultProps`). Icon fonts render a private-use glyph that VoiceOver cannot speak. So a button whose children are an icon plus text needs an explicit `accessibilityLabel`: React Native builds a parent label by joining every child's label, glyph included (", ORDER").
+- **No accessibility props on a Reanimated `createAnimatedComponent` wrapper.** The selected state never reached iOS through it. Put them on a plain parent view (`uButtonTabs`).
+- **A label and its value are one element**: `accessible accessibilityRole="text" accessibilityLabel="Date, Dec 17, 2025"` on the row (`EventInfo`, `BookHero` rating row, chat bubbles).
+- **A placeholder is not a label.** Every input gets `accessibilityLabel`.
+- **Larger Text.** `UText` caps `maxFontSizeMultiplier`: 2x for reading variants (`body`, `text-*`, `link`, `playfair-*`), 1.3x for headings, labels and wordmarks, which are wide capitals that cannot wrap. Test with `xcrun simctl ui <device> content_size accessibility-extra-extra-extra-large`, then relaunch the app, then `content_size large` to reset.
+- **The Mobile MCP dump is not VoiceOver.** `mobilecli dump ui --device <id>` filters element types: no ScrollView, Slider, or trait-less view ever appears, and every `StaticText` has a same-label child (how React Native's text view reports itself, not a double read). Absence in the dump does not prove VoiceOver cannot reach it. Use Xcode's Accessibility Inspector or VoiceOver for the final word.
 
-- Explore's category chips (Blogs, Podcasts, Videos, Events, Community) are not in the accessibility tree at all, so VoiceOver cannot reach them. The search `TextField` has no label, and its search icon is an empty `StaticText`. Found by Mobile MCP's element list.
+### Accessibility, still to check by hand
 
-- Book detail: the About, Synopsis, Reviews and More Books tabs are not in the accessibility tree. The star rating has no label (the text says "No ratings" but the stars are silent or missing). The cover image has no label. The Order button reads ", ORDER", because the icon glyph is an empty text in the label.
-- Every `StaticText` shows up twice in the Mobile MCP element list, on every screen. Check with VoiceOver whether it reads each text twice before fixing anything.
-
-- Book detail's Listen Now button reads ", LISTEN NOW", like Order. The podcast hero icon is an empty `StaticText`. The audio `Slider` does not appear in the element list, so check that VoiceOver can scrub it.
+- VoiceOver on a device: the audio slider (should read "Playback position, 40:30 of 3:17:34", swipe up or down skips 30 s), the chips, the welcome modal, and the chat bubbles.
+- Android TalkBack has not been checked at all.
 
 ### Layout debt found, not yet fixed
 

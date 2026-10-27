@@ -64,6 +64,7 @@ const BreakdownRow = memo(function BreakdownRow({ star, count, percentage }: Bre
       ai="center"
       gap={10}
       accessible
+      accessibilityRole="text"
       accessibilityLabel={`${star} stars, ${count} ${count === 1 ? 'rating' : 'ratings'}`}
     >
       <UText variant="meta-s" color="$textSecondary" w={28}>

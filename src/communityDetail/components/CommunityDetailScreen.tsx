@@ -21,10 +21,10 @@ export function CommunityDetailScreen() {
   const { communityId } = useLocalSearchParams<{ communityId: string }>();
   const { top, bottom } = useSafeAreaInsets();
 
-  const { community, isLoading, isError, isSending, refetch, sendThread, joinCommunity, isJoining } =
-    useCommunityDetail(communityId);
-
   const [viewMode, setViewMode] = useState<ViewMode>('chat');
+
+  const { community, isLoading, isError, isSending, refetch, sendThread, joinCommunity, isJoining } =
+    useCommunityDetail(communityId, viewMode === 'chat');
 
   const showAbout = useCallback(() => {
     haptics.light();

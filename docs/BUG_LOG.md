@@ -55,6 +55,24 @@ Dev build numbers are slower than release in absolute terms, but render counts a
 | Video float tap, then X | 61 | 49 | 1 each | Fine |
 | Related video open (replace) | 55 | 53 | 8 | Fine |
 | Back to Explore from a chained video | 58 | 58 | 5 to 7 | Fine. Not blank (4.1), and the list refetched (5.11). |
+| Library, first visit | 51 | 57 | 12 | Fine. First mount. |
+| Library idle | 60 | 60 | 0 | Fine |
+| Library filter chip | 55 | 55 | 6 to 7 | Fine |
+| Library scroll, 3 down and 3 up | 53 | 59 | 16 in total | Fine. List cell recycling. |
+| Library, open a book and back | 50 | 57 | 12 open, 4 back | Fine |
+| Ebook reader open (cached PDF, resume on page 27) | 35 | 57 | 35 in two seconds | Acceptable. One-off: about six state updates in `useEbookReader` plus the native PDF view mounting and jumping to the saved page. Hidden behind the load. |
+| Ebook reader idle | 60 | 60 | 0 | Fine |
+| Ebook page turn | 56 | 60 | 2 | Fine |
+| Ebook tap to hide or show the chrome | 57 | 57 | 1 to 2 | Fine |
+| Ebook back to book detail | 60 | 59 | 4 | Fine |
+| Edit Profile open | 51 | 51 | 9 | Fine |
+| Edit Profile, typing 8 characters | 54 | 61 | 9 | Fine. About one commit per keystroke, the floor for a controlled input. |
+| Change Password open | 53 | 54 | 6 | Fine |
+| Change Password, 18 characters across two fields | 49 | 50 | 27, with focus changes | Fine |
+| Checkout open | 44 | 53 | 8 | Fine |
+| Checkout quantity up, 3 fast taps | 57 | 53 | 3 per tap | Fine. The estimated total updates locally. |
+| Checkout, typing 7 characters | 45 | 48 | 10 | Acceptable. Each keystroke re-renders the whole form and the order summary. Watch it if the form grows. |
+| Any first keyboard open | 58 | 24 | 1 | UI dips for about a second the first time the keyboard opens in the simulator. Seen on Explore search and Edit Profile. Check on a device. |
 
 Until the probe moved to `app/(app)/_layout.tsx`, it only wrapped the tabs, so pushed screens showed 0 commits whatever happened. Rows above Book detail were measured with the tabs-only probe, which is fine because they are all tab screens.
 
@@ -469,6 +487,25 @@ _(verified in the iOS simulator: podcast card moved from 35% to 74% after a seek
 - **Fix.** `handleRefresh` awaits `refetch()` and checks `result.isError`. The test pulls to refresh with the failure already released.
 - **Say it.** "A flaky test is often a real race, not a bad test. This one was right to fail."
 
+### 6.4 Your chat message appeared only after two round trips
+
+_(code done; not yet checked by sending a real message)_
+
+- **Symptom.** Tap send and watch a spinner. The message showed up only after the POST finished and the whole community was fetched again.
+- **Cause.** The mutation only invalidated the cache tag, so the screen waited for the refetch before it had anything new to draw.
+- **Fix.** An optimistic update in `sendThread`'s `onQueryStarted` (`src/store/api/exploreApi.ts`): `updateQueryData` pushes the message into the cached thread list right away, the tag refetch then swaps in the server's copy, and on failure `patch.undo()` takes it back out. The text stays in the box for a retry, as before.
+- **Also.** `ThreadResponse.createdAt` was typed `Date`, but JSON gives a string. It is now `string | null`, so the optimistic message stores an ISO string and Redux never holds a non-serializable `Date`.
+- **Say it.** "Sending felt slow because the UI waited for a full refetch. I insert the message into the RTK Query cache optimistically, let the tag refetch reconcile it, and undo the patch if the request fails."
+- **Term.** Optimistic update. `updateQueryData`. `patch.undo()`.
+
+### 6.5 The chat polled when nobody was reading it
+
+- **Symptom.** The community refetched every 30 seconds on the About view and before you had joined, where no messages are shown.
+- **Fix.** `useCommunityDetail(id, isChatVisible)` polls only when you have joined and the chat is on screen. Whether you have joined comes from the cached result through `useQueryState`, which reads the cache without starting a second request. `src/communityDetail/hooks/useCommunityDetail.ts`.
+- **Measured.** A poll that returns no new messages already costs 0 React commits: RTK Query keeps the same data object when the response is deep-equal (structural sharing). So the saving here is network and battery, not rendering.
+- **Say it.** "Polling should follow what is on screen. I turn it off on the About view, and read the join state from the cache with useQueryState so the polling flag does not depend on its own subscription."
+- **Term.** Polling. Structural sharing. `useQueryState`.
+
 ---
 
 ## 7. Accessibility
@@ -492,6 +529,61 @@ _(found and verified with Maestro's view hierarchy on the simulator; VoiceOver n
 - **Measured.** `maestro hierarchy` before: no `tab-*` IDs. After: all five.
 - **Say it.** "My UI test tool could not see the tab bar. Its wrapper had zero height because everything inside was absolutely positioned, and iOS accessibility skips children of a zero-size view. Giving it a real size fixed the tests and, more importantly, screen reader access."
 - **Term.** Accessibility tree. Zero-size container.
+
+### 7.2 Chips and tabs were not buttons to VoiceOver
+
+_(found with the simulator's accessibility tree through Mobile MCP; VoiceOver not yet checked by hand)_
+
+- **Symptom.** The Explore and Library chips and the book detail tabs never appeared in the accessibility tree. Changing their role to `button` made them appear at once.
+- **Cause.** All of them used `accessibilityRole="tab"`. React Native maps `"tab"` to `UIAccessibilityTraitNone` on iOS (`RCTViewManager.m`): iOS has a tab bar trait for the container, but no trait for one tab. So the chip had no trait at all, and VoiceOver would read "Blogs" as plain text, never saying it can be tapped.
+- **Fix.** `accessibilityRole="button"` with `accessibilityState={{ selected }}` in `uButtonTabs.tsx` and `TabBar.tsx`. It reads "Blogs, selected, button", the same pattern as a native segmented control.
+- **Say it.** "React Native's `tab` role maps to no trait on iOS, so my tabs were silent text to VoiceOver. A selected button is what iOS itself uses."
+- **Term.** Accessibility traits. Role mapping.
+
+### 7.3 The selected chip was never announced as selected
+
+- **Cause.** The chip's accessibility props sat on `Animated.createAnimatedComponent(XStack)`. Role and label reached iOS through it; `accessibilityState` did not. `aria-selected` did not help either.
+- **Fix.** Press handlers and accessibility props moved to a plain `XStack`; the animated pill sits inside it. `src/components/core/buttons/uButtonTabs.tsx`.
+- **Measured.** The tree showed `Button 'Blogs'` before, `Button 'Blogs' [selected]` after.
+- **Say it.** "The state got lost through the Reanimated wrapper. I keep accessibility on a plain view and animate a child."
+
+### 7.4 Icon glyphs leaked into labels
+
+- **Symptom.** The Order button read ", ORDER" and Listen Now ", LISTEN NOW". The search field's icon and the podcast hero icon were their own unreadable elements.
+- **Cause.** Icon fonts render a `Text` holding a private-use character. React Native builds a button's label by joining its children's labels (`RCTRecursiveAccessibilityLabel`), glyph included. An empty label does not help: the text view falls back to its text when the label is empty.
+- **Fix.** Two parts. Every `Ionicons` and `Feather` is hidden from screen readers through `defaultProps` in `app/_layout.tsx`, so a glyph is never its own element. And the four `NeonButton`s with icon-plus-text children (Order, Retry, Submit Review, Join or Maps) pass an explicit `accessibilityLabel`; with a label, React Native never walks the children.
+- **Say it.** "Icon fonts are text to the accessibility layer. I hid all icons in one place, and gave icon-plus-text buttons an explicit label."
+- **Term.** Recursive accessibility label. Private Use Area glyphs.
+
+### 7.5 One fact, several stops
+
+- **Symptom.** VoiceOver would stop on "DATE", then "Dec 17, 2025"; on a chat bubble's initials, name, text and time separately; and on "Rated 0 out of 5 stars" followed by "No ratings".
+- **Fix.** The row is one element with `accessibilityRole="text"` and a full label: `EventInfo` rows ("Date, Dec 17, 2025"), the book hero rating row ("No ratings yet" or "Rated 4.3 out of 5, 12 ratings"), and each chat bubble ("You: Hey, Oct 24, 4:56 PM"). The Push Notifications row hides its text, because the switch carries the label and now the subtitle as its hint.
+- **Also.** Every `accessible` view without a role got one (`PaginationDots`, `HomeSkeleton`, `AppLoader`, `ReaderFooter`, rating breakdown rows). The search field and the chat box got real labels instead of placeholders. The welcome modal's message lives only in its picture, so its words are now the label.
+- **Say it.** "A screen reader user should hear a fact once, in one stop. I merge label and value into one element, the way a native table row does."
+
+### 7.6 The audio slider could not be read or scrubbed
+
+_(not yet verified with VoiceOver: the tool cannot show sliders)_
+
+- **Fix.** The `Slider` in `ProgressDisplay` has `accessibilityRole="adjustable"`, the label "Playback position", a spoken value ("40:30 of 3:17:34"), and `increment` and `decrement` actions that seek 30 seconds. `src/components/core/audio/AudioPlayer.tsx`.
+- **Say it.** "A slider must say where it is and accept swipes. Adjustable role, a spoken value, and increment and decrement actions."
+- **Term.** Adjustable. `accessibilityActions`.
+
+### 7.7 The largest text sizes broke headings mid-word
+
+_(checked in the simulator at accessibility-extra-extra-extra-large)_
+
+- **Symptom.** At the largest text size, "CONTINUE EXPLORING" split as "EXPLORIN / G", and the banner title cut to "FRO ZE…".
+- **Cause.** Headings, labels and wordmarks are wide, letter-spaced capitals in fixed-width places. Scaled 3x, they cannot wrap.
+- **Fix.** `UText` sets `maxFontSizeMultiplier` by variant: 2x for reading text, 1.3x for headings, labels and wordmarks. Body text still grows a lot, which is what larger text is for. `src/components/core/text/uText.tsx`.
+- **Say it.** "I support larger text, but cap display type, which can't reflow, and let reading text scale to 2x."
+- **Term.** Dynamic Type. `maxFontSizeMultiplier`.
+
+### 7.8 Mobile MCP's element list was not the whole truth
+
+- **What happened.** Elements without a trait, sliders and scroll views never appear in the dump, and every text appears twice (React Native's text view reports a child element with the same label). Some "missing" findings were the tool, not VoiceOver.
+- **Lesson.** Use the dump to find candidates, then check the reason in React Native's source or with VoiceOver. Here the source settled it: the `tab` role really has no trait.
 
 ## 8. UX bugs
 
@@ -518,6 +610,22 @@ _(not yet verified on device)_
 - **Chat bubbles were reversed.** Your own messages were on the left, which is the opposite of every chat app. They are now on the right.
 - **Navy behind every screen.** The root view and the app stack still used the old navy `#132440`. It showed through during screen transitions, under overscroll, and between the splash and the first screen. Both now use the page colour `#020103`, the same as the new splash. _(not yet verified on device)_
 - **An ended in-person event** still showed an active "Open in Maps" button. It now says "Event has ended".
+
+### 8.2 The chat input floated above the bottom of the screen
+
+_(checked in the simulator: closed and with the keyboard open)_
+
+- **Symptom.** The "Type a message" bar sat about 68 px above the bottom edge, with an empty band under it. With the keyboard open it floated 34 px above the keyboard.
+- **Cause.** The safe area was added twice. `ThreadInput` padded its bottom by the inset, and `UKeyboardAvoidingView` renders a `UKeyboardSpacer` under it whose resting height is also the inset. With the keyboard open, the spacer already covers the keyboard, so the bar's own padding was pure extra.
+- **Fix.** `ThreadInput` pads 10 px and leaves the safe area to the spacer. The spacer is painted in the bar's colour (`UKeyboardAvoidingView color={THREAD_BAR_BG}`), so the bar reads as one block down to the screen edge. `src/communityDetail/components/chat/ThreadInput.tsx`, `CommunityChatView.tsx`.
+- **Measured.** Gap under the pill: 69 px before, 45 px after (10 px padding plus the 34 px home-indicator area, now in the bar's colour). With the keyboard open, the bar sits directly on the keyboard.
+- **Say it.** "Two layers each reserved the safe area. I gave the job to one of them, the keyboard spacer, which already switches between the inset and the keyboard height, and painted it the bar colour."
+- **Term.** Safe area insets. Double padding.
+
+### 8.3 Chat details: serif placeholder, no time on messages
+
+- **Serif placeholder.** The chat box used `UInput`'s `dark` variant, which inherited `$cormorantgaramond` from the old design's base style. The variant now sets `$inter`. It is the only user of that variant. `src/components/core/inputs/uInput.tsx`.
+- **No time.** Bubbles showed only the date, so every message from one day looked the same. New `formatMessageTime` in `src/utils/helper.ts`: "4:32 PM" today, "Jan 5, 4:32 PM" this year, "Jan 5, 2025, 4:32 PM" before that.
 
 ---
 

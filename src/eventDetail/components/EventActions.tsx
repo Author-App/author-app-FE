@@ -66,7 +66,7 @@ export const EventActions = memo(function EventActions({
       borderTopWidth={1}
       borderTopColor="$glassBorder"
     >
-      <NeonButton flex={1} tone={isDisabled ? 'neutral' : 'primary'} disabled={isDisabled} onPress={handlePress}>
+      <NeonButton flex={1} tone={isDisabled ? 'neutral' : 'primary'} disabled={isDisabled} accessibilityLabel={label} onPress={handlePress}>
         <XStack ai="center" gap={8}>
           <Ionicons
             name={isOffline ? 'map-outline' : 'videocam-outline'}

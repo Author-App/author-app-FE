@@ -49,7 +49,13 @@ const SettingsOptionItem: React.FC<SettingsOptionItemProps> = ({
         <Ionicons name={option.icon as any} size={18} color={tile.icon} />
       </YStack>
 
-      <YStack flex={1} gap={2}>
+      {/* With a switch, the switch carries the label and hint, so the text would be read twice */}
+      <YStack
+        flex={1}
+        gap={2}
+        accessibilityElementsHidden={!!rightComponent}
+        importantForAccessibility={rightComponent ? 'no-hide-descendants' : 'auto'}
+      >
         <UText
           variant="body"
           fontWeight="600"
