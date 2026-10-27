@@ -1,5 +1,6 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { baseQueryWithReauth } from './baseQuery';
+import { exploreApi } from './exploreApi';
 import type { ApiResponse } from '@/src/types/api/common.types';
 import type {
   MediaListResponse,
@@ -58,10 +59,20 @@ export const mediaApi = createApi({
         method: 'PUT',
         body: { currentPositionSec },
       }),
-      // Invalidate the media detail cache so it refetches with new progress
+      // Detail and lists both show progress. Explore keeps its own copy of the list in exploreApi,
+      // and tags only reach endpoints in the same api, so that one is invalidated by hand.
       invalidatesTags: (result, error, { mediaId }) => [
         { type: 'MediaDetail', id: mediaId },
+        'Media',
       ],
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          dispatch(exploreApi.util.invalidateTags(['Media']));
+        } catch {
+          // Mutation failed, nothing changed on the server
+        }
+      },
     }),
   }),
 });

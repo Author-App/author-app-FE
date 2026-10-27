@@ -151,6 +151,12 @@ Do not re-argue these.
 
 **One animation system: Reanimated.** Never use Tamagui's `animation` prop on views (`animation="quick"` and similar). Its driver is React Native's old `Animated`, which updates views with `setNativeProps` from the JS thread and crashed the app when it collided with Reanimated (BUG_LOG 5.6). `pressStyle` without `animation` is fine, it just applies instantly. The only exception is `Sheet`, which needs the driver. Toasts are our own `Toast`/`ToastHost` (`src/components/core/toast/toast.tsx`) on Reanimated; `react-native-toast-message` was removed because its Android slide used the JS driver.
 
+**Timers in a screen go in `useFocusEffect`, not `useEffect`.** Bottom tabs keep screens mounted while hidden, so a `useEffect` cleanup never runs on a tab switch (BUG_LOG 5.9). Applies to intervals, polling, loops and media. A test that mocks `expo-router` must then provide `useFocusEffect`.
+
+**`PerfProbe`** (`src/components/core/dev/PerfProbe.tsx`) wraps every signed-in screen in `app/(app)/_layout.tsx` and logs `[perf] app js= ui= commits=` once a second in dev. Mobile MCP drives the simulator; read the lines with `xcrun simctl spawn <device> log show --last 2m --info --predicate 'subsystem == "com.facebook.react.log"'`. Live `log stream` to a file gave nothing.
+
+**After editing a file in `src/store/api/`, cold-restart the app.** Fast Refresh reloads the api module but not the store it is wired into, and every request then hangs on a skeleton. It looks like a backend outage, and it is not.
+
 **`getByRole` only matches accessible elements.** A `queryByRole(...)` that expects "not on screen" on a non-accessible element passes whatever happens. Query toasts by their text.
 
 **Every bug fixed goes in `docs/BUG_LOG.md`**, in the same session, with Symptom, Cause, Fix, Say it, and Term. He uses it to prepare interview answers. Mark anything not checked on a device as _(not yet verified on device)_.
@@ -193,6 +199,13 @@ Never reach for `UNSAFE_getByType` or a `testID` to route around a missing label
 ### Accessibility debt found, not yet fixed
 
 - `UIconButton` does not forward `disabled` to the host element as `accessibilityState`. Tamagui blocks the press with `pointerEvents: none`, so it works, but a screen reader does not announce the button as dimmed.
+
+- Explore's category chips (Blogs, Podcasts, Videos, Events, Community) are not in the accessibility tree at all, so VoiceOver cannot reach them. The search `TextField` has no label, and its search icon is an empty `StaticText`. Found by Mobile MCP's element list.
+
+- Book detail: the About, Synopsis, Reviews and More Books tabs are not in the accessibility tree. The star rating has no label (the text says "No ratings" but the stars are silent or missing). The cover image has no label. The Order button reads ", ORDER", because the icon glyph is an empty text in the label.
+- Every `StaticText` shows up twice in the Mobile MCP element list, on every screen. Check with VoiceOver whether it reads each text twice before fixing anything.
+
+- Book detail's Listen Now button reads ", LISTEN NOW", like Order. The podcast hero icon is an empty `StaticText`. The audio `Slider` does not appear in the element list, so check that VoiceOver can scrub it.
 
 ### Layout debt found, not yet fixed
 

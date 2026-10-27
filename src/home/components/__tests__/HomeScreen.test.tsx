@@ -10,6 +10,8 @@ import { makeHomeStore, mockFetchJson, type HomeStore } from '@/src/test-utils/h
 const mockPush = jest.fn();
 jest.mock('expo-router', () => ({
   router: { push: (...args: unknown[]) => mockPush(...args) },
+  // No navigator in this test, so the screen counts as always focused
+  useFocusEffect: (effect: () => void | (() => void)) => require('react').useEffect(effect, [effect]),
 }));
 
 // The toast is our own component now, so it is rendered for real, as at the app root

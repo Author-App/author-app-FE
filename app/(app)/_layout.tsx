@@ -7,6 +7,7 @@ import { useAppSelector } from '@/src/store/hooks';
 import { selectShowWelcomeBanner } from '@/src/store/selectors/userSelectors';
 import { useDismissWelcomeBannerMutation } from '@/src/store/api/userApi';
 import WelcomeModal from '@/src/components/home/WelcomeModal';
+import { PerfProbe } from '@/src/components/core/dev/PerfProbe';
 
 // $bgPage, shown behind screens during transitions
 const BG_PAGE = "#020103";
@@ -43,8 +44,9 @@ export default function AppLayout() {
     }
   }, [dismissWelcomeBanner]);
 
+  // One probe over every signed-in screen: tabs and pushed screens alike
   return (
-    <>
+    <PerfProbe id="app">
       <Stack
         screenOptions={{
           headerShown: false,
@@ -63,6 +65,6 @@ export default function AppLayout() {
 
       {/* Notification Permission Sheet */}
       <NotificationPermissionSheet />
-    </>
+    </PerfProbe>
   );
 }

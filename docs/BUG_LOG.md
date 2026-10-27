@@ -20,11 +20,45 @@ Every performance entry follows the same loop, so the numbers can be defended:
 
 1. **Pick one action** and do it the same way every time (idle 10 seconds, one pull to refresh, one tab switch).
 2. **Baseline:** Perf Monitor for JS and UI fps, React DevTools Profiler for commits, with "Record why each component rendered" on.
+   Since 5.9 there is also an automated baseline: `PerfProbe` (`src/components/core/dev/PerfProbe.tsx`) wraps every signed-in screen in `app/(app)/_layout.tsx` and logs `[perf] app js= ui= commits=` once a second in dev. Mobile MCP drives the taps on the simulator, and the lines are read back with `xcrun simctl spawn <device> log show --last 2m --info --predicate 'subsystem == "com.facebook.react.log"'`. It counts commits but does not say why, so the Profiler is still the tool for finding a cause.
 3. **Find the cause** from "why did this render": hook changed, props changed, parent rendered, or context changed.
 4. **Change one thing**, then repeat the same action in the same build.
 5. **Log before and after**, saying which build and which filter, so the comparison is fair.
 
 Dev build numbers are slower than release in absolute terms, but render counts are exact in both, and relative changes hold.
+
+### Baseline, 2026-10-26
+
+`PerfProbe` lines, iPhone 17 Pro simulator, dev build, Mobile MCP doing the taps. Compare future runs against this table.
+
+| Flow | JS fps (lowest) | UI fps (lowest) | Commits | Verdict |
+|---|---|---|---|---|
+| Home idle | 60 | 60 | about 5 per 4-second banner step | Fine |
+| Home scroll, 3 down and 3 up | 60 | 55 | 1 to 3 per second | Fine |
+| Any other tab idle (after 5.9) | 60 | 60 | 0 | Fine |
+| Fast tab taps, first visit to each tab | 18 | 50 | 20 in one second | Worst number. First mount of each screen. |
+| Fast tab taps, all tabs already visited | 57 | 54 | 12 for 6 taps | Fine |
+| Explore idle | 60 | 60 | 0 | Fine |
+| Explore category chip | 40 (first load of Videos), else 45 to 54 | 56 | 6 to 9 | Fine |
+| Explore search, typing 7 characters | 45 | 15 for one second | 10 | The UI dip is the keyboard opening for the first time in the simulator. Check on a device. |
+| Explore scroll, 4 down and 2 up | 55 | 57 | 0 to 3 per second | Fine |
+| Book detail open from Home | 59 | 59 | 4 to 6 | Fine |
+| Book detail idle | 60 | 60 | 0 | Fine |
+| Book detail scroll, 3 down and 3 up | 60 | 100 to 115 | 1 to 2 per second | Fine. UI went above 60 because the simulated ProMotion screen runs at 120 Hz while scrolling. |
+| Book detail back to Home | 59 | 51 | 2 to 4 | Fine |
+| Article scroll (long text) | 60 | 56 | 0 | Fine |
+| Audiobook player, playing | 55 | 60 | 6 per second, then 2 after 5.10 | Fixed in 5.10 |
+| Audiobook player, paused | 60 | 60 | 0 | Fine |
+| Podcast, playing (after 5.10) | 55 | 60 | 2 per second | Fine |
+| Video playing | 60 | 60 | 0 per second | Fine. Native controls, no JS clock. |
+| Video scroll until it floats, 2 swipes | 60 | 100 | 1 in total | Fine. The float runs on the UI thread. |
+| Video float tap, then X | 61 | 49 | 1 each | Fine |
+| Related video open (replace) | 55 | 53 | 8 | Fine |
+| Back to Explore from a chained video | 58 | 58 | 5 to 7 | Fine. Not blank (4.1), and the list refetched (5.11). |
+
+Until the probe moved to `app/(app)/_layout.tsx`, it only wrapped the tabs, so pushed screens showed 0 commits whatever happened. Rows above Book detail were measured with the tabs-only probe, which is fine because they are all tab screens.
+
+UI fps is frames counted, not a percentage of 60. On a 120 Hz screen the ceiling is 120 during interaction.
 
 ## The five best stories
 
@@ -346,6 +380,69 @@ _(verified in the iOS simulator by hand: reproduced before, not reproducible aft
 - **Options not taken.** `detachInactiveScreens={false}`, a newer `@react-navigation/bottom-tabs`, or our own Reanimated transition that snaps to visible when interrupted.
 - **Say it.** "Screens went black after fast tab switches. The inspector showed the views were there but invisible. The tab transition animated opacity on the native driver, and an interrupted animation on a detached screen could leave it at zero. I removed the transition, which also matches how native iOS tabs behave."
 - **Term.** Native-driven animation. Interrupted animation. Detached inactive screens.
+
+### 5.9 The home banner kept ticking on every other tab
+
+_(measured in the iOS simulator, dev build, with `PerfProbe` and Mobile MCP)_
+
+- **Symptom.** Sitting idle on Library, a screen with no timers, the app still committed every 4 seconds. That is the banner's autoplay interval.
+- **How it was found.** The first automated baseline. Mobile MCP tapped through the tabs, `PerfProbe` logged commits per second, and the idle lines on Library showed a commit spike every 4 seconds while every other second was 0.
+- **Cause.** Bottom tabs keep a screen mounted after its first visit and only hide it, so scroll position and state survive. `HeroBanner` started its `setInterval` in a `useEffect`. A `useEffect` cleanup only runs on unmount or a dependency change, and switching tabs is neither, so the timer never stopped and kept calling `setActiveIndex` on a screen nobody could see.
+- **Fix.** Start and stop autoplay with `useFocusEffect` instead of `useEffect`. Its cleanup runs on blur. `src/components/home/hero/HeroBanner.tsx`. The `HomeScreen` test mocks `expo-router`, so its mock now provides `useFocusEffect` as a plain effect: with no navigator, the screen counts as always focused.
+- **Measured.** `PerfProbe` lines, iOS simulator, dev build.
+
+  | Scenario | Before | After |
+  |---|---|---|
+  | Library idle for 12 seconds | about 5 commits every 4 seconds | 0 commits |
+  | Back on Home, idle | about 5 commits every 4 seconds | about 5 commits every 4 seconds (autoplay resumes) |
+
+- **Also.** With the banner paused off Home, the JS thread is idle on the other tabs, which is what Detox synchronisation waits for.
+- **Say it.** "Our perf probe showed commits every 4 seconds on a tab with no timers. Bottom tabs keep screens mounted, so the banner's interval in a `useEffect` never got cleaned up. I moved it to `useFocusEffect`, which stops it on blur. Off Home the app went to zero commits."
+- **Term.** Screen lifecycle versus component lifecycle. Focus versus mount. Pause on blur.
+
+### 5.10 The audio player re-rendered the whole screen three times per tick
+
+_(measured in the iOS simulator, dev build, with `PerfProbe` and Mobile MCP; audiobook and podcast both checked)_
+
+- **Symptom.** While an audiobook played, the app committed 6 times every second, steadily. Paused, it was 0. The time label only changes once a second.
+- **How it was found.** The `PerfProbe` baseline on the audiobook player: playing showed a flat 6 per second, pausing dropped it to 0, so the cause was the playback loop itself.
+- **Cause.** Three clocks updated the same progress.
+  - `useAudioPlayerStatus` lived in the screen-level hook `useAudioPlayer`, so every expo-audio status event, every 500 ms, re-rendered the whole screen.
+  - `ProgressDisplay` ran its own `setInterval(500)` that copied a ref into state. The ref was there "to avoid re-renders on every tick", but the first clock already re-rendered on every tick, so it saved nothing and added a second render.
+  - The `Slider`'s `onValueChange` also wrote the same state, and on iOS it can fire when the `value` prop moves, not only when a finger drags.
+- **Fix.** One clock, at the leaf. `src/components/core/audio/hooks/useAudioPlayer.ts`, `src/components/core/audio/AudioPlayer.tsx`.
+  - The hook listens with `player.addListener('playbackStatusUpdate')` and only sets `isPlaying` and `isLoading`. Setting the same value again is a no-op for React, so a plain tick renders nothing at screen level. Rewind, forward and seek read `player.currentTime` live instead of a captured status.
+  - `ProgressDisplay` calls `useAudioPlayerStatus(player)` itself and derives the position. The interval and the ref are gone.
+  - The slider keeps a local value only while the thumb is held (`onSlidingStart` to `onSlidingComplete`), and ignores `onValueChange` otherwise.
+- **Measured.** `PerfProbe` lines, iOS simulator, dev build.
+
+  | Scenario | Before | After |
+  |---|---|---|
+  | Audiobook playing, per second | 6 commits, whole screen | 2 commits, `ProgressDisplay` only |
+  | Podcast playing, per second | same hook, same 6 | 2 |
+  | Paused | 0 | 0 |
+
+  Checked after the fix: resume at the saved position, autoplay, forward 10 seconds, pause, and a slider drag while paused all behave.
+- **Seen, not fixed.** After a very short drag, 60 px or less, made by Mobile MCP while paused, the thumb moved but no seek happened. The time label stayed correct, and play snapped the thumb back. Most likely a synthetic swipe too short to count as a slide, so `onSlidingComplete` never fired. _(not yet checked with a finger on a device)_
+- **Say it.** "The player re-rendered the whole screen six times a second while playing. Three things updated the same progress: the status hook at screen level, a second interval in the progress bar, and the slider echoing its own value. I moved the status subscription into the progress component and kept only play state at screen level. Two small renders a second, and the screen itself does not re-render."
+- **Term.** Colocate state. Subscribe at the leaf. Redundant clock. Controlled input echo.
+
+### 5.11 The podcast and video cards never showed new progress
+
+_(verified in the iOS simulator: podcast card moved from 35% to 74% after a seek, with no manual refresh)_
+
+- **Symptom.** After listening to a podcast and going back, the Explore card's progress bar stayed where it was when the list first loaded. Reopening the podcast resumed at the right place, so the save itself worked. Videos use the same bar.
+- **How it was found.** A temporary `console.log` of `data.progress` in `PodcastCard` showed `percentage: 35` while the bar on screen still drew about 71%, the value from the first load. The data was fresh, and the drawing was stale.
+- **Cause.** Two problems on top of each other.
+  - **The bar read its prop once.** `UProgressBar` keeps the width in `useSharedValue(percentage)`. A shared value, like `useState`, only uses its argument on the first render. With `isAnimate` off, the effect returned early, so a new `percentage` never reached the bar.
+  - **The list cache was never told.** `updateMediaProgress` only invalidated `MediaDetail`. The Explore list lives in a different api slice, `exploreApi.getMedia`, and RTK Query tags only reach endpoints in the same `createApi`. So even a working bar would have shown old data until the 5-minute cache expired.
+- **Fix.**
+  - `src/components/core/display/uProgressBar.tsx`: when not animating, the effect sets `progressWidth.value = percentage` on every change.
+  - `src/store/api/mediaApi.ts`: the mutation also invalidates its own `'Media'` lists, and after success dispatches `exploreApi.util.invalidateTags(['Media'])`, the same pattern `libraryApi` already uses for the home feed.
+- **Measured.** The podcast was seeked to 24:29 of 33:11 and the screen was left. Before the fix the card stayed at about 71%. After it, the card showed 74% with no manual refresh.
+- **Also checked.** The audiobook "time left" on Home did update; my first read was simply before the refetch landed.
+- **Say it.** "Progress cards stayed stale after listening. Two bugs: the bar stored its width in a Reanimated shared value, which only reads its initial value, so new props were ignored. And the save mutation invalidated a tag in one API slice while the list lived in another, and tags don't cross slices. I push the new value into the shared value, and invalidate the other slice by hand after the save succeeds."
+- **Term.** Initial-value-only hooks (`useState`, `useSharedValue`). Cache invalidation. Tags are scoped to one `createApi`.
 
 ---
 

@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { setAudioModeAsync, useAudioPlayer as useExpoAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
-import type { AudioProgressData, UseAudioPlayerOptions } from '../types/types';
+import { setAudioModeAsync, useAudioPlayer as useExpoAudioPlayer } from 'expo-audio';
+import type { AudioStatus } from 'expo-audio';
+import type { UseAudioPlayerOptions, UseAudioPlayerReturn } from '../types/types';
 
 export function useAudioPlayer(
   fileUrl: string | undefined,
   options: UseAudioPlayerOptions = {}
-) {
+): UseAudioPlayerReturn {
   const {
     autoPlay = false,
     initialPosition = 0,
@@ -19,18 +20,15 @@ export function useAudioPlayer(
   const player = useExpoAudioPlayer(fileUrl ? { uri: fileUrl } : null, {
     updateInterval: 500,
   });
-  const status = useAudioPlayerStatus(player);
 
-  // Progress stored in ref to avoid re-renders on every tick
-  const progressRef = useRef<AudioProgressData>({
-    position: initialPosition,
-    duration: 1,
-    progress: 0,
-  });
-
-  // Only these cause re-renders
+  // Only these cause re-renders. The position lives in ProgressDisplay, which
+  // subscribes to the player itself, so a tick re-renders the slider, not the screen
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Latest options for the status listener, so it never needs to resubscribe
+  const latest = useRef({ autoPlay, initialPosition, onProgressUpdate, onPlaybackComplete, fileUrl });
+  latest.current = { autoPlay, initialPosition, onProgressUpdate, onPlaybackComplete, fileUrl };
 
   useEffect(() => {
     isMountedRef.current = true;
@@ -59,38 +57,40 @@ export function useAudioPlayer(
     };
   }, [fileUrl]);
 
-  // Resume and autoplay once the file is loaded: a seek before that can be dropped.
-  // expo-audio's currentTime is read-only, so seekTo is the only way to move.
   useEffect(() => {
-    if (!status.isLoaded || hasStartedRef.current) return;
-    hasStartedRef.current = true;
+    const onStatus = (status: AudioStatus) => {
+      if (!isMountedRef.current) return;
+      const { autoPlay, initialPosition, onProgressUpdate, onPlaybackComplete, fileUrl } = latest.current;
 
-    const start = async () => {
-      try {
-        if (initialPosition > 0) await player.seekTo(initialPosition / 1000);
-        if (autoPlay) player.play();
-      } catch (error) {
-        console.error('Error starting audio:', error);
+      // Same value as before is a no-op for React, so a plain tick renders nothing here
+      setIsPlaying(status.playing);
+      setIsLoading(Boolean(fileUrl) && !status.isLoaded);
+
+      const position = status.currentTime * 1000;
+      const duration = status.duration * 1000 || 1;
+      onProgressUpdate?.({ position, duration, progress: (position / duration) * 100 });
+      if (status.didJustFinish) onPlaybackComplete?.();
+
+      // Resume and autoplay once the file is loaded: a seek before that can be dropped.
+      // expo-audio's currentTime is read-only, so seekTo is the only way to move.
+      if (status.isLoaded && !hasStartedRef.current) {
+        hasStartedRef.current = true;
+        (async () => {
+          try {
+            if (initialPosition > 0) await player.seekTo(initialPosition / 1000);
+            if (autoPlay) player.play();
+          } catch (error) {
+            console.error('Error starting audio:', error);
+          }
+        })();
       }
     };
-    start();
-  }, [status.isLoaded, autoPlay, initialPosition, player]);
 
-  useEffect(() => {
-    if (!isMountedRef.current) return;
+    const subscription = player.addListener('playbackStatusUpdate', onStatus);
+    onStatus(player.currentStatus);
+    return () => subscription.remove();
+  }, [player]);
 
-    const position = status.currentTime * 1000;
-    const duration = status.duration * 1000 || 1;
-    const progress = duration > 0 ? (position / duration) * 100 : 0;
-    progressRef.current = { position, duration, progress };
-    setIsPlaying(status.playing);
-    setIsLoading(Boolean(fileUrl) && !status.isLoaded);
-    onProgressUpdate?.({ position, duration, progress });
-
-    if (status.didJustFinish) onPlaybackComplete?.();
-  }, [fileUrl, onPlaybackComplete, onProgressUpdate, status]);
-
-  // Play/Pause toggle
   const togglePlayPause = useCallback(async () => {
     try {
       if (player.playing) {
@@ -103,53 +103,37 @@ export function useAudioPlayer(
     }
   }, [player]);
 
-  // Seek to position (milliseconds)
+  // Seek to position (milliseconds). Reads the player live, so it never goes stale between ticks.
   const seekTo = useCallback(async (positionMs: number) => {
     try {
-      const clampedPosition = Math.max(0, Math.min(positionMs, status.duration * 1000));
+      const clampedPosition = Math.max(0, Math.min(positionMs, player.duration * 1000));
       await player.seekTo(clampedPosition / 1000);
     } catch (error) {
       console.error('Error seeking:', error);
     }
-  }, [player, status.duration]);
+  }, [player]);
 
-  // Rewind by seconds
   const rewind = useCallback(
     async (seconds: number = 10) => {
-      await seekTo(status.currentTime * 1000 - seconds * 1000);
+      await seekTo(player.currentTime * 1000 - seconds * 1000);
     },
-    [seekTo, status.currentTime]
+    [seekTo, player]
   );
 
-  // Forward by seconds
   const forward = useCallback(
     async (seconds: number = 10) => {
-      await seekTo(status.currentTime * 1000 + seconds * 1000);
+      await seekTo(player.currentTime * 1000 + seconds * 1000);
     },
-    [seekTo, status.currentTime]
+    [seekTo, player]
   );
 
-  // Format time helper
-  const formatTime = useCallback((ms: number) => {
-    const totalSeconds = Math.floor(ms / 1000);
-    const hours = Math.floor(totalSeconds / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
-
-    if (hours > 0) {
-      return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-    }
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  }, []);
-
   return {
+    player,
     isPlaying,
     isLoading,
     togglePlayPause,
     seekTo,
     rewind,
     forward,
-    progressRef,
-    formatTime,
   };
 }

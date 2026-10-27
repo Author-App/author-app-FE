@@ -15,10 +15,7 @@ These were built and typechecked, but not yet checked on the simulator.
 - [ ] **Event detail**
   - An online event opened 15 min early: the Join button turns on by itself at 10 min.
   - An ended event, online or in person: grey "Event has ended" button.
-- [ ] **Video detail**
-  - Scroll the video away: it floats bottom right and keeps playing without restarting.
-  - Tap the floating video: it scrolls back to the top.
-  - Tap X, then scroll up: the video is back, paused.
+- [ ] **Video detail** (float, float tap and X checked in the simulator with Mobile MCP on 2026-10-26)
   - Fullscreen, then back out.
 - [ ] **Podcast and audiobook**
   - Opens at the saved position and autoplays.
@@ -60,6 +57,16 @@ These were built and typechecked, but not yet checked on the simulator.
 - [ ] **Subscription plans go live with RevenueCat.** `SubscriptionPlansScreen` is redesigned to the artboard but not routed. `app/(app)/subscription` still renders the teaser. When RevenueCat is in, wire `handleSubscribe` and `handleManageSubscription` in `useSubscription` (both only `console.log` now) and point the route at the plans screen. To preview it before then, temporarily swap the import in the route.
 - [ ] **Play/pause on the floating video.** Needs `isPlaying` back in `useVideoPlayer` (for example with `useEvent(player, 'playingChange')`).
 
+## Open questions from the perf baseline
+
+- [ ] **Taps on Home cards sometimes do nothing.** Twice a Mobile MCP tap on a Home card produced 0 commits and no navigation; the retry worked. The same happened on video detail right after two swipes. Most likely normal iOS behaviour: the first tap during momentum scrolling only stops the scroll. Check with a finger before treating it as a bug.
+- [ ] **Does a podcast keep playing after you leave it?** Once, a podcast saved at 9:39 came back at 23:34 about 14 minutes later, as if it had kept playing. It may just have been a missed pause tap. Check by ear: play, press back without pausing, and listen.
+- [ ] **Mini player on a short podcast.** The test episode is too short to scroll its controls away, so the mini player could not be checked.
+
+## Accessibility pass (whole app, one go)
+
+It is a content app, so every screen must work with VoiceOver and TalkBack. Collect findings in the CLAUDE.md debt list while testing each screen, then fix them together. Check each screen with Mobile MCP's element list, which is the same tree VoiceOver reads.
+
 ## Known gaps
 
 - [ ] Inter Italic is not bundled.
@@ -67,6 +74,13 @@ These were built and typechecked, but not yet checked on the simulator.
 - [ ] Remove the Underline button from the CMS editor. The app strips `<u>` tags in `ArticleContent`.
 - [ ] `UIconButton` does not forward `disabled` as `accessibilityState` (see CLAUDE.md).
 - [ ] Community detail polls every 30s even while the app is in the background or on the About view.
+
+## Perf automation
+
+Find problems by hand (Perf Monitor, React DevTools Profiler). Automate only the guard once fixed.
+
+- [ ] `PerfProbe` (`src/components/core/dev/PerfProbe.tsx`) wraps every signed-in screen in `app/(app)/_layout.tsx` and logs `[perf] app js= ui= commits=` once a second in dev. Mobile MCP drives the taps, Metro shows the numbers. Take a baseline per screen.
+- [ ] Reassure render-count tests for the fixed bugs (HeroBanner dots, tab switch), after the seven steps.
 
 ## Tests worth writing
 

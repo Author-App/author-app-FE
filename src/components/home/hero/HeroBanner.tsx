@@ -1,5 +1,6 @@
-import React, { memo, useCallback, useMemo, useRef, useState, useEffect } from 'react';
+import React, { memo, useCallback, useMemo, useRef, useState } from 'react';
 import { FlatList, NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
+import { useFocusEffect } from 'expo-router';
 import { YStack } from 'tamagui';
 import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
 import type { BannerItem } from '@/src/home/types/home.types';
@@ -48,10 +49,14 @@ const HeroBanner: React.FC<HeroBannerProps> = ({ items, onPressItem, autoPlayInt
     }
   }, []);
 
-  useEffect(() => {
-    startAutoPlay();
-    return () => stopAutoPlay();
-  }, [startAutoPlay, stopAutoPlay]);
+  // Focus, not mount: bottom tabs keep Home mounted while hidden, so a mount-based
+  // timer kept ticking on every other tab (BUG_LOG 5.9)
+  useFocusEffect(
+    useCallback(() => {
+      startAutoPlay();
+      return stopAutoPlay;
+    }, [startAutoPlay, stopAutoPlay])
+  );
 
   const onScrollBeginDrag = useCallback(() => {
     isUserScrollingRef.current = true;

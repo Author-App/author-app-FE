@@ -1,4 +1,6 @@
-import React, { memo, useState, useEffect, useCallback } from 'react';
+import React, { memo, useState, useRef, useCallback } from 'react';
+import { useAudioPlayerStatus } from 'expo-audio';
+import type { AudioPlayer as ExpoAudioPlayer } from 'expo-audio';
 import { StyleSheet } from 'react-native';
 import { XStack, YStack, getTokenValue } from 'tamagui';
 import Slider from '@react-native-community/slider';
@@ -10,85 +12,58 @@ import UText from '@/src/components/core/text/uText';
 import UCtaGradient from '@/src/components/core/display/uCtaGradient';
 import haptics from '@/src/utils/haptics';
 
-import type { AudioProgressData, UseAudioPlayerReturn } from './types/types';
+import type { UseAudioPlayerReturn } from './types/types';
+
+const formatTime = (ms: number) => {
+  const totalSeconds = Math.floor(ms / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  if (hours > 0) {
+    return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  }
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+};
 
 interface ProgressDisplayProps {
-  isPlaying: boolean;
-  progressRef: React.MutableRefObject<AudioProgressData>;
-  formatTime: (ms: number) => string;
+  player: ExpoAudioPlayer;
   onSeek?: (positionMs: number) => void;
 }
 
-const ProgressDisplay = memo(function ProgressDisplay({
-  isPlaying,
-  progressRef,
-  formatTime,
-  onSeek,
-}: ProgressDisplayProps) {
-  const [displayProgress, setDisplayProgress] = useState({
-    progress: 0,
-    position: 0,
-    duration: 1,
-    positionText: '0:00',
-    durationText: '0:00',
-  });
+// The only component that listens to every status tick, so a tick re-renders this, not the screen
+const ProgressDisplay = memo(function ProgressDisplay({ player, onSeek }: ProgressDisplayProps) {
+  const status = useAudioPlayerStatus(player);
+  // Set only while the thumb is held: the Slider also fires onValueChange when its value prop moves
+  const [dragValue, setDragValue] = useState<number | null>(null);
+  const isDraggingRef = useRef(false);
 
-  const [isSeeking, setIsSeeking] = useState(false);
-
-  // Update progress display using interval when playing
-  useEffect(() => {
-    const updateProgress = () => {
-      if (isSeeking) return;
-      const current = progressRef.current;
-      setDisplayProgress({
-        progress: current.progress,
-        position: current.position,
-        duration: current.duration,
-        positionText: formatTime(current.position),
-        durationText: formatTime(current.duration),
-      });
-    };
-
-    updateProgress();
-
-    if (!isPlaying) return;
-
-    const intervalId = setInterval(updateProgress, 500);
-    return () => clearInterval(intervalId);
-  }, [isPlaying, progressRef, formatTime, isSeeking]);
+  const duration = status.duration * 1000 || 1;
+  const progress = dragValue ?? ((status.currentTime * 1000) / duration) * 100;
+  const position = (progress / 100) * duration;
 
   const handleSliderStart = useCallback(() => {
-    setIsSeeking(true);
+    isDraggingRef.current = true;
   }, []);
 
-  const handleSliderChange = useCallback(
-    (value: number) => {
-      const newPosition = (value / 100) * displayProgress.duration;
-      setDisplayProgress((prev) => ({
-        ...prev,
-        position: newPosition,
-        progress: value,
-        positionText: formatTime(newPosition),
-      }));
-    },
-    [displayProgress.duration, formatTime]
-  );
+  const handleSliderChange = useCallback((value: number) => {
+    if (isDraggingRef.current) setDragValue(value);
+  }, []);
 
   const handleSliderComplete = useCallback(
     (value: number) => {
       haptics.selection();
-      setIsSeeking(false);
-      const newPosition = (value / 100) * progressRef.current.duration;
-      onSeek?.(newPosition);
+      isDraggingRef.current = false;
+      setDragValue(null);
+      onSeek?.((value / 100) * duration);
     },
-    [onSeek, progressRef]
+    [onSeek, duration]
   );
 
   return (
     <YStack gap={8}>
       <Slider
         style={styles.slider}
-        value={displayProgress.progress}
+        value={progress}
         minimumValue={0}
         maximumValue={100}
         minimumTrackTintColor={getTokenValue('$accentCyan', 'color')}
@@ -102,10 +77,10 @@ const ProgressDisplay = memo(function ProgressDisplay({
       {/* Time display */}
       <XStack jc="space-between" px={4}>
         <UText variant="meta-s" color="$accentCyan">
-          {displayProgress.positionText}
+          {formatTime(position)}
         </UText>
         <UText variant="meta-s" color="$textMuted">
-          {displayProgress.durationText}
+          {formatTime(duration)}
         </UText>
       </XStack>
     </YStack>
@@ -195,7 +170,7 @@ interface AudioPlayerProps {
 }
 
 export const AudioPlayer = memo(function AudioPlayer({ audio }: AudioPlayerProps) {
-  const { isPlaying, isLoading, togglePlayPause, seekTo, rewind, forward, progressRef, formatTime } = audio;
+  const { player, isPlaying, isLoading, togglePlayPause, seekTo, rewind, forward } = audio;
 
   const handleRewind = useCallback(() => {
     haptics.light();
@@ -215,12 +190,7 @@ export const AudioPlayer = memo(function AudioPlayer({ audio }: AudioPlayerProps
   return (
     <YStack gap={24}>
       {/* Progress Slider */}
-      <ProgressDisplay
-        isPlaying={isPlaying}
-        progressRef={progressRef}
-        formatTime={formatTime}
-        onSeek={seekTo}
-      />
+      <ProgressDisplay player={player} onSeek={seekTo} />
 
       {/* Controls */}
       <PlayerControls
