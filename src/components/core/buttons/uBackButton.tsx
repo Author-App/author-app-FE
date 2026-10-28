@@ -18,7 +18,10 @@ const UBackButton = ({ variant = 'quaternary-sm', onPress, ...props }: GetProps<
     <UIconButton
       variant={variant}
       icon={IconArrowLeft}
-      onPress={navigateBack}
+      onPress={onPress ?? navigateBack}
+      // Icon-only button. Without these a screen reader announces nothing.
+      accessible
+      accessibilityLabel="Go back"
       {...props}
     />
   );

@@ -26,6 +26,7 @@ export const useEventDetail = (
 
   // Select data from cache using memoized selectors
   const event = useAppSelector(selectEvent(eventId ?? ''));
+  console.log('event:', event);
   const joinStatus = useAppSelector(selectJoinStatus(eventId ?? ''));
 
   return {

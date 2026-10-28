@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Audio, AVPlaybackStatus } from 'expo-av';
+import { setAudioModeAsync, useAudioPlayer as useExpoAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import type { AudioProgressData, UseAudioPlayerOptions } from '../types/types';
 
 export function useAudioPlayer(
@@ -13,8 +13,11 @@ export function useAudioPlayer(
     onPlaybackComplete,
   } = options;
 
-  const soundRef = useRef<Audio.Sound | null>(null);
   const isMountedRef = useRef(true);
+  const player = useExpoAudioPlayer(fileUrl ? { uri: fileUrl } : null, {
+    updateInterval: 500,
+  });
+  const status = useAudioPlayerStatus(player);
 
   // Progress stored in ref to avoid re-renders on every tick
   const progressRef = useRef<AudioProgressData>({
@@ -27,141 +30,85 @@ export function useAudioPlayer(
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Playback status handler
-  const handlePlaybackStatus = useCallback(
-    (status: AVPlaybackStatus) => {
-      if (!isMountedRef.current || !status.isLoaded) return;
-
-      const position = status.positionMillis ?? 0;
-      const duration = status.durationMillis ?? 1;
-      const playing = status.isPlaying ?? false;
-      const progress = duration > 0 ? (position / duration) * 100 : 0;
-
-      // Always update the ref (no re-render)
-      progressRef.current = { position, duration, progress };
-
-      // Call progress callback if provided
-      onProgressUpdate?.({ position, duration, progress });
-
-      // Check if playback completed
-      if (status.didJustFinish) {
-        onPlaybackComplete?.();
-      }
-
-      // Only update state if isPlaying changed or still loading
-      setIsPlaying((prev) => (prev !== playing ? playing : prev));
-      setIsLoading(false);
-    },
-    [onProgressUpdate, onPlaybackComplete]
-  );
-
-  // Load audio
   useEffect(() => {
-    if (!fileUrl) {
-      setIsLoading(false);
-      return;
-    }
-
     isMountedRef.current = true;
+    setIsLoading(Boolean(fileUrl));
+    if (!fileUrl) return;
 
-    const loadAudio = async () => {
+    const configureAudio = async () => {
       try {
-        // Unload previous sound if exists
-        if (soundRef.current) {
-          await soundRef.current.unloadAsync();
-          soundRef.current = null;
-        }
-
-        // Configure audio mode for iOS
-        await Audio.setAudioModeAsync({
-          playsInSilentModeIOS: true,
-          staysActiveInBackground: true,
+        await setAudioModeAsync({
+          playsInSilentMode: true,
+          shouldPlayInBackground: true,
+          allowsRecording: false,
+          interruptionMode: 'doNotMix',
         });
-
-        const { sound } = await Audio.Sound.createAsync(
-          { uri: fileUrl },
-          {
-            shouldPlay: autoPlay,
-            positionMillis: initialPosition,
-            progressUpdateIntervalMillis: 500,
-          },
-          handlePlaybackStatus
-        );
-
-        soundRef.current = sound;
+        player.currentTime = initialPosition / 1000;
+        if (autoPlay) player.play();
       } catch (error) {
         console.error('Error loading audio:', error);
-        if (isMountedRef.current) {
-          setIsLoading(false);
-        }
+        if (isMountedRef.current) setIsLoading(false);
       }
     };
 
-    loadAudio();
+    configureAudio();
 
     return () => {
       isMountedRef.current = false;
-      soundRef.current?.unloadAsync();
-      soundRef.current = null;
     };
-  }, [fileUrl]);
+  }, [autoPlay, fileUrl, initialPosition, player]);
+
+  useEffect(() => {
+    if (!isMountedRef.current) return;
+
+    const position = status.currentTime * 1000;
+    const duration = status.duration * 1000 || 1;
+    const progress = duration > 0 ? (position / duration) * 100 : 0;
+    progressRef.current = { position, duration, progress };
+    setIsPlaying(status.playing);
+    setIsLoading(Boolean(fileUrl) && !status.isLoaded);
+    onProgressUpdate?.({ position, duration, progress });
+
+    if (status.didJustFinish) onPlaybackComplete?.();
+  }, [fileUrl, onPlaybackComplete, onProgressUpdate, status]);
 
   // Play/Pause toggle
   const togglePlayPause = useCallback(async () => {
-    if (!soundRef.current) return;
-
     try {
-      const status = await soundRef.current.getStatusAsync();
-      if (status.isLoaded && status.isPlaying) {
-        await soundRef.current.pauseAsync();
+      if (player.playing) {
+        player.pause();
       } else {
-        await soundRef.current.playAsync();
+        player.play();
       }
     } catch (error) {
       console.error('Error toggling playback:', error);
     }
-  }, []);
+  }, [player]);
 
   // Seek to position (milliseconds)
   const seekTo = useCallback(async (positionMs: number) => {
-    if (!soundRef.current) return;
-
     try {
-      const status = await soundRef.current.getStatusAsync();
-      if (status.isLoaded) {
-        const clampedPosition = Math.max(
-          0,
-          Math.min(positionMs, status.durationMillis ?? 0)
-        );
-        await soundRef.current.setPositionAsync(clampedPosition);
-      }
+      const clampedPosition = Math.max(0, Math.min(positionMs, status.duration * 1000));
+      await player.seekTo(clampedPosition / 1000);
     } catch (error) {
       console.error('Error seeking:', error);
     }
-  }, []);
+  }, [player, status.duration]);
 
   // Rewind by seconds
   const rewind = useCallback(
     async (seconds: number = 10) => {
-      if (!soundRef.current) return;
-      const status = await soundRef.current.getStatusAsync();
-      if (status.isLoaded) {
-        await seekTo(status.positionMillis - seconds * 1000);
-      }
+      await seekTo(status.currentTime * 1000 - seconds * 1000);
     },
-    [seekTo]
+    [seekTo, status.currentTime]
   );
 
   // Forward by seconds
   const forward = useCallback(
     async (seconds: number = 10) => {
-      if (!soundRef.current) return;
-      const status = await soundRef.current.getStatusAsync();
-      if (status.isLoaded) {
-        await seekTo(status.positionMillis + seconds * 1000);
-      }
+      await seekTo(status.currentTime * 1000 + seconds * 1000);
     },
-    [seekTo]
+    [seekTo, status.currentTime]
   );
 
   // Format time helper

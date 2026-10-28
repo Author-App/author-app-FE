@@ -50,3 +50,11 @@ yarn-error.*
 
 .env.local
 google-service-account.json
+google-services.json
+/docs/INTERVIEW_BRIEF.md
+
+# Detox run output
+artifacts/
+
+# test coverage output
+coverage/

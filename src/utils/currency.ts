@@ -62,20 +62,24 @@ export const formatPrice = (
     symbolPosition?: 'before' | 'after';
   } = {}
 ): string => {
-  const { showDecimals = true, symbolPosition = 'before' } = options;
+  const { showDecimals = true } = options;
   const symbol = getCurrencySymbol(currencyCode);
-  
-  const formattedNumber = showDecimals 
-    ? price.toFixed(2) 
+
+  const formattedNumber = showDecimals
+    ? price.toFixed(2)
     : Math.round(price).toString();
 
-  // Some currencies traditionally show symbol after (e.g., European conventions)
   const symbolAfterCurrencies = ['EUR', 'SEK', 'NOK', 'DKK', 'PLN', 'CHF'];
-  const shouldShowAfter = symbolPosition === 'after' || 
-    (symbolPosition === 'before' && symbolAfterCurrencies.includes(currencyCode.toUpperCase()));
 
-  // For simplicity, we'll always show symbol before (common in apps)
-  return `${symbol}${formattedNumber}`;
+  // Read options directly: a destructured default cannot tell "not passed"
+  // from "passed as before", and the caller must be able to override the list.
+  const shouldShowAfter = options.symbolPosition
+    ? options.symbolPosition === 'after'
+    : symbolAfterCurrencies.includes(currencyCode.toUpperCase());
+
+  return shouldShowAfter
+    ? `${formattedNumber}${symbol}`
+    : `${symbol}${formattedNumber}`;
 };
 
 /**

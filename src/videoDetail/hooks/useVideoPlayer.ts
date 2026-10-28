@@ -1,5 +1,5 @@
-import { useRef, useState, useCallback } from 'react';
-import { Video, AVPlaybackStatus } from 'expo-av';
+import { useEffect, useState, useCallback, useRef } from 'react';
+import { useVideoPlayer as useExpoVideoPlayer, type VideoPlayer } from 'expo-video';
 
 interface ProgressData {
   position: number;
@@ -12,10 +12,14 @@ interface UseVideoPlayerOptions {
   onProgressUpdate?: (data: ProgressData) => void;
 }
 
-export function useVideoPlayer(options: UseVideoPlayerOptions = {}) {
+export function useVideoPlayer(fileUrl: string | undefined, options: UseVideoPlayerOptions = {}) {
   const { initialPosition = 0, onProgressUpdate } = options;
 
-  const videoRef = useRef<Video>(null);
+  const player = useExpoVideoPlayer(fileUrl ? { uri: fileUrl } : null, (videoPlayer) => {
+    videoPlayer.timeUpdateEventInterval = 0.5;
+    videoPlayer.currentTime = initialPosition / 1000;
+    videoPlayer.play();
+  });
   const progressRef = useRef<ProgressData>({
     position: initialPosition,
     duration: 1,
@@ -25,56 +29,54 @@ export function useVideoPlayer(options: UseVideoPlayerOptions = {}) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Handle playback status updates
-  const handlePlaybackStatusUpdate = useCallback(
-    (status: AVPlaybackStatus) => {
-      if (!status.isLoaded) {
-        setIsLoading(true);
-        return;
-      }
-
-      setIsLoading(false);
-      setIsPlaying(status.isPlaying);
-
-      const position = status.positionMillis ?? 0;
-      const duration = status.durationMillis ?? 1;
+  useEffect(() => {
+    const statusSubscription = player.addListener('statusChange', ({ status }) => {
+      setIsLoading(status !== 'readyToPlay');
+    });
+    const playingSubscription = player.addListener('playingChange', ({ isPlaying: playing }) => {
+      setIsPlaying(playing);
+    });
+    const timeSubscription = player.addListener('timeUpdate', ({ currentTime }) => {
+      const position = currentTime * 1000;
+      const duration = player.duration * 1000 || 1;
       const progress = duration > 0 ? (position / duration) * 100 : 0;
-
       progressRef.current = { position, duration, progress };
       onProgressUpdate?.({ position, duration, progress });
-    },
-    [onProgressUpdate]
-  );
+    });
+
+    return () => {
+      statusSubscription.remove();
+      playingSubscription.remove();
+      timeSubscription.remove();
+    };
+  }, [onProgressUpdate, player]);
 
   // Seek to position
   const seekTo = useCallback(async (positionMs: number) => {
-    if (!videoRef.current) return;
     try {
-      await videoRef.current.setPositionAsync(positionMs);
+      player.currentTime = positionMs / 1000;
     } catch (error) {
       console.error('Error seeking video:', error);
     }
-  }, []);
+  }, [player]);
 
   // Play video
   const play = useCallback(async () => {
-    if (!videoRef.current) return;
     try {
-      await videoRef.current.playAsync();
+      player.play();
     } catch (error) {
       console.error('Error playing video:', error);
     }
-  }, []);
+  }, [player]);
 
   // Pause video
   const pause = useCallback(async () => {
-    if (!videoRef.current) return;
     try {
-      await videoRef.current.pauseAsync();
+      player.pause();
     } catch (error) {
       console.error('Error pausing video:', error);
     }
-  }, []);
+  }, [player]);
 
   // Toggle play/pause
   const togglePlayPause = useCallback(async () => {
@@ -86,11 +88,10 @@ export function useVideoPlayer(options: UseVideoPlayerOptions = {}) {
   }, [isPlaying, play, pause]);
 
   return {
-    videoRef,
+    player,
     progressRef,
     isPlaying,
     isLoading,
-    handlePlaybackStatusUpdate,
     seekTo,
     play,
     pause,

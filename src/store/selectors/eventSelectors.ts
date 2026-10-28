@@ -36,5 +36,5 @@ export const selectJoinStatus = (eventId: string) =>
     if (event.eventType !== 'online') return null;
     if (!event.eventDate || !event.eventTime) return null;
 
-    return getJoinStatus(event.eventDate, event.eventTime);
+    return getJoinStatus(event);
   });

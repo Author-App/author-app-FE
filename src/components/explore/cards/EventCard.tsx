@@ -6,7 +6,7 @@ import UText from '@/src/components/core/text/uText';
 import ULocalImage from '@/src/components/core/image/uLocalImage';
 import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
 import type { EventResponse } from '@/src/explore/types/explore.types';
-import { formatDate, formatTime12h } from '@/src/utils/helper';
+import { formatEventDisplay } from '@/src/utils/helper';
 
 interface EventCardProps extends YStackProps {
   data: EventResponse;
@@ -19,6 +19,12 @@ const EventCard: React.FC<EventCardProps> = ({ data, onPress, ...props }) => {
   const neutral = getTokenValue('$neutral1', 'color');
 
   const isOnline = data.eventType === 'online';
+  const display = formatEventDisplay({
+    eventStartUtc: data.eventStartUtc,
+    eventDate: data.eventDate,
+    eventTime: data.eventTime,
+    timezone: data.timezone,
+  });
 
   return (
     <UAnimatedView animation="fadeInUp" duration={400}>
@@ -85,10 +91,10 @@ const EventCard: React.FC<EventCardProps> = ({ data, onPress, ...props }) => {
               ai="center"
             >
               <UText variant="text-md" color="$white" fontWeight="700">
-                {new Date(data.eventDate).getDate()}
+                {display.badgeDay ?? ''}
               </UText>
               <UText variant="text-xs" color="$neutral1" fontWeight="500" mt={-2}>
-                {new Date(data.eventDate).toLocaleString('default', { month: 'short' })}
+                {display.badgeMonthLabel}
               </UText>
             </YStack>
           )}
@@ -126,7 +132,7 @@ const EventCard: React.FC<EventCardProps> = ({ data, onPress, ...props }) => {
             <XStack ai="center" gap={6}>
               <Ionicons name="time-outline" size={14} color={teal} />
               <UText variant="text-sm" color="$brandTeal" fontWeight="500">
-                {data.eventTime ? formatTime12h(data.eventTime) : 'TBA'}
+                {data.eventTime ? `${display.timeLabel}${display.timezoneLabel ? ` ${display.timezoneLabel}` : ''}` : 'TBA'}
               </UText>
             </XStack>
 

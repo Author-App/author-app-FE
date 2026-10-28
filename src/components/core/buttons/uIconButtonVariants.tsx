@@ -262,6 +262,9 @@ const UIconButton = forwardRef<any, UIconButtonProps>((props, ref) => {
       }}
       unstyled
       disabled={disabled}
+      // Tamagui blocks the press with pointerEvents, but does not tell a screen
+      // reader. Without this the button is announced as active while dimmed.
+      accessibilityState={{ disabled: !!disabled }}
       opacity={disabled ? 0.5 : 1}
       {...restProps}
     >
