@@ -8,6 +8,7 @@ import { useTabBarInset } from '@/src/navigations/hooks/useTabBarInset';
 import { useLayoutClass } from '@/src/components/core/layout/useLayoutClass';
 import { CARD_MIN_LIST, COVER_MAX } from '@/src/components/core/layout/layout';
 import { UGrid } from '@/src/components/core/layout/UGrid';
+import USkeleton from '@/src/components/core/display/uSkeleton';
 import UText from '@/src/components/core/text/uText';
 import HeroBanner from '@/src/components/home/hero/HeroBanner';
 import SectionHeader from '@/src/components/home/sections/SectionHeader';
@@ -183,3 +184,63 @@ const HomeWide = ({
 };
 
 export default memo(HomeWide);
+
+/** The loading shape of HomeWide: hero beside two Continue cards, a cover row, covers beside article rows. */
+export const HomeWideSkeleton = () => {
+  const { size, gutter, contentWidth, sectionGap, gridGap, coverMin, columns } = useLayoutClass();
+  const isExpanded = size === 'expanded';
+  const heroWidth = ((contentWidth - gridGap) * 3) / 5;
+  const cols = columns(coverMin);
+  const coverWidth = (contentWidth - gridGap * (cols - 1)) / cols;
+  const pairWidth = (contentWidth - gridGap) / 2;
+  const pairCovers = columns(coverMin, pairWidth);
+  const pairCoverWidth = (pairWidth - gridGap * (pairCovers - 1)) / pairCovers;
+
+  return (
+    <YStack
+      px={gutter}
+      ai="center"
+      accessible
+      accessibilityRole="text"
+      accessibilityLabel="Loading home"
+      accessibilityState={{ busy: true }}
+    >
+      <YStack w={contentWidth} gap={sectionGap}>
+        <XStack gap={gridGap}>
+          <USkeleton width={heroWidth} height={isExpanded ? 352 : 328} radius={24} />
+          <YStack flex={1} gap={12}>
+            <USkeleton width={180} height={20} radius={8} />
+            <USkeleton width="100%" height={isExpanded ? 140 : 128} radius={20} />
+            <USkeleton width="100%" height={isExpanded ? 140 : 128} radius={20} />
+          </YStack>
+        </XStack>
+
+        <YStack gap={12}>
+          <USkeleton width={180} height={20} radius={8} />
+          <XStack gap={gridGap}>
+            {Array.from({ length: cols }, (_, i) => (
+              <USkeleton key={i} width={coverWidth} height={coverWidth * 1.5 + 70} radius={16} />
+            ))}
+          </XStack>
+        </YStack>
+
+        <XStack gap={gridGap}>
+          <YStack w={pairWidth} gap={12}>
+            <USkeleton width={150} height={20} radius={8} />
+            <XStack gap={gridGap}>
+              {Array.from({ length: pairCovers }, (_, i) => (
+                <USkeleton key={i} width={pairCoverWidth} height={pairCoverWidth * 1.5 + 70} radius={16} />
+              ))}
+            </XStack>
+          </YStack>
+          <YStack w={pairWidth} gap={12}>
+            <USkeleton width={150} height={20} radius={8} />
+            {[0, 1, 2].map((i) => (
+              <USkeleton key={i} width="100%" height={96} radius={16} />
+            ))}
+          </YStack>
+        </XStack>
+      </YStack>
+    </YStack>
+  );
+};

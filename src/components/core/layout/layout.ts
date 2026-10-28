@@ -27,6 +27,9 @@ export const getSizeClass = (width: number): SizeClass =>
 // The design's clamp(360, 34%, 440): content stops at 1280, so the 440 cap can never apply
 export const paneWidth = (contentWidth: number): number => Math.max(360, contentWidth * 0.34);
 export const PANE_GAP = 48;
+// Reading widths: about 70 characters a line at body 15 and at long-form 17
+export const READ_MAX = 560;
+export const READ_MAX_LONG = 600;
 
 export const columns = (minCardWidth: number, contentWidth: number, gap: number): number =>
   Math.max(1, Math.floor((contentWidth + gap) / (minCardWidth + gap)));

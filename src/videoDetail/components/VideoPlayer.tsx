@@ -28,23 +28,34 @@ interface VideoPlayerProps {
   /** Offset of the screen's ScrollView, whose first child is a 16:9 spacer for the video */
   scrollY: SharedValue<number>;
   onExpand: () => void;
+  /** The inline video's column: the whole window unless a wide layout gives it a pane */
+  frameLeft?: number;
+  frameWidth?: number;
 }
 
 /**
  * One VideoView for every state, moved with transforms, so playback never restarts.
  * Inline it scrolls with the page; once mostly out of view it floats bottom right.
  */
-export const VideoPlayer = memo(function VideoPlayer({ player, isLoading, scrollY, onExpand }: VideoPlayerProps) {
+export const VideoPlayer = memo(function VideoPlayer({
+  player,
+  isLoading,
+  scrollY,
+  onExpand,
+  frameLeft = 0,
+  frameWidth,
+}: VideoPlayerProps) {
   const { top: safeTop, bottom: safeBottom } = useSafeAreaInsets();
   const { width, height } = useWindowDimensions();
+  const inlineWidth = frameWidth ?? width;
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isMini, setIsMini] = useState(false);
 
   const inlineTop = safeTop + STICKY_BAR_HEIGHT;
-  const videoHeight = (width * 9) / 16;
-  const miniScale = MINI_WIDTH / width;
+  const videoHeight = (inlineWidth * 9) / 16;
+  const miniScale = MINI_WIDTH / inlineWidth;
   const miniHeight = videoHeight * miniScale;
-  const miniX = width - MINI_MARGIN - MINI_WIDTH / 2 - width / 2;
+  const miniX = width - MINI_MARGIN - MINI_WIDTH / 2 - (frameLeft + inlineWidth / 2);
   const miniY = height - safeBottom - MINI_MARGIN - miniHeight / 2 - (inlineTop + videoHeight / 2);
   // Different thresholds in and out, so resting near one edge does not flicker
   const enterAt = videoHeight * 0.75;
@@ -121,8 +132,8 @@ export const VideoPlayer = memo(function VideoPlayer({ player, isLoading, scroll
         style={[
           styles.video,
           isFullscreen
-            ? { top: 0, width, height, zIndex: 3 }
-            : { top: inlineTop, width, height: videoHeight },
+            ? { top: 0, left: 0, width, height, zIndex: 3 }
+            : { top: inlineTop, left: frameLeft, width: inlineWidth, height: videoHeight },
           containerStyle,
         ]}
       >
@@ -208,6 +219,6 @@ export const VideoPlayer = memo(function VideoPlayer({ player, isLoading, scroll
 });
 
 const styles = StyleSheet.create({
-  video: { position: 'absolute', left: 0, zIndex: 1, overflow: 'hidden', backgroundColor: '#000' },
+  video: { position: 'absolute', zIndex: 1, overflow: 'hidden', backgroundColor: '#000' },
   miniOverlay: { position: 'absolute', zIndex: 4, borderRadius: 12, overflow: 'hidden' },
 });

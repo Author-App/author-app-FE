@@ -6,9 +6,8 @@ import { Toast } from '@/src/components/core/toast/toast';
 
 import UBackButton from '@/src/components/core/buttons/uBackButton';
 import UScreenLayout from '@/src/components/core/layout/UScreenLayout';
-import USkeleton from '@/src/components/core/display/uSkeleton';
 import UScreenError from '@/src/components/core/feedback/UScreenError';
-import { DETAIL_HERO_HEIGHT } from '@/src/components/core/layout/uDetailHero';
+import { UDetailScaffoldSkeleton } from '@/src/components/core/layout/UDetailScaffold';
 import haptics from '@/src/utils/haptics';
 
 import { useCommunityDetail } from '@/src/communityDetail/hooks/useCommunityDetail';
@@ -57,13 +56,7 @@ export function CommunityDetailScreen() {
     return (
       <UScreenLayout>
         {backButton}
-        <USkeleton width="100%" height={DETAIL_HERO_HEIGHT} radius={0} />
-        <YStack px={20} mt={-40} gap={14}>
-          <USkeleton width={110} height={22} radius={11} />
-          <USkeleton width="80%" height={24} radius={8} />
-          <USkeleton width="100%" height={14} radius={7} mt={16} />
-          <USkeleton width="70%" height={14} radius={7} />
-        </YStack>
+        <UDetailScaffoldSkeleton />
       </UScreenLayout>
     );
   }

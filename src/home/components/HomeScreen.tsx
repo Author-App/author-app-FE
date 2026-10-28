@@ -13,7 +13,7 @@ import UScreenLayout from '@/src/components/core/layout/UScreenLayout';
 import HomeSkeleton from './HomeSkeleton';
 import { useURefreshControl } from '@/src/components/core/feedback/URefreshControl';
 import HomeCompact from './layouts/HomeCompact';
-import HomeWide from './layouts/HomeWide';
+import HomeWide, { HomeWideSkeleton } from './layouts/HomeWide';
 import { useLayoutClass } from '@/src/components/core/layout/useLayoutClass';
 
 
@@ -92,7 +92,7 @@ const HomeScreen: React.FC = () => {
   if (isLoading) {
     return (
       <UScreenLayout pt={top + 12}>
-        <HomeSkeleton />
+        {size === 'compact' ? <HomeSkeleton /> : <HomeWideSkeleton />}
       </UScreenLayout>
     );
   }

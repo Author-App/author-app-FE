@@ -2,7 +2,6 @@ import React, { memo } from 'react';
 import { Alert, Linking } from 'react-native';
 import { XStack, getTokenValue } from 'tamagui';
 import { Ionicons } from '@expo/vector-icons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { NeonButton } from '@/src/components/core/buttons/neonButton';
 import UText from '@/src/components/core/text/uText';
@@ -30,7 +29,6 @@ export const EventActions = memo(function EventActions({
   locationGoogleMapLink,
   googleMeetLink,
 }: EventActionsProps) {
-  const { bottom } = useSafeAreaInsets();
   const isOffline = eventType === 'offline';
   const url = isOffline ? locationGoogleMapLink : googleMeetLink;
   const hasEnded = joinStatus === 'ended';
@@ -54,19 +52,7 @@ export const EventActions = memo(function EventActions({
   };
 
   return (
-    <XStack
-      pos="absolute"
-      left={0}
-      right={0}
-      bottom={0}
-      pt={14}
-      px={16}
-      pb={Math.max(bottom, 16)}
-      bg="rgba(7,5,18,0.88)"
-      borderTopWidth={1}
-      borderTopColor="$glassBorder"
-    >
-      <NeonButton flex={1} tone={isDisabled ? 'neutral' : 'primary'} disabled={isDisabled} accessibilityLabel={label} onPress={handlePress}>
+      <NeonButton tone={isDisabled ? 'neutral' : 'primary'} disabled={isDisabled} accessibilityLabel={label} onPress={handlePress}>
         <XStack ai="center" gap={8}>
           <Ionicons
             name={isOffline ? 'map-outline' : 'videocam-outline'}
@@ -78,6 +64,5 @@ export const EventActions = memo(function EventActions({
           </UText>
         </XStack>
       </NeonButton>
-    </XStack>
   );
 });
