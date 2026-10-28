@@ -7,12 +7,14 @@ interface ReviewsTabContentProps {
   ratingStats?: RatingStats;
   hasAccess?: boolean;
   onWriteReview: () => void;
+  width: number;
 }
 
 export function ReviewsTabContent({
   ratingStats,
   hasAccess,
   onWriteReview,
+  width,
 }: ReviewsTabContentProps) {
   if (!ratingStats) return null;
 
@@ -21,6 +23,7 @@ export function ReviewsTabContent({
       ratingStats={ratingStats}
       hasAccess={hasAccess}
       onWriteReview={onWriteReview}
+      width={width}
     />
   );
 }

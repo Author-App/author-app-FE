@@ -11,6 +11,9 @@ import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
 import UCtaGradient from '@/src/components/core/display/uCtaGradient';
 import UText from '@/src/components/core/text/uText';
 import UGradientText from '@/src/components/core/text/uGradientText';
+import { useLayoutClass } from '@/src/components/core/layout/useLayoutClass';
+import { CARD_MIN_LIST, READ_MAX } from '@/src/components/core/layout/layout';
+import { UGrid } from '@/src/components/core/layout/UGrid';
 
 const COMING_FEATURES = [
   { icon: 'book-outline', title: 'Unlimited Access', desc: 'Read all books without limits' },
@@ -23,6 +26,8 @@ const COMING_FEATURES = [
 export function SubscriptionScreen() {
   const { bottom } = useSafeAreaInsets();
   const cyan = getTokenValue('$accentCyan', 'color');
+  const { size, side, contentWidth, gridGap, columns } = useLayoutClass();
+  const isWide = size !== 'compact';
 
   return (
     <UScreenLayout>
@@ -32,8 +37,9 @@ export function SubscriptionScreen() {
         textProps={{ variant: 'display-l' }}
         leftControl={<UBackButton variant="glass-md" />}
         pb={8}
+        {...(isWide && { px: side })}
       />
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: bottom + 32 }}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: isWide ? side : 16, paddingBottom: bottom + 32 }}>
         <UAnimatedView animation="fadeInUp" delay={100}>
           <YStack ai="center" gap={18} pt={24}>
             <YStack w={112} h={112} br={56} ai="center" jc="center" boxShadow="0 0 48px rgba(135,54,247,0.55), 0 0 24px rgba(0,240,255,0.25)">
@@ -50,7 +56,7 @@ export function SubscriptionScreen() {
               </UGradientText>
             </YStack>
 
-            <UText variant="body" color="$textSecondary" textAlign="center" px={12}>
+            <UText variant="body" color="$textSecondary" textAlign="center" px={12} maw={READ_MAX}>
               We are crafting a premium experience just for you. Get ready to unlock the full potential of your
               reading journey.
             </UText>
@@ -62,30 +68,33 @@ export function SubscriptionScreen() {
             <UText variant="meta-pill" fontWeight="600" color="$accentCyan" textAlign="center">
               What's coming
             </UText>
-            {COMING_FEATURES.map((feature) => (
-              <XStack
-                key={feature.title}
-                p={16}
-                gap={14}
-                ai="center"
-                br={20}
-                bg="$glass"
-                borderWidth={1}
-                borderColor="$glassBorder"
-              >
-                <YStack w={44} h={44} br={12} ai="center" jc="center" bg="$glassCyan" borderWidth={1} borderColor="$glassCyanBorder">
-                  <Ionicons name={feature.icon} size={22} color={cyan} />
-                </YStack>
-                <YStack flex={1} gap={2}>
-                  <UText variant="display-s" color="$textPrimary">
-                    {feature.title}
-                  </UText>
-                  <UText variant="body-s" color="$textSecondary">
-                    {feature.desc}
-                  </UText>
-                </YStack>
-              </XStack>
-            ))}
+            {/* Four features: two to a row keeps every row full */}
+            <UGrid columns={isWide ? Math.min(2, columns(CARD_MIN_LIST)) : 1} gap={isWide ? gridGap : 12} width={contentWidth}>
+              {COMING_FEATURES.map((feature) => (
+                <XStack
+                  key={feature.title}
+                  p={16}
+                  gap={14}
+                  ai="center"
+                  br={20}
+                  bg="$glass"
+                  borderWidth={1}
+                  borderColor="$glassBorder"
+                >
+                  <YStack w={44} h={44} br={12} ai="center" jc="center" bg="$glassCyan" borderWidth={1} borderColor="$glassCyanBorder">
+                    <Ionicons name={feature.icon} size={22} color={cyan} />
+                  </YStack>
+                  <YStack flex={1} gap={2}>
+                    <UText variant="display-s" color="$textPrimary">
+                      {feature.title}
+                    </UText>
+                    <UText variant="body-s" color="$textSecondary">
+                      {feature.desc}
+                    </UText>
+                  </YStack>
+                </XStack>
+              ))}
+            </UGrid>
           </YStack>
         </UAnimatedView>
 
@@ -95,6 +104,9 @@ export function SubscriptionScreen() {
             p={20}
             gap={8}
             ai="center"
+            w="100%"
+            maw={READ_MAX}
+            als="center"
             br={24}
             bg="rgba(18,14,42,0.75)"
             borderWidth={1}

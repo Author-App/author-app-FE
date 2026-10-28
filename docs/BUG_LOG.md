@@ -689,8 +689,8 @@ _(checked in the iPad Pro 13 simulator, portrait to landscape)_
 
 - **Symptom.** After rotating to landscape, the purple glow at the top of a tab screen ended in a hard vertical edge at the old portrait width. The right third of the screen had no glow.
 - **Cause.** Every tab screen sits on `UScreenLayout`, which draws the glow as an SVG `RadialGradient` with the id `screenHaze`. Tabs stay mounted, so five SVGs used the same id at once. On iOS, react-native-svg resolved the id to a gradient from another screen, measured for the old size. Remounting the SVG on resize did not help, which ruled out a stale size on the SVG itself.
-- **Fix.** Each screen gets its own id from `useId()`. `src/components/core/layout/UScreenLayout.tsx`.
-- **Say it.** "An SVG id is meant to be unique, like an HTML id. Tab screens stay mounted, so five copies of one id existed at once, and iOS drew the wrong one. A per-instance id from `useId` fixed it."
+- **Fix.** Two causes, two fixes, both in `src/components/core/layout/UScreenLayout.tsx`. Each screen gets its own id from `useId()`. And the Svg is sized from `useWindowDimensions` and keyed on that size: a tab that was hidden during the rotation never re-laid out its percentage-sized Svg, so the id fix alone still left Profile with the old edge.
+- **Say it.** "Two bugs stacked. An SVG id is meant to be unique, like an HTML id, and five mounted tabs shared one, so iOS drew the wrong gradient. Then a tab hidden during a rotation kept its old size. A per-instance id from `useId`, and sizing the SVG from the window with a key on that size, fixed both."
 - **Term.** Duplicate SVG ids. `useId`.
 
 ---

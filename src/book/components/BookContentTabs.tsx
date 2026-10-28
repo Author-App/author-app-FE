@@ -28,6 +28,8 @@ interface BookTabPanelProps {
   hasAccess?: boolean;
   onWriteReview: () => void;
   onBookPress: (bookId: string) => void;
+  /** The width the panel gets: the screen minus its gutters, or the right pane */
+  width: number;
 }
 
 /** The content under the tabs. The TabBar lives in the screen so it can stick while scrolling. */
@@ -39,6 +41,7 @@ export function BookTabPanel({
   hasAccess,
   onWriteReview,
   onBookPress,
+  width,
 }: BookTabPanelProps) {
   switch (activeTab) {
     case 'about':
@@ -46,9 +49,9 @@ export function BookTabPanel({
     case 'synopsis':
       return <SynopsisTabContent synopsis={book.synopsis} />;
     case 'reviews':
-      return <ReviewsTabContent ratingStats={ratingStats} hasAccess={hasAccess} onWriteReview={onWriteReview} />;
+      return <ReviewsTabContent ratingStats={ratingStats} hasAccess={hasAccess} onWriteReview={onWriteReview} width={width} />;
     case 'more':
-      return <MoreBooksTabContent books={moreBooks} onBookPress={onBookPress} />;
+      return <MoreBooksTabContent books={moreBooks} onBookPress={onBookPress} width={width} />;
     default:
       return null;
   }

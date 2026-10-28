@@ -8,6 +8,7 @@ import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
 import UKeyboardSpacer from '@/src/components/core/layout/uKeyboardSpacer';
 import UGradientText from '@/src/components/core/text/uGradientText';
 import UText from '@/src/components/core/text/uText';
+import { FORM_PANEL, FORM_WIDTH } from '@/src/components/core/layout/layout';
 
 interface AuthLayoutProps {
   title: string;
@@ -41,12 +42,12 @@ const AuthLayout = ({ title, subtitle, children, footer }: AuthLayoutProps) => {
         contentContainerStyle={[styles.content, { paddingTop: top + 16 }]}
         keyboardShouldPersistTaps="handled"
       >
-        <YStack w="100%" maw={COLUMN_WIDTH} als="center" f={1} gap={16}>
+        <YStack w="100%" maw={FORM_WIDTH} als="center" f={1} gap={16}>
           {/* Stays at the top inset: Onboarding's wordmark animates to exactly this spot */}
           <UAnimatedView animation="fadeIn" duration={400}>
             <UGradientText variant="wordmark">Stanley Paden</UGradientText>
           </UAnimatedView>
-          <YStack gap={16} {...(isWide ? WIDE_PANEL : { f: 1 })}>
+          <YStack gap={16} {...(isWide ? { ...FORM_PANEL, my: 'auto' } : { f: 1 })}>
             <UAnimatedView animation="fadeInUp" delay={100}>
               <UText
                 variant="display-l"
@@ -78,16 +79,6 @@ const AuthLayout = ({ title, subtitle, children, footer }: AuthLayoutProps) => {
   );
 };
 
-export const COLUMN_WIDTH = 440;
-
-const WIDE_PANEL = {
-  my: 'auto',
-  p: 28,
-  br: 24,
-  bg: '$glassDeep',
-  borderWidth: 1,
-  borderColor: '$glassBorder',
-} as const;
 
 const styles = StyleSheet.create({
   flex: { flex: 1 },

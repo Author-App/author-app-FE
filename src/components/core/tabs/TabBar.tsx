@@ -15,6 +15,10 @@ interface TabBarProps<T extends string> {
   onTabLayout: (key: T, event: LayoutChangeEvent) => void;
   indicatorX: SharedValue<number>;
   indicatorWidth: SharedValue<number>;
+  /** Side padding, also where the track starts and ends */
+  inset?: number;
+  /** Phone: tabs spread edge to edge. Wide: natural widths, left-aligned */
+  spread?: boolean;
 }
 
 /** Underline tabs: Jura labels on a 1pt track, a glowing purple-to-cyan indicator under the active one. */
@@ -25,6 +29,8 @@ export function TabBar<T extends string>({
   onTabLayout,
   indicatorX,
   indicatorWidth,
+  inset = 16,
+  spread = true,
 }: TabBarProps<T>) {
   const indicatorStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: indicatorX.value }],
@@ -35,11 +41,11 @@ export function TabBar<T extends string>({
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.content}
+      contentContainerStyle={[styles.content, { paddingHorizontal: inset }]}
       accessibilityRole="tablist"
     >
       {/* Spread edge to edge, so the first and last tabs line up with the ends of the track */}
-      <XStack flex={1} gap={22} jc="space-between">
+      <XStack flex={1} gap={spread ? 22 : 32} jc={spread ? 'space-between' : 'flex-start'}>
         {tabs.map((tab) => {
           const isActive = activeTab === tab.key;
 
@@ -61,7 +67,7 @@ export function TabBar<T extends string>({
         })}
       </XStack>
 
-      <YStack h={1} bg="$borderSoft" pos="absolute" bottom={0} left={16} right={16}>
+      <YStack h={1} bg="$borderSoft" pos="absolute" bottom={0} left={inset} right={inset}>
         <Animated.View style={[styles.indicator, indicatorStyle]}>
           <LinearGradient
             colors={['#8736F7', '#00F0FF']}
@@ -76,7 +82,7 @@ export function TabBar<T extends string>({
 }
 
 const styles = StyleSheet.create({
-  content: { flexGrow: 1, paddingHorizontal: 16 },
+  content: { flexGrow: 1 },
   tab: { height: 44, justifyContent: 'center' },
   indicator: {
     position: 'absolute',

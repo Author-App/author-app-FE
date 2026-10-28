@@ -1,12 +1,12 @@
 import React, { useCallback } from 'react';
-import { Alert, ScrollView } from 'react-native';
+import { Alert } from 'react-native';
 import { XStack, YStack, getTokenValue } from 'tamagui';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import UScreenLayout from '@/src/components/core/layout/UScreenLayout';
-import UKeyboardAvoidingView from '@/src/components/core/layout/uKeyboardAvoidingView';
+import { useLayoutClass } from '@/src/components/core/layout/useLayoutClass';
 import UHeader from '@/src/components/core/layout/uHeader';
 import UText from '@/src/components/core/text/uText';
 import UBadge from '@/src/components/core/display/uBadge';
@@ -23,9 +23,10 @@ import { useBookDetail } from '@/src/book/hooks/useBookDetail';
 import { useCheckoutForm } from '../hooks/useCheckoutForm';
 import { getBookTypeLabel, getBookTypeTone, isPrintBook } from '@/src/utils/bookHelpers';
 import { formatPrice } from '@/src/utils/currency';
+import CheckoutCompact from './layouts/CheckoutCompact';
+import CheckoutExpanded from './layouts/CheckoutExpanded';
 
 // Clears the fixed pay bar: total row + 52 button + the home indicator, plus room to breathe
-const PAY_BAR_CLEARANCE = 150;
 
 function QuantityStepper({ quantity, max, onChange }: { quantity: number; max: number; onChange: (n: number) => void }) {
   const steps = [
@@ -90,6 +91,8 @@ function SummaryRow({ label, value, strong }: { label: string; value: string; st
 
 const CheckoutScreen = ({ bookId }: { bookId: string }) => {
   const { bottom } = useSafeAreaInsets();
+  const { size, side } = useLayoutClass();
+  const isWide = size !== 'compact';
   const { book, isLoading: isLoadingBook, isError: isBookError, refetch } = useBookDetail(bookId);
 
   const handleSuccess = useCallback((_orderId: string, isConfirmed: boolean) => {
@@ -130,6 +133,7 @@ const CheckoutScreen = ({ bookId }: { bookId: string }) => {
       textProps={{ variant: 'display-l' }}
       leftControl={<UBackButton variant="glass-md" />}
       pb={8}
+      {...(isWide && { px: side })}
     />
   );
 
@@ -137,7 +141,7 @@ const CheckoutScreen = ({ bookId }: { bookId: string }) => {
     return (
       <UScreenLayout>
         {header}
-        <YStack px={16} pt={16} gap={14}>
+        <YStack px={isWide ? side : 16} pt={16} gap={14}>
           <USkeleton width="100%" height={118} radius={20} />
           <USkeleton width={160} height={18} radius={8} mt={12} />
           <USkeleton width="100%" height={50} radius={14} />
@@ -181,118 +185,109 @@ const CheckoutScreen = ({ bookId }: { bookId: string }) => {
       ? `Pay ${formatPrice(total, currency)}`
       : 'Enter shipping details';
 
+  const bookCard = (
+    <XStack p={14} gap={14} br={20} bg="$glass" borderWidth={1} borderColor="$glassBorder">
+      <YStack w={64} h={96} br={10} overflow="hidden" bg="$glassSolid" ai="center" jc="center">
+        {book.thumbnail ? (
+          <ULocalImage source={{ uri: book.thumbnail }} width="100%" height="100%" contentFit="cover" />
+        ) : (
+          <Ionicons name="book-outline" size={24} color={getTokenValue('$textMuted', 'color')} />
+        )}
+      </YStack>
+      <YStack flex={1} jc="space-between">
+        <YStack gap={4}>
+          <UText variant="display-s" color="$textPrimary" numberOfLines={2}>
+            {book.title}
+          </UText>
+          <UText variant="body-s" color="$textSecondary">
+            by {book.author}
+          </UText>
+        </YStack>
+        <XStack ai="center" jc="space-between">
+          <YStack gap={4}>
+            <UBadge label={getBookTypeLabel(book.type)} tone={getBookTypeTone(book.type)} />
+            <UText variant="display-s" color="$accentCyan">
+              {formatPrice(price, book.currency)}
+            </UText>
+          </YStack>
+          <QuantityStepper quantity={quantity} max={maxQuantity} onChange={handleQuantityChange} />
+        </XStack>
+      </YStack>
+    </XStack>
+  );
+
+  const form = (
+    <>
+      <YStack>
+        <SectionTitle>Contact</SectionTitle>
+        <ContactInfoFields
+          values={values}
+          setFieldValue={setFieldValue}
+          touchField={touchField}
+          getFieldError={getFieldError}
+          refs={refs}
+        />
+      </YStack>
+
+      <YStack>
+        <SectionTitle>Shipping address</SectionTitle>
+        <AddressFields
+          values={values}
+          setFieldValue={setFieldValue}
+          touchField={touchField}
+          getFieldError={getFieldError}
+          refs={refs}
+        />
+      </YStack>
+    </>
+  );
+
+  const summary = (
+    <YStack>
+      <SectionTitle>Order summary</SectionTitle>
+      <YStack p={16} gap={12} br={20} bg="$glass" borderWidth={1} borderColor="$glassBorder">
+        <SummaryRow label={`${book.title} × ${quantity}`} value={formatPrice(subtotal, book.currency)} />
+        <SummaryRow
+          label={`Standard shipping, ${SHIPPING_CONFIG.deliveryEstimate}`}
+          value={formatPrice(SHIPPING_CONFIG.flatRate, book.currency)}
+        />
+        <YStack h={1} bg="$glassBorder" />
+        <SummaryRow label={quote ? 'Total, incl. tax' : 'Estimated total'} value={formatPrice(total, currency)} strong />
+        {!quote && (
+          <UText variant="body-s" color="$textMuted">
+            The final price, with tax, appears once the address is complete.
+          </UText>
+        )}
+      </YStack>
+    </YStack>
+  );
+
+  const pay = (
+    <>
+      {quoteError && (
+        <XStack gap={6} ai="center" jc="center" accessibilityLiveRegion="polite">
+          <Ionicons name="alert-circle-outline" size={14} color={getTokenValue('$errorText', 'color')} />
+          <UText variant="body-s" color="$errorText" textAlign="center" flexShrink={1}>
+            {quoteError}
+          </UText>
+        </XStack>
+      )}
+      <NeonButton
+        onPress={handlePlaceOrder}
+        disabled={!canPay}
+        loading={isCreatingOrder}
+        tone={canPay || isCreatingOrder ? 'primary' : 'neutral'}
+        title={payLabel}
+      />
+    </>
+  );
+
+  const Layout = size === 'expanded' ? CheckoutExpanded : CheckoutCompact;
+
   return (
     <UScreenLayout>
       {header}
-
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: bottom + PAY_BAR_CLEARANCE }}
-        keyboardShouldPersistTaps="handled"
-      >
-        <UKeyboardAvoidingView dismissOnTap>
-          <YStack px={16} pt={16} gap={28}>
-            <XStack p={14} gap={14} br={20} bg="$glass" borderWidth={1} borderColor="$glassBorder">
-              <YStack w={64} h={96} br={10} overflow="hidden" bg="$glassSolid" ai="center" jc="center">
-                {book.thumbnail ? (
-                  <ULocalImage source={{ uri: book.thumbnail }} width="100%" height="100%" contentFit="cover" />
-                ) : (
-                  <Ionicons name="book-outline" size={24} color={getTokenValue('$textMuted', 'color')} />
-                )}
-              </YStack>
-              <YStack flex={1} jc="space-between">
-                <YStack gap={4}>
-                  <UText variant="display-s" color="$textPrimary" numberOfLines={2}>
-                    {book.title}
-                  </UText>
-                  <UText variant="body-s" color="$textSecondary">
-                    by {book.author}
-                  </UText>
-                </YStack>
-                <XStack ai="center" jc="space-between">
-                  <YStack gap={4}>
-                    <UBadge label={getBookTypeLabel(book.type)} tone={getBookTypeTone(book.type)} />
-                    <UText variant="display-s" color="$accentCyan">
-                      {formatPrice(price, book.currency)}
-                    </UText>
-                  </YStack>
-                  <QuantityStepper quantity={quantity} max={maxQuantity} onChange={handleQuantityChange} />
-                </XStack>
-              </YStack>
-            </XStack>
-
-            <YStack>
-              <SectionTitle>Contact</SectionTitle>
-              <ContactInfoFields
-                values={values}
-                setFieldValue={setFieldValue}
-                touchField={touchField}
-                getFieldError={getFieldError}
-                refs={refs}
-              />
-            </YStack>
-
-            <YStack>
-              <SectionTitle>Shipping address</SectionTitle>
-              <AddressFields
-                values={values}
-                setFieldValue={setFieldValue}
-                touchField={touchField}
-                getFieldError={getFieldError}
-                refs={refs}
-              />
-            </YStack>
-
-            <YStack>
-              <SectionTitle>Order summary</SectionTitle>
-              <YStack p={16} gap={12} br={20} bg="$glass" borderWidth={1} borderColor="$glassBorder">
-                <SummaryRow label={`${book.title} × ${quantity}`} value={formatPrice(subtotal, book.currency)} />
-                <SummaryRow
-                  label={`Standard shipping, ${SHIPPING_CONFIG.deliveryEstimate}`}
-                  value={formatPrice(SHIPPING_CONFIG.flatRate, book.currency)}
-                />
-                <YStack h={1} bg="$glassBorder" />
-                <SummaryRow label={quote ? 'Total, incl. tax' : 'Estimated total'} value={formatPrice(total, currency)} strong />
-                {!quote && (
-                  <UText variant="body-s" color="$textMuted">
-                    The final price, with tax, appears once the address is complete.
-                  </UText>
-                )}
-              </YStack>
-            </YStack>
-          </YStack>
-        </UKeyboardAvoidingView>
-      </ScrollView>
-
-      <YStack
-        pos="absolute"
-        left={0}
-        right={0}
-        bottom={0}
-        pt={14}
-        px={16}
-        pb={Math.max(bottom, 16)}
-        gap={10}
-        bg="rgba(7,5,18,0.9)"
-        borderTopWidth={1}
-        borderTopColor="$glassBorder"
-      >
-        {quoteError && (
-          <XStack gap={6} ai="center" jc="center" accessibilityLiveRegion="polite">
-            <Ionicons name="alert-circle-outline" size={14} color={getTokenValue('$errorText', 'color')} />
-            <UText variant="body-s" color="$errorText" textAlign="center" flexShrink={1}>
-              {quoteError}
-            </UText>
-          </XStack>
-        )}
-        <NeonButton
-          onPress={handlePlaceOrder}
-          disabled={!canPay}
-          loading={isCreatingOrder}
-          tone={canPay || isCreatingOrder ? 'primary' : 'neutral'}
-          title={payLabel}
-        />
-      </YStack>
+      <Layout bookCard={bookCard} form={form} summary={summary} pay={pay} />
     </UScreenLayout>
   );
 };

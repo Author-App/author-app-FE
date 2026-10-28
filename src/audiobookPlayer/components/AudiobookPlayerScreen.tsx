@@ -5,6 +5,8 @@ import { useLocalSearchParams } from 'expo-router';
 import { YStack } from 'tamagui';
 import Animated, { useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useLayoutClass } from '@/src/components/core/layout/useLayoutClass';
+import { READ_MAX } from '@/src/components/core/layout/layout';
 
 import UBackButton from '@/src/components/core/buttons/uBackButton';
 import UScreenLayout from '@/src/components/core/layout/UScreenLayout';
@@ -25,6 +27,8 @@ import { useAudiobookPlayer } from '../hooks/useAudiobookPlayer';
 export function AudiobookPlayerScreen() {
   const { bookId } = useLocalSearchParams<{ bookId: string }>();
   const { top, bottom } = useSafeAreaInsets();
+  const { size, side } = useLayoutClass();
+  const isCompact = size === 'compact';
 
   const {
     book,
@@ -55,9 +59,11 @@ export function AudiobookPlayerScreen() {
 
   if (isLoading || (!isAudioReady && !isError)) {
     return (
-      <UScreenLayout pt={top + STICKY_BAR_HEIGHT} px={20}>
+      <UScreenLayout pt={top + STICKY_BAR_HEIGHT} px={isCompact ? 20 : side} ai="center">
         {backButton}
-        <AudioSkeleton />
+        <YStack w="100%" maw={isCompact ? undefined : READ_MAX}>
+          <AudioSkeleton />
+        </YStack>
       </UScreenLayout>
     );
   }
@@ -80,17 +86,24 @@ export function AudiobookPlayerScreen() {
 
       <Animated.ScrollView
         style={{ marginTop: top + STICKY_BAR_HEIGHT }}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: bottom + MINI_PLAYER_CLEARANCE + 24 }}
+        // A player stays a centred column on wide screens: there is no second pane's worth of content
+        contentContainerStyle={{
+          paddingHorizontal: isCompact ? 20 : side,
+          paddingBottom: bottom + MINI_PLAYER_CLEARANCE + 24,
+          alignItems: 'center',
+        }}
         showsVerticalScrollIndicator={false}
         onScroll={onScroll}
         scrollEventThrottle={16}
       >
-        <AudioHero title={book.title} subtitle={book.author} duration={formattedDuration} thumbnail={book.thumbnail} />
+        <YStack w="100%" maw={isCompact ? undefined : READ_MAX}>
+          <AudioHero title={book.title} subtitle={book.author} duration={formattedDuration} thumbnail={book.thumbnail} />
 
-        <YStack mt={28} onLayout={(e) => (playerBottom.value = e.nativeEvent.layout.y + e.nativeEvent.layout.height)}>
-          <UAnimatedView animation="fadeInUp" delay={200}>
-            <AudioPlayer audio={audio} />
-          </UAnimatedView>
+          <YStack mt={28} onLayout={(e) => (playerBottom.value = e.nativeEvent.layout.y + e.nativeEvent.layout.height)}>
+            <UAnimatedView animation="fadeInUp" delay={200}>
+              <AudioPlayer audio={audio} />
+            </UAnimatedView>
+          </YStack>
         </YStack>
       </Animated.ScrollView>
 

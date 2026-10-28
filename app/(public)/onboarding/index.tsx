@@ -21,7 +21,7 @@ import Animated, {
   interpolate,
 } from 'react-native-reanimated';
 import AuthBackground from '@/src/auth/components/AuthBackground';
-import { COLUMN_WIDTH } from '@/src/auth/components/AuthLayout';
+import { FORM_WIDTH } from '@/src/components/core/layout/layout';
 import UGlitchWordmark, { burst } from '@/src/components/core/text/uGlitchWordmark';
 import { WIDE_DISPLAY_SCALE } from '@/src/components/core/text/uText';
 
@@ -57,7 +57,7 @@ const OnboardingScreen = memo(() => {
   const wordmarkWidth = Math.ceil(wordmarkSize * fontScale * WORDMARK_WIDTH_EM) + 8;
   const fitScale = Math.min(1, (screenWidth - GUTTER * 2) / wordmarkWidth);
   // Left edge of Login's wordmark: the gutter, plus the margin of its centered column
-  const loginWordmarkX = GUTTER + Math.max(0, (screenWidth - GUTTER * 2 - COLUMN_WIDTH) / 2);
+  const loginWordmarkX = GUTTER + Math.max(0, (screenWidth - GUTTER * 2 - FORM_WIDTH) / 2);
   const wordmarkRef = useRef<View>(null);
   const accentColors = [getTokenValue('$glowPurple', 'color'), getTokenValue('$glowCyan', 'color')] as const;
 
@@ -142,7 +142,7 @@ const OnboardingScreen = memo(() => {
           />
         </YStack>
 
-        <YStack gap={12} w="100%" maw={COLUMN_WIDTH} als="center">
+        <YStack gap={12} w="100%" maw={FORM_WIDTH} als="center">
           <UAnimatedView animation="fadeInUp" delay={300}>
             <NeonButton scan testID="onboarding-login" onPress={handleLoginPress} title="Log In" />
           </UAnimatedView>
