@@ -41,7 +41,7 @@ export const EventActions = memo(function EventActions({
       ? 'Open in Maps'
       : joinStatus
         ? LABELS[joinStatus]
-        : 'Join Meeting';
+        : 'Time to be announced';
 
   const handlePress = async () => {
     if (!url) return;

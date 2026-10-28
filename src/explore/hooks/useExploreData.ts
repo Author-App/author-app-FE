@@ -8,20 +8,19 @@ import { extractErrorMessage } from '@/src/services/error.service';
 import { useMemo, useState, useCallback } from 'react';
 import {
   useGetArticlesQuery,
-  useGetMediaQuery,
   useGetEventsQuery,
   useGetCommunitiesQuery,
   useJoinCommunityMutation,
   useExitCommunityMutation,
 } from '@/src/store/api/exploreApi';
+import { useGetMediaQuery } from '@/src/store/api/mediaApi';
 import { useAppSelector } from '@/src/store/hooks';
 import {
   selectArticles,
-  selectPodcasts,
-  selectVideos,
   selectEvents,
   selectCommunities,
 } from '@/src/store/selectors/exploreSelectors';
+import { selectPodcastsList, selectVideosList } from '@/src/store/selectors/mediaSelectors';
 import type {
   ExploreTabType,
   ExploreSectionItem,
@@ -77,8 +76,8 @@ export const useExploreData = (): UseExploreDataReturn => {
 
   // Select data from cache using memoized selectors
   const articles = useAppSelector(selectArticles);
-  const podcasts = useAppSelector(selectPodcasts);
-  const videos = useAppSelector(selectVideos);
+  const podcasts = useAppSelector(selectPodcastsList);
+  const videos = useAppSelector(selectVideosList);
   const events = useAppSelector(selectEvents);
   const communities = useAppSelector(selectCommunities);
 

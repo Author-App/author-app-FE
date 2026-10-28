@@ -254,6 +254,17 @@ _(checked in the simulator: Sci-Fi Spotlight now reads Dec 18 on both screens)_
 - **Say it.** "Two functions answered the same question differently. A date-only value from the server is a calendar day, not an instant, but one path parsed it as UTC midnight and converted it to local time. And my test fixture did not match what the backend really sends, so the test was green while the app was wrong."
 - **Term.** Date-only versus instant. Timezone offset. Fixture drift.
 
+### 2.8 Events with a date but no time never changed state
+
+_(not yet verified on device)_
+
+- **Symptom.** An online event with a date but no time showed "Join Meeting", greyed out, forever, so the user could not tell whether something was broken. An in-person event with no time kept "Open in Maps" enabled forever, even weeks after its date.
+- **Cause.** `useEventDetail` gave these events no join status at all (`null`), because without a time it cannot know when the join window opens. That is right before the day, and wrong after it: nothing ever moved them to "ended".
+- **Fix.** A date with no time is now "time to be announced" until that calendar day is over, then "ended". `EventActions` says "Time to be announced" instead of "Join Meeting" for an online event with no time. Product decisions: both. `src/eventDetail/hooks/useEventDetail.ts`, `src/eventDetail/components/EventActions.tsx`. The same change memoizes `selectEvent(eventId)`, which was rebuilt on every render, so its memo never hit.
+- **Resolved and pinned.** `useEventDetail.test.tsx`, "has no join status while the time is still to be announced" and "says ended the day after an event that never got a time". The same file also pins 2.1: "turns Join on by itself when the join window opens".
+- **Say it.** "A missing value has two meanings over time. Before the day, no time means 'not announced yet'. After the day, it means 'over'. The code only handled the first one, so the button was stuck in a state that never ended."
+- **Term.** Missing data versus unknown data. State that never reaches a terminal state.
+
 ## 3. Native modules and library migrations
 
 ### 3.1 Podcast autoplay and resume broke

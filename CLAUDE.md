@@ -105,7 +105,7 @@ Do not re-argue these.
 
 **Stack:** Expo SDK 54, React Native 0.81, Reanimated 4, RNTL 13.3, pnpm, Redux Toolkit with RTK Query, Expo Router, Tamagui, Stripe, Sentry.
 
-**Tests that exist:** 18 Jest suites, 183 tests, plus 1 Detox E2E test on a separate runner.
+**Tests that exist:** 19 Jest suites, 188 tests, plus 1 Detox E2E test on a separate runner.
 
 | File | Kind | State |
 |---|---|---|
@@ -125,6 +125,7 @@ Do not re-argue these.
 | `src/auth/login/components/__tests__/LoginScreen.test.tsx` | integration | Good. Whole login flow: validation, payload, navigation, toasts, failure keeping the form. Fakes `fetch`, `expo-router` and `expo-application`. Renders the real `ToastHost` and reads toasts by text. |
 | `src/navigations/__tests__/bottomNavbar.test.tsx` | component | Good. Label only on the active tab, `selected` state, tab press navigates, re-tap resets every tab (product decision). Fakes React Navigation's `state` and `navigation` props; mocks `@expo/vector-icons` locally to stop async font `act()` warnings. |
 | `src/hooks/__tests__/usePrintCheckout.test.tsx` | hook, money path | Good. Real store, only `fetch` and Stripe faked. Holds one quote request to land it after a newer one (stale response ignored, order sent with the newest amount), a failed quote leaves nothing payable, Lulu field errors, cancel is silent, server messages from RTK errors, and with fake timers: polling until paid, and a charged card whose confirmation times out still leaves checkout. |
+| `src/eventDetail/hooks/__tests__/useEventDetail.test.tsx` | hook, clock | Good. Real store seeded with `upsertQueryData`, fetch never answers, fake timers. Join turns on and off by itself as the clock moves (BUG_LOG 2.1), a date with no time is "to be announced" on the day and ended after it (2.8). Calls `cleanup()` before `resetApiState`, or the mounted query refetches and Jest never exits. |
 | `src/__tests__/smoke.test.tsx` | component | One test. Proves the render pipeline works. |
 | `e2e/login.test.js` | E2E, Detox | Good. Real Release build on a simulator, real backend, real account. Onboarding to login to home. |
 | `src/storage/__tests__/authStorage.test.ts` | unit | **Weak. Needs rewriting.** It mocks `../secureStorage`, which is his own code. Its "lifecycle" test tells a mock to return null then checks it returned null. Needs a fake store that actually holds state, with `expo-secure-store` as the only mock. |
@@ -158,6 +159,10 @@ Do not re-argue these.
 **Timers in a screen go in `useFocusEffect`, not `useEffect`.** Bottom tabs keep screens mounted while hidden, so a `useEffect` cleanup never runs on a tab switch (BUG_LOG 5.9). Applies to intervals, polling, loops and media. A test that mocks `expo-router` must then provide `useFocusEffect`.
 
 **`PerfProbe`** (`src/components/core/dev/PerfProbe.tsx`) wraps every signed-in screen in `app/(app)/_layout.tsx` and logs `[perf] app js= ui= commits=` once a second in dev. Mobile MCP drives the simulator; read the lines with `xcrun simctl spawn <device> log show --last 2m --info --predicate 'subsystem == "com.facebook.react.log"'`. Live `log stream` to a file gave nothing.
+
+**pnpm settings live in `pnpm-workspace.yaml`** (`overrides`, `allowBuilds`). pnpm 11 ignores the `pnpm` field in `package.json`.
+
+**One cache per endpoint.** The media list lives only in `mediaApi`. Tags never cross `createApi` slices, so a second copy of an endpoint in another slice goes stale.
 
 **After editing a file in `src/store/api/`, cold-restart the app.** Fast Refresh reloads the api module but not the store it is wired into, and every request then hangs on a skeleton. It looks like a backend outage, and it is not.
 
@@ -247,6 +252,5 @@ He liked this shape. Keep it.
 
 1. A GitHub Actions workflow for the E2E suite. `macos-latest`, `workflow_dispatch` plus a nightly `schedule`, never on `pull_request`. Needs `brew install applesimutils`, `expo prebuild`, and `EXPO_PUBLIC_API_BASE_URL`, `E2E_EMAIL`, `E2E_PASSWORD` as repo secrets. The existing `test.yml` and `pr-check.yml` need no edits.
 2. Rewrite `authStorage.test.ts` against the real boundary.
-3. Move `pnpm.overrides` out of `package.json`. pnpm 12 stopped reading that field, so the `react-native-web` override is currently doing nothing.
 
 Do not start any of these without walking through the seven steps above first.

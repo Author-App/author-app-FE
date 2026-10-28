@@ -96,14 +96,5 @@
     "react-test-renderer": "19.1.0",
     "typescript": "~5.9.2"
   },
-  "pnpm": {
-    "ignoredBuiltDependencies": [
-      "@sentry/cli",
-      "unrs-resolver"
-    ],
-    "overrides": {
-      "react-native-web": "0.21.2"
-    }
-  },
   "private": true
 }
