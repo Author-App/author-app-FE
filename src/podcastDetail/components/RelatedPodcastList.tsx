@@ -28,7 +28,7 @@ export const RelatedPodcastList = memo(function RelatedPodcastList({ podcasts }:
         <UText variant="display-m" color="$textPrimary" px={20} accessibilityRole="header">
           More episodes
         </UText>
-        <YStack>
+        <YStack px={16}>
           {podcasts.slice(0, 4).map((podcast) => (
             <PodcastCard key={podcast.id} data={podcast} onPress={openPodcast} />
           ))}

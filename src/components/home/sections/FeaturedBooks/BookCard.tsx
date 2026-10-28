@@ -53,7 +53,7 @@ const BookCard = memo(({ item, onPress, index, isAudiobook, width = COVER_WIDTH 
           {item.hasAccess && <UBadge label="Owned" tone="purple" onImage pos="absolute" bottom={8} left={8} />}
         </YStack>
 
-        <UText variant="display-s" fontSize={12} lineHeight={16} color="$textPrimary" numberOfLines={2}>
+        <UText variant="display-s" fontSize={12} lineHeight={16} color="$textPrimary" numberOfLines={2} reserveLines={2}>
           {item.title}
         </UText>
         <UText variant="display-s" color="$accentCyan">

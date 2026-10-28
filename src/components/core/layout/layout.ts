@@ -1,7 +1,7 @@
-export type SizeClass = 'compact' | 'medium' | 'expanded';
+type SizeClass = 'compact' | 'medium' | 'expanded';
 
-export const BREAKPOINT_MEDIUM = 661;
-export const BREAKPOINT_EXPANDED = 1024;
+const BREAKPOINT_MEDIUM = 661;
+const BREAKPOINT_EXPANDED = 1024;
 
 interface ClassSizes {
   gutter: number;
@@ -19,9 +19,14 @@ export const SIZES: Record<SizeClass, ClassSizes> = {
 
 export const COVER_MAX = 240;
 export const CARD_MIN_LIST = 320;
+export const CARD_MIN_MEDIA = 280;
 
 export const getSizeClass = (width: number): SizeClass =>
   width >= BREAKPOINT_EXPANDED ? 'expanded' : width >= BREAKPOINT_MEDIUM ? 'medium' : 'compact';
+
+// The design's clamp(360, 34%, 440): content stops at 1280, so the 440 cap can never apply
+export const paneWidth = (contentWidth: number): number => Math.max(360, contentWidth * 0.34);
+export const PANE_GAP = 48;
 
 export const columns = (minCardWidth: number, contentWidth: number, gap: number): number =>
   Math.max(1, Math.floor((contentWidth + gap) / (minCardWidth + gap)));

@@ -1,8 +1,8 @@
 import React, { memo, useCallback } from 'react';
-import { Dimensions } from 'react-native';
 import { XStack, YStack } from 'tamagui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTabBarInset } from '@/src/navigations/hooks/useTabBarInset';
+import { useLayoutClass } from '@/src/components/core/layout/useLayoutClass';
 
 import USkeleton from '@/src/components/core/display/uSkeleton';
 import { URefreshableList } from '@/src/components/core/layout/uRefreshableList';
@@ -16,12 +16,16 @@ import UScreenError from '@/src/components/core/feedback/UScreenError';
 import { useLibraryData } from '../hooks/useLibraryData';
 import type { BookResponse } from '@/src/types/api/library.types';
 
-// Two columns inside the 16pt gutters with a 14pt gap, the same grid as the cards
-const SKELETON_WIDTH = (Dimensions.get('window').width - 16 * 2 - 14) / 2;
+// The iPhone grid predates the shared sizes and keeps its 14pt gap
+const COMPACT_GAP = 14;
 
 const LibraryScreen: React.FC = () => {
   const { top } = useSafeAreaInsets();
   const { clearance } = useTabBarInset();
+  const { size, side, contentWidth, gridGap, coverMin, columns } = useLayoutClass();
+  const gap = size === 'compact' ? COMPACT_GAP : gridGap;
+  const numColumns = columns(coverMin);
+  const cardWidth = (contentWidth - gap * (numColumns - 1)) / numColumns;
 
   const {
     books,
@@ -30,24 +34,24 @@ const LibraryScreen: React.FC = () => {
     refetch,
     activeTab,
     handleTabChange,
-    numColumns,
     navigateToBook,
   } = useLibraryData();
 
   // Render book item
+  // FlashList splits the row into equal cells: half a gap on each side of every card
   const renderBookItem = useCallback(
-    ({ item, index }: { item: BookResponse; index: number }) => (
-      <LibraryBookCard
-        book={item}
-        index={index}
-        numColumns={numColumns}
-        onPress={() => {
-          haptics.light();
-          navigateToBook(item.id);
-        }}
-      />
+    ({ item }: { item: BookResponse }) => (
+      <YStack px={gap / 2}>
+        <LibraryBookCard
+          book={item}
+          onPress={() => {
+            haptics.light();
+            navigateToBook(item.id);
+          }}
+        />
+      </YStack>
     ),
-    [numColumns, navigateToBook]
+    [gap, navigateToBook]
   );
 
   const renderEmpty = useCallback(() => {
@@ -64,10 +68,10 @@ const LibraryScreen: React.FC = () => {
   const renderContent = () => {
     if (isLoading && books.length === 0) {
       return (
-        <XStack flexWrap="wrap" px={16} pt={20} gap={14} accessibilityLabel="Loading library">
-          {[0, 1, 2, 3].map((i) => (
-            <YStack key={i} w={SKELETON_WIDTH}>
-              <USkeleton width="100%" height={SKELETON_WIDTH * 1.5 + 70} radius={16} />
+        <XStack flexWrap="wrap" px={side} pt={20} gap={gap} accessibilityLabel="Loading library">
+          {Array.from({ length: numColumns * 2 }, (_, i) => (
+            <YStack key={i} w={cardWidth}>
+              <USkeleton width="100%" height={cardWidth * 1.5 + 70} radius={16} />
             </YStack>
           ))}
         </XStack>
@@ -91,6 +95,7 @@ const LibraryScreen: React.FC = () => {
         contentContainerStyle={{
           paddingTop: 20,
           paddingBottom: clearance,
+          paddingHorizontal: side - gap / 2,
           flexGrow: 1,
         }}
       />
@@ -99,8 +104,8 @@ const LibraryScreen: React.FC = () => {
 
   return (
     <UScreenLayout pt={top}>
-      <LibraryHeader />
-      <LibraryFilters activeTab={activeTab} onTabChange={handleTabChange} />
+      <LibraryHeader px={size === 'compact' ? undefined : side} />
+      <LibraryFilters activeTab={activeTab} onTabChange={handleTabChange} inset={side} />
 
       {renderContent()}
     </UScreenLayout>

@@ -7,7 +7,7 @@
 import React, { memo } from 'react';
 import UHeader from '@/src/components/core/layout/uHeader';
 
-const LibraryHeader: React.FC = () => {
+const LibraryHeader: React.FC<{ px?: number }> = ({ px }) => {
   return (
     <UHeader
       variant="premium"
@@ -15,6 +15,8 @@ const LibraryHeader: React.FC = () => {
       subtitle="Your personal collection"
       safeAreaDisabled
       pb={16}
+      // An explicit undefined would clear UHeader's own padding
+      {...(px !== undefined && { px })}
     />
   );
 };

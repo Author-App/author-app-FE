@@ -99,6 +99,7 @@ interface UButtonTabsProps<T extends string = string> {
   onTabChange: (tab: T) => void;
   showIcons?: boolean;
   gap?: number;
+  inset?: number;
 }
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -110,6 +111,7 @@ const UButtonTabs = <T extends string = string>({
   onTabChange,
   showIcons = true,
   gap = 8,
+  inset = 16,
 }: UButtonTabsProps<T>) => {
   const scrollViewRef = useRef<ScrollView>(null);
   const tabPositions = useRef<Record<string, { x: number; width: number }>>({});
@@ -173,8 +175,8 @@ const UButtonTabs = <T extends string = string>({
       ref={scrollViewRef}
       horizontal
       showsHorizontalScrollIndicator={false}
-      // Full-bleed: pills start at the 16pt gutter and scroll past the screen edge
-      contentContainerStyle={{ gap, paddingHorizontal: 16 }}
+      // Full-bleed: pills start at the gutter and scroll past the screen edge
+      contentContainerStyle={{ gap, paddingHorizontal: inset }}
       accessibilityRole="tablist"
       onLayout={handleScrollViewLayout}
     >

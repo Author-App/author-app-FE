@@ -21,7 +21,6 @@ const BlogCard: React.FC<BlogCardProps> = ({ data, onPress }) => {
 
   return (
     <YStack
-      mx={16}
       mb={14}
       br={24}
       overflow="hidden"
@@ -42,7 +41,7 @@ const BlogCard: React.FC<BlogCardProps> = ({ data, onPress }) => {
             {meta}
           </UText>
         )}
-        <UText variant="display-s" fontSize={15} lineHeight={20} color="$textPrimary" numberOfLines={2}>
+        <UText variant="display-s" fontSize={15} lineHeight={20} color="$textPrimary" numberOfLines={2} reserveLines={2}>
           {data.title}
         </UText>
       </YStack>

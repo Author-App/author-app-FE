@@ -1,12 +1,14 @@
 import React, { memo } from 'react';
 import { ScrollView } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { XStack, YStack } from 'tamagui';
+import { getTokenValue, XStack, YStack } from 'tamagui';
+import { Ionicons } from '@expo/vector-icons';
 
 import { useTabBarInset } from '@/src/navigations/hooks/useTabBarInset';
 import { useLayoutClass } from '@/src/components/core/layout/useLayoutClass';
 import { CARD_MIN_LIST, COVER_MAX } from '@/src/components/core/layout/layout';
 import { UGrid } from '@/src/components/core/layout/UGrid';
+import UText from '@/src/components/core/text/uText';
 import HeroBanner from '@/src/components/home/hero/HeroBanner';
 import SectionHeader from '@/src/components/home/sections/SectionHeader';
 import BookCard from '@/src/components/home/sections/FeaturedBooks/BookCard';
@@ -120,6 +122,33 @@ const HomeWide = ({
                     onPress={() => onContinueReadingPress(book)}
                   />
                 ))}
+                {continueReading.data.length === 1 && (
+                  <XStack
+                    h={isExpanded ? 140 : 128}
+                    px={20}
+                    gap={14}
+                    ai="center"
+                    br={20}
+                    bg="$glass"
+                    borderWidth={1}
+                    borderColor="$glassBorder"
+                    pressStyle={{ scale: 0.98, opacity: 0.9 }}
+                    onPress={() => onSeeAll('continueReading')}
+                    accessible
+                    accessibilityRole="button"
+                    accessibilityLabel="Browse your library"
+                  >
+                    <Ionicons name="library-outline" size={28} color={getTokenValue('$accentCyan')} />
+                    <YStack flex={1} gap={2}>
+                      <UText variant="display-s" color="$textPrimary">
+                        Browse your library
+                      </UText>
+                      <UText variant="body-s" color="$textMuted">
+                        Pick your next read
+                      </UText>
+                    </YStack>
+                  </XStack>
+                )}
               </YStack>
             )}
           </XStack>

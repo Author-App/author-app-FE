@@ -1,3 +1,4 @@
+import { Dimensions } from 'react-native';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { renderWithProviders, screen, fireEvent } from '@/src/test-utils/render';
 import BottomNavbar from '../bottomNavbar';
@@ -52,5 +53,21 @@ describe('BottomNavbar', () => {
 
     expect(navigation.reset).toHaveBeenCalledWith({ index: 0, routes: [{ name: '(home)' }] });
     expect(navigation.navigate).not.toHaveBeenCalled();
+  });
+
+  describe('on an iPad', () => {
+    const iPad = { width: 1024, height: 1366, scale: 2, fontScale: 1 };
+    const iPhone = { width: 390, height: 844, scale: 3, fontScale: 1 };
+
+    beforeEach(() => Dimensions.set({ window: iPad, screen: iPad }));
+    afterEach(() => Dimensions.set({ window: iPhone, screen: iPhone }));
+
+    it('shows every tab label, not only the active one', () => {
+      renderNavbar(0);
+
+      expect(screen.getByText('Home')).toBeOnTheScreen();
+      expect(screen.getByText('Explore')).toBeOnTheScreen();
+      expect(screen.getByText('Settings')).toBeOnTheScreen();
+    });
   });
 });

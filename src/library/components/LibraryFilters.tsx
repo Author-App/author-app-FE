@@ -34,11 +34,13 @@ const TYPE_TO_TAB: Record<LibraryTab, string> = {
 interface LibraryFiltersProps extends YStackProps {
   activeTab: LibraryTab;
   onTabChange: (value: LibraryTab) => void;
+  inset?: number;
 }
 
 const LibraryFilters: React.FC<LibraryFiltersProps> = ({
   activeTab,
   onTabChange,
+  inset,
   ...props
 }) => {
 
@@ -57,6 +59,7 @@ const LibraryFilters: React.FC<LibraryFiltersProps> = ({
           activeTab={activeTabLabel}
           onTabChange={handleTabChange}
           showIcons={false}
+          inset={inset}
         />
       </UAnimatedView>
     </YStack>

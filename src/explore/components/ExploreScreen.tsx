@@ -1,7 +1,11 @@
 import React, { memo, useCallback, useState } from 'react';
 import { Href, router } from 'expo-router';
+import { useWindowDimensions } from 'react-native';
+import { XStack, YStack } from 'tamagui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTabBarInset } from '@/src/navigations/hooks/useTabBarInset';
+import { useLayoutClass } from '@/src/components/core/layout/useLayoutClass';
+import { CARD_MIN_LIST, CARD_MIN_MEDIA } from '@/src/components/core/layout/layout';
 
 import { useExploreData } from '@/src/explore/hooks/useExploreData';
 import UScreenLayout from '@/src/components/core/layout/UScreenLayout';
@@ -15,7 +19,7 @@ import type {
   CommunityResponse,
 } from '@/src/explore/types/explore.types';
 
-import { ContentCardSkeleton, ListSkeleton } from '@/src/components/core/skeletons';
+import { ContentCardSkeleton } from '@/src/components/core/skeletons';
 import UEmptyState from '@/src/components/core/feedback/UEmptyState';
 import UScreenError from '@/src/components/core/feedback/UScreenError';
 import { URefreshableList } from '@/src/components/core/layout/uRefreshableList';
@@ -43,6 +47,12 @@ const ExploreScreen: React.FC = () => {
     handleJoinCommunity,
     handleExitCommunity,
   } = useExploreData();
+
+  const { size, side, contentWidth, gridGap, columns } = useLayoutClass();
+  const { width, height } = useWindowDimensions();
+  const hasImage = activeTab === 'Blogs' || activeTab === 'Videos';
+  const numColumns = columns(hasImage ? CARD_MIN_MEDIA : CARD_MIN_LIST);
+  const cardWidth = (contentWidth - gridGap * (numColumns - 1)) / numColumns;
 
   const handleBlogPress = useCallback((article: ArticleResponse) => {
     haptics.light();
@@ -103,8 +113,8 @@ const ExploreScreen: React.FC = () => {
     [handleJoinCommunity, handleExitCommunity]
   );
 
-  const renderItem = useCallback(
-    ({ item }: { item: ExploreSectionItem }) => {
+  const renderCard = useCallback(
+    (item: ExploreSectionItem) => {
       switch (item.type) {
         case 'blog':
           return <BlogCard data={item.data} onPress={handleBlogPress} />;
@@ -138,6 +148,12 @@ const ExploreScreen: React.FC = () => {
     ]
   );
 
+  // FlashList splits the row into equal cells: half a gap on each side of every card
+  const renderItem = useCallback(
+    ({ item }: { item: ExploreSectionItem }) => <YStack px={gridGap / 2}>{renderCard(item)}</YStack>,
+    [gridGap, renderCard]
+  );
+
   const keyExtractor = useCallback((item: ExploreSectionItem, index: number) => {
     return `${item.type}-${item.data.id}-${index}`;
   }, []);
@@ -156,7 +172,15 @@ const ExploreScreen: React.FC = () => {
 
   const renderContent = () => {
     if (isLoading && items.length === 0) {
-      return <ListSkeleton count={4} SkeletonComponent={ContentCardSkeleton} />;
+      return (
+        <XStack flexWrap="wrap" px={side} gap={gridGap}>
+          {Array.from({ length: numColumns * 4 }, (_, i) => (
+            <YStack key={i} w={cardWidth}>
+              <ContentCardSkeleton />
+            </YStack>
+          ))}
+        </XStack>
+      );
     }
 
     if (isError) {
@@ -171,10 +195,13 @@ const ExploreScreen: React.FC = () => {
         data={items}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
+        numColumns={numColumns}
+        key={numColumns}
         ListEmptyComponent={renderEmpty}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           paddingBottom: clearance,
+          paddingHorizontal: side - gridGap / 2,
           flexGrow: 1,
         }}
         onRefresh={refetch}
@@ -190,6 +217,9 @@ const ExploreScreen: React.FC = () => {
         onSearchChange={setSearch}
         activeTab={activeTab}
         onTabChange={setActiveTab}
+        inset={side}
+        wide={size !== 'compact'}
+        chipsBeside={size === 'expanded' && width > height}
       />
 
       {renderContent()}

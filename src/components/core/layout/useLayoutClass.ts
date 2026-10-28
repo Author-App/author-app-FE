@@ -12,6 +12,7 @@ export const useLayoutClass = () => {
     size,
     ...sizes,
     contentWidth,
+    side: (width - contentWidth) / 2,
     columns: (minCardWidth: number, availableWidth = contentWidth) =>
       columns(minCardWidth, availableWidth, sizes.gridGap),
   };

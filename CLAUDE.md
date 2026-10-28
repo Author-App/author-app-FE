@@ -105,7 +105,7 @@ Do not re-argue these.
 
 **Stack:** Expo SDK 54, React Native 0.81, Reanimated 4, RNTL 13.3, pnpm, Redux Toolkit with RTK Query, Expo Router, Tamagui, Stripe, Sentry.
 
-**Tests that exist:** 19 Jest suites, 188 tests, plus 1 Detox E2E test on a separate runner.
+**Tests that exist:** 21 Jest suites, 211 tests, plus 1 Detox E2E test on a separate runner.
 
 | File | Kind | State |
 |---|---|---|
@@ -121,11 +121,13 @@ Do not re-argue these.
 | `src/components/core/inputs/__tests__/uSearchbar.test.tsx` | component | Good. `changeText`, clear button, disabled. |
 | `src/store/selectors/__tests__/homeSelectors.test.ts` | unit, real store | Good. Seeds the RTK Query cache. |
 | `src/home/hooks/__tests__/useHomeData.test.tsx` | hook, async | Good. Real store, only `fetch` faked. |
-| `src/home/components/__tests__/HomeScreen.test.tsx` | integration | Good. Whole screen, real store, only `fetch` and `expo-router` faked. Covers loading, error, retry, stale-feed-on-failed-refresh (with the Retry toast: the real `ToastHost` is rendered next to the screen and the toast is found by its text), and navigation. |
+| `src/home/components/__tests__/HomeScreen.test.tsx` | integration | Good. Whole screen, real store, only `fetch` and `expo-router` faked. Covers loading, error, retry, stale-feed-on-failed-refresh (with the Retry toast: the real `ToastHost` is rendered next to the screen and the toast is found by its text), and navigation. On an iPad (1024): only full rows of covers, at most two rows, and every "See all" opens its list. Calls `cleanup()` before `resetApiState`, or Jest never exits. |
 | `src/auth/login/components/__tests__/LoginScreen.test.tsx` | integration | Good. Whole login flow: validation, payload, navigation, toasts, failure keeping the form. Fakes `fetch`, `expo-router` and `expo-application`. Renders the real `ToastHost` and reads toasts by text. |
-| `src/navigations/__tests__/bottomNavbar.test.tsx` | component | Good. Label only on the active tab, `selected` state, tab press navigates, re-tap resets every tab (product decision). Fakes React Navigation's `state` and `navigation` props; mocks `@expo/vector-icons` locally to stop async font `act()` warnings. |
+| `src/navigations/__tests__/bottomNavbar.test.tsx` | component | Good. Label only on the active tab, `selected` state, tab press navigates, re-tap resets every tab (product decision). On an iPad every label shows. Fakes React Navigation's `state` and `navigation` props; mocks `@expo/vector-icons` locally to stop async font `act()` warnings. |
 | `src/hooks/__tests__/usePrintCheckout.test.tsx` | hook, money path | Good. Real store, only `fetch` and Stripe faked. Holds one quote request to land it after a newer one (stale response ignored, order sent with the newest amount), a failed quote leaves nothing payable, Lulu field errors, cancel is silent, server messages from RTK errors, and with fake timers: polling until paid, and a charged card whose confirmation times out still leaves checkout. |
 | `src/eventDetail/hooks/__tests__/useEventDetail.test.tsx` | hook, clock | Good. Real store seeded with `upsertQueryData`, fetch never answers, fake timers. Join turns on and off by itself as the clock moves (BUG_LOG 2.1), a date with no time is "to be announced" on the day and ended after it (2.8). Calls `cleanup()` before `resetApiState`, or the mounted query refetches and Jest never exits. |
+| `src/components/core/layout/__tests__/layout.test.ts` | unit | Good. Size-class boundaries (660/661, 1023/1024) and real devices; `columns()` against the design's cover counts, an exact-fit row (catches a missing `+ gap`) and the never-zero guard. |
+| `src/library/hooks/__tests__/useLibraryData.test.tsx` | hook | Good. A `tab` route param picks the filter, also while Library stays mounted, and the same "See all" twice still switches back after a manual chip change (BUG_LOG 8.4). Fake `expo-router` whose `setParams` really changes the params. |
 | `src/__tests__/smoke.test.tsx` | component | One test. Proves the render pipeline works. |
 | `e2e/login.test.js` | E2E, Detox | Good. Real Release build on a simulator, real backend, real account. Onboarding to login to home. |
 | `src/storage/__tests__/authStorage.test.ts` | unit | **Weak. Needs rewriting.** It mocks `../secureStorage`, which is his own code. Its "lifecycle" test tells a mock to return null then checks it returned null. Needs a fake store that actually holds state, with `expo-secure-store` as the only mock. |
@@ -195,7 +197,7 @@ The iPhone design never changes. Wide screens get their own layouts of the same 
 - Sections and cards are shared between layouts. A wide layout that only changes spacing or columns gets no file of its own: the hook covers it.
 - Wide screens have no carousels, no sideways scrolling and no full-width cards. Short sections use `UGrid` and show full rows only, with "See all". Endless lists stay virtualized (`FlashList` with `numColumns`).
 
-**Already built.** Home: `HomeScreen` (container) picks `layouts/HomeCompact` or `layouts/HomeWide`; "See all" opens Library on a filter through its `tab` route param. Tab bar: 600 wide and centered with every label on wide screens (`wide` prop on `TabItem`). Auth screens: one centered 440 column (`COLUMN_WIDTH` in `AuthLayout`) on a `$glassDeep` card, CTA under the form. `UText` grows `display-xl/l/m` and `wordmark` by `WIDE_DISPLAY_SCALE` (1.25); `NeonButton` 52 to 56, `UInput` 50 to 54. Body text, labels and links keep their size, as iOS does.
+**Already built.** Home: `HomeScreen` (container) picks `layouts/HomeCompact` or `layouts/HomeWide`; "See all" opens Library on a filter through its `tab` route param. Library: one `FlashList` grid at `columns(coverMin)` (2 on iPhone, 5 on iPad Pro portrait), edges on the gutter, header and chips aligned to it (`UButtonTabs` `inset`). Explore: a `FlashList` grid per tab, `CARD_MIN_MEDIA` (280) for Blogs and Videos, `CARD_MIN_LIST` (320) for the rest; 3 or 4 Blog columns and 2 or 3 Event columns on iPad. Cards own no outside margin: the list or parent gives it (Related lists use `px={16}`). Profile and Settings: `layouts/<Screen>Compact` and `<Screen>Wide`. Medium is one column on the gutter; expanded is two panes, the left `paneWidth(contentWidth)` (34%, never under 360), gap `PANE_GAP` 48 (Profile: author card | About and Writing; Settings: sections split in half). Never a centered column: every tab title sits on the gutter. `useLayoutClass` returns `side`, the left edge of the content. Grid card titles reserve two lines on wide screens (`UText` `reserveLines`), so rows stay equal. Explore search is 420, with chips beside it in landscape. Tab bar: 600 wide and centered with every label on wide screens (`wide` prop on `TabItem`). Auth screens: one centered 440 column (`COLUMN_WIDTH` in `AuthLayout`) on a `$glassDeep` card, CTA under the form. `UText` grows `display-xl/l/m` and `wordmark` by `WIDE_DISPLAY_SCALE` (1.25); `NeonButton` 52 to 56, `UInput` 50 to 54. Body text, labels and links keep their size, as iOS does.
 
 **Tests.** React Native's Jest `Dimensions` mock is 750 wide, which is the medium class. The default test window is pinned to an iPhone (390) in `jest.setup-after-env.js`; a wide test sets its own width.
 
@@ -269,6 +271,9 @@ He liked this shape. Keep it.
 
 ## Known open risks
 
+- **E-books and audiobooks are sold through Stripe inside the app**, which breaks App Review Guideline 3.1.1 (digital content must use In-App Purchase). Printed books on Stripe are fine. Options and the EU trader-status question are in `docs/IN_APP_PURCHASES.md`. Waiting on a client decision.
+- EAS build servers default to Node 20, and pnpm 11 needs Node 22.13 or newer. Every profile in `eas.json` pins `node`. Bump it together with `packageManager`.
+- `render.tsx` imports the real app store, so `persistStore` starts a timer on import. A file run alone then prints "Jest did not exit" (seen in `bottomNavbar.test.tsx`). The full suite still finishes. Not fixed yet.
 - `formatEventDisplay` in `helper.ts` uses `Intl.DateTimeFormat` with a `timeZone` option. Node has full ICU so it works under Jest. Hermes on device may not. Tests could be green while the app is wrong. Unconfirmed on a real device.
 - `renderWithProviders` now has Redux, SafeAreaProvider and Tamagui. The real root in `app/_layout.tsx` also has GestureHandlerRootView, Stripe, PersistGate and FontProvider. A screen that needs one of those will fail and name it. **Do not add them pre-emptively.**
 - The E2E logs into the real backend with a real account. It is not hermetic. A backend outage fails it, and it writes real session data. This is why it must not run on every PR.

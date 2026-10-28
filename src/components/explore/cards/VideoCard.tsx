@@ -19,7 +19,6 @@ const VideoCard: React.FC<VideoCardProps> = ({ data, onPress }) => {
 
   return (
     <YStack
-      mx={16}
       mb={14}
       br={20}
       overflow="hidden"
@@ -67,7 +66,7 @@ const VideoCard: React.FC<VideoCardProps> = ({ data, onPress }) => {
         )}
       </YStack>
 
-      <UText variant="display-s" fontSize={14} lineHeight={18} color="$textPrimary" numberOfLines={2} pt={12} px={16} pb={14}>
+      <UText variant="display-s" fontSize={14} lineHeight={18} color="$textPrimary" numberOfLines={2} reserveLines={2} pt={12} px={16} pb={14}>
         {data.name}
       </UText>
     </YStack>

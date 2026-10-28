@@ -18,26 +18,3 @@ export const ContentCardSkeleton = React.memo(() => (
 ));
 
 ContentCardSkeleton.displayName = 'ContentCardSkeleton';
-
-/**
- * Generic list skeleton generator
- * Renders multiple instances of a skeleton component
- */
-export const ListSkeleton = React.memo(
-  ({
-    count = 5,
-    SkeletonComponent,
-  }: {
-    count?: number;
-    SkeletonComponent: React.ComponentType;
-  }) => (
-    <YStack gap="$3" padding="$4">
-      {Array.from({ length: count }).map((_, i) => (
-        <SkeletonComponent key={i} />
-      ))}
-    </YStack>
-  )
-);
-
-ListSkeleton.displayName = 'ListSkeleton';
-

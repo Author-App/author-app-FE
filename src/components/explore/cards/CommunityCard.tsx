@@ -24,7 +24,6 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
 
   return (
     <XStack
-      mx={16}
       mb={14}
       p={12}
       gap={12}
@@ -52,7 +51,7 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
         </YStack>
 
         <YStack flex={1} w={0} gap={4}>
-          <UText variant="display-s" color="$textPrimary" numberOfLines={2}>
+          <UText variant="display-s" color="$textPrimary" numberOfLines={2} reserveLines={2}>
             {data.title}
           </UText>
           <UText variant="body-s" color="$textMuted">

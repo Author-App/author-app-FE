@@ -1,7 +1,6 @@
 import React, { useCallback } from 'react';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { StyleSheet, useWindowDimensions } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+import { useWindowDimensions } from 'react-native';
 import { styled, XStack } from 'tamagui';
 import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
 import haptics from '@/src/utils/haptics';
@@ -51,13 +50,6 @@ const BottomNavbar = React.memo(({ state, navigation }: BottomTabBarProps) => {
     // A real box, not zero height: iOS accessibility (VoiceOver, XCUITest, Maestro) skipped the tabs
     // while every child was absolutely positioned inside an empty wrapper
     <UAnimatedView animation="fadeInUp" duration={400} pos="absolute" left={0} right={0} bottom={0} h={150} pointerEvents="box-none">
-      {/* Fades scrolling content out behind the bar on every tab */}
-      <LinearGradient
-        colors={['rgba(2,1,3,0)', 'rgba(2,1,3,0.92)']}
-        locations={[0, 0.55]}
-        style={styles.scrim}
-        pointerEvents="none"
-      />
       <Capsule bottom={offset} left={inset} right={inset} gap={isWide ? 4 : 0}>
         {state.routes.map((route, index) => {
           const isFocused = state.index === index;
@@ -80,7 +72,3 @@ const BottomNavbar = React.memo(({ state, navigation }: BottomTabBarProps) => {
 BottomNavbar.displayName = 'BottomNavbar';
 
 export default BottomNavbar;
-
-const styles = StyleSheet.create({
-  scrim: { position: 'absolute', left: 0, right: 0, bottom: 0, height: 150 },
-});

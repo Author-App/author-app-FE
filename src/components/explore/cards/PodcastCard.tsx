@@ -23,7 +23,6 @@ const PodcastCard: React.FC<PodcastCardProps> = ({ data, onPress }) => {
 
   return (
     <YStack
-      mx={16}
       mb={14}
       br={20}
       overflow="hidden"
@@ -56,7 +55,7 @@ const PodcastCard: React.FC<PodcastCardProps> = ({ data, onPress }) => {
         </YStack>
 
         <YStack flex={1} w={0} gap={4}>
-          <UText variant="display-s" color="$textPrimary" numberOfLines={2}>
+          <UText variant="display-s" color="$textPrimary" numberOfLines={2} reserveLines={2}>
             {data.name}
           </UText>
           {data.description && (

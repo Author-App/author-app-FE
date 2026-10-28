@@ -19,6 +19,8 @@ export interface UTextProps
   extends Omit<TextProps, 'fontFamily'>,
   FontFamily {
   variant?: TextVariant;
+  // Wide screens only: grid cards keep equal heights when titles wrap differently
+  reserveLines?: number;
 }
 interface StylesType
   extends Omit<TextProps, 'children' | 'variant' | 'ref' | 'fontFamily'>,
@@ -202,6 +204,7 @@ const UText = forwardRef<TamaguiTextElement, UTextProps>((props, ref) => {
     children,
     variant = 'text-md',
     fontFamily: fontFamilyProp,
+    reserveLines,
     ...restProps
   } = props;
   const { gtXs } = useMedia();
@@ -211,6 +214,8 @@ const UText = forwardRef<TamaguiTextElement, UTextProps>((props, ref) => {
     [variant, isWideDisplay]
   );
   const { fontFamily, ...restVariantStyles } = variantStyle;
+  const lineHeight = (restProps.lineHeight as number | undefined) ?? (variantStyle.lineHeight as number);
+  const minHeight = gtXs && reserveLines ? reserveLines * lineHeight : undefined;
 
   return (
     <Text
@@ -218,6 +223,7 @@ const UText = forwardRef<TamaguiTextElement, UTextProps>((props, ref) => {
       {...restVariantStyles}
       fontFamily={fontFamilyProp || (fontFamily as any)}
       maxFontSizeMultiplier={maxScaleFor(variant)}
+      minHeight={minHeight}
       {...restProps}
     >
       {children}

@@ -28,7 +28,7 @@ export const RelatedVideoList = memo(function RelatedVideoList({ videos }: Relat
         <UText variant="display-m" color="$textPrimary" px={20} accessibilityRole="header">
           Related videos
         </UText>
-        <YStack>
+        <YStack px={16}>
           {videos.slice(0, 5).map((video) => (
             <VideoCard key={video.id} data={video} onPress={openVideo} />
           ))}

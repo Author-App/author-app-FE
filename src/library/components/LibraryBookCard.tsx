@@ -13,22 +13,12 @@ import { getBookTypeLabel, getBookTypeTone } from '@/src/utils/bookHelpers';
 interface LibraryBookCardProps {
   book: BookResponse;
   onPress: () => void;
-  index: number;
-  numColumns: number;
 }
-
-// Half the 14pt column gap on each inner side, the 16pt gutter on the outer sides
-const GUTTER = 16;
-const HALF_GAP = 7;
 
 const LibraryBookCard: React.FC<LibraryBookCardProps> = ({
   book,
   onPress,
-  index,
-  numColumns,
 }) => {
-  const isLeftColumn = index % numColumns === 0;
-  const isRightColumn = index % numColumns === numColumns - 1;
   const price = book.isFree ? 'Free' : formatPrice(book.price, book.currency);
   const length =
     book.type === 'audiobook' && book.durationSec
@@ -42,8 +32,6 @@ const LibraryBookCard: React.FC<LibraryBookCardProps> = ({
     <YStack
       flex={1}
       mb={20}
-      ml={isLeftColumn ? GUTTER : HALF_GAP}
-      mr={isRightColumn ? GUTTER : HALF_GAP}
       p={8}
       pb={10}
       gap={8}
@@ -79,7 +67,7 @@ const LibraryBookCard: React.FC<LibraryBookCardProps> = ({
         {owned && <UBadge label="Owned" tone="purple" onImage pos="absolute" bottom={8} left={8} />}
       </YStack>
 
-      <UText variant="display-s" color="$textPrimary" numberOfLines={2}>
+      <UText variant="display-s" color="$textPrimary" numberOfLines={2} reserveLines={2}>
         {book.title}
       </UText>
       <XStack jc="space-between" ai="center" gap={6}>

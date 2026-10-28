@@ -673,6 +673,26 @@ _(checked in the simulator: closed and with the keyboard open)_
 - **Serif placeholder.** The chat box used `UInput`'s `dark` variant, which inherited `$cormorantgaramond` from the old design's base style. The variant now sets `$inter`. It is the only user of that variant. `src/components/core/inputs/uInput.tsx`.
 - **No time.** Bubbles showed only the date, so every message from one day looked the same. New `formatMessageTime` in `src/utils/helper.ts`: "4:32 PM" today, "Jan 5, 4:32 PM" this year, "Jan 5, 2025, 4:32 PM" before that.
 
+### 8.4 A second "See all" opened the wrong Library filter
+
+_(not yet verified on device)_
+
+- **Symptom.** Tap Audiobooks "See all" on Home: Library opens on Audiobooks. Tap the All chip, go back, tap Audiobooks "See all" again: Library stays on All.
+- **Cause.** Library is a tab, so it stays mounted. The filter followed the `tab` route param through a `useEffect`. The second link sent the same value, `'audiobook'`, so the effect's dependency never changed and it never ran.
+- **Fix.** Library clears the param once it has used it (`router.setParams({ tab: undefined })`). Every link now changes the param from empty to a value. `src/library/hooks/useLibraryData.ts`. Pinned by `src/library/hooks/__tests__/useLibraryData.test.tsx`, which failed before the fix.
+- **Say it.** "A route param is state, not an event. The effect only fires when the value changes, so the same link twice did nothing. I consume the param and clear it, so each navigation is a new change."
+- **Term.** Route params as one-shot events. Effect dependencies.
+
+### 8.5 The purple haze stopped short after rotating an iPad
+
+_(checked in the iPad Pro 13 simulator, portrait to landscape)_
+
+- **Symptom.** After rotating to landscape, the purple glow at the top of a tab screen ended in a hard vertical edge at the old portrait width. The right third of the screen had no glow.
+- **Cause.** Every tab screen sits on `UScreenLayout`, which draws the glow as an SVG `RadialGradient` with the id `screenHaze`. Tabs stay mounted, so five SVGs used the same id at once. On iOS, react-native-svg resolved the id to a gradient from another screen, measured for the old size. Remounting the SVG on resize did not help, which ruled out a stale size on the SVG itself.
+- **Fix.** Each screen gets its own id from `useId()`. `src/components/core/layout/UScreenLayout.tsx`.
+- **Say it.** "An SVG id is meant to be unique, like an HTML id. Tab screens stay mounted, so five copies of one id existed at once, and iOS drew the wrong one. A per-instance id from `useId` fixed it."
+- **Term.** Duplicate SVG ids. `useId`.
+
 ---
 
 ## 9. CI/CD
