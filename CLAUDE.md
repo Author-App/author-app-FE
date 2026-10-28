@@ -18,6 +18,8 @@ He has used Vitest and Playwright on web. On mobile he has now, in this repo:
 
 - Written integration tests that render a whole screen against a real store and a faked `fetch`, including a form flow with Formik and Yup validation, a mutation, and navigation asserted through a mocked router
 - Set up Detox from nothing and written an E2E login test that drives the real app on a simulator against the real backend
+- Tested a race: held one request with a promise so it lands after a newer one, and asserted the request body that was sent
+- Driven a polling loop with fake timers and `jest.advanceTimersByTimeAsync`, starting the async call inside `act`
 
 He has **not** yet:
 
@@ -103,7 +105,7 @@ Do not re-argue these.
 
 **Stack:** Expo SDK 54, React Native 0.81, Reanimated 4, RNTL 13.3, pnpm, Redux Toolkit with RTK Query, Expo Router, Tamagui, Stripe, Sentry.
 
-**Tests that exist:** 17 Jest suites, 172 tests, plus 1 Detox E2E test on a separate runner.
+**Tests that exist:** 18 Jest suites, 183 tests, plus 1 Detox E2E test on a separate runner.
 
 | File | Kind | State |
 |---|---|---|
@@ -122,6 +124,7 @@ Do not re-argue these.
 | `src/home/components/__tests__/HomeScreen.test.tsx` | integration | Good. Whole screen, real store, only `fetch` and `expo-router` faked. Covers loading, error, retry, stale-feed-on-failed-refresh (with the Retry toast: the real `ToastHost` is rendered next to the screen and the toast is found by its text), and navigation. |
 | `src/auth/login/components/__tests__/LoginScreen.test.tsx` | integration | Good. Whole login flow: validation, payload, navigation, toasts, failure keeping the form. Fakes `fetch`, `expo-router` and `expo-application`. Renders the real `ToastHost` and reads toasts by text. |
 | `src/navigations/__tests__/bottomNavbar.test.tsx` | component | Good. Label only on the active tab, `selected` state, tab press navigates, re-tap resets every tab (product decision). Fakes React Navigation's `state` and `navigation` props; mocks `@expo/vector-icons` locally to stop async font `act()` warnings. |
+| `src/hooks/__tests__/usePrintCheckout.test.tsx` | hook, money path | Good. Real store, only `fetch` and Stripe faked. Holds one quote request to land it after a newer one (stale response ignored, order sent with the newest amount), a failed quote leaves nothing payable, Lulu field errors, cancel is silent, server messages from RTK errors, and with fake timers: polling until paid, and a charged card whose confirmation times out still leaves checkout. |
 | `src/__tests__/smoke.test.tsx` | component | One test. Proves the render pipeline works. |
 | `e2e/login.test.js` | E2E, Detox | Good. Real Release build on a simulator, real backend, real account. Onboarding to login to home. |
 | `src/storage/__tests__/authStorage.test.ts` | unit | **Weak. Needs rewriting.** It mocks `../secureStorage`, which is his own code. Its "lifecycle" test tells a mock to return null then checks it returned null. Needs a fake store that actually holds state, with `expo-secure-store` as the only mock. |
@@ -135,6 +138,7 @@ Do not re-argue these.
 | `homeFeed.fixture.ts` | `buildHomeFeed`, a full feed with per-section overrides. |
 | `authStore.ts` | `makeAuthStore` (auth slice plus the authApi and userApi caches), `mockFetchRoutes` (answers several URLs from one fetch mock, with the same `release`). |
 | `auth.fixture.ts` | `buildLoginResponse`, `buildMeResponse`. |
+| `printStore.ts` | `makePrintStore` (auth slice plus the printApi cache). |
 
 **E2E setup.** Detox 20.51, `applesimutils` from the `wix/brew` tap, `@config-plugins/detox` installed but unused until Android. `.detoxrc.js` holds the `xcodebuild` command and the binary path. `e2e/jest.config.js` is a second Jest config with no `jest-expo` preset, because E2E imports no app code. `/e2e/` is in the unit config's `testPathIgnorePatterns` so `pnpm test` never picks it up. Credentials come from `E2E_EMAIL` and `E2E_PASSWORD` in `.env`, loaded by `e2e/setup.js`. **Never prefix those with `EXPO_PUBLIC_`**, or Babel inlines them into the shipped bundle.
 
@@ -196,16 +200,21 @@ Never reach for `UNSAFE_getByType` or a `testID` to route around a missing label
 - `NeonButton`, the primary CTA on 12 screens, rendered `role="button"` without `accessible`, so VoiceOver read its text alone and never said "button". Found when `getByRole('button', { name: 'Sign In' })` failed. Fixed with `accessible`, `accessibilityRole` and `accessibilityState={{ busy }}`.
 - The bottom tab bar was icon-only with no label and no role, so a screen reader announced nothing. Fixed while adding `testID` for Detox: `accessible`, `accessibilityRole`, `accessibilityLabel`, `accessibilityState={{ selected }}`. A dead `accessibilityLabel` prop on `TabItem` was deleted at the same time.
 
-### Accessibility debt found, not yet fixed
+### Accessibility rules (from the app-wide pass, BUG_LOG 7.2 to 7.7)
 
-- `UIconButton` does not forward `disabled` to the host element as `accessibilityState`. Tamagui blocks the press with `pointerEvents: none`, so it works, but a screen reader does not announce the button as dimmed.
+- **Never `accessibilityRole="tab"`.** React Native maps it to `UIAccessibilityTraitNone` on iOS, so VoiceOver never says the chip is tappable. Use `"button"` with `accessibilityState={{ selected }}`; it reads "Blogs, selected, button". `tablist` on the container is fine.
+- **Every `accessible` view needs a role.** Information rows use `"text"`. Without a role the view has no trait at all.
+- **Icons are hidden globally** (`app/_layout.tsx`, `Ionicons` and `Feather` `defaultProps`). Icon fonts render a private-use glyph that VoiceOver cannot speak. So a button whose children are an icon plus text needs an explicit `accessibilityLabel`: React Native builds a parent label by joining every child's label, glyph included (", ORDER").
+- **No accessibility props on a Reanimated `createAnimatedComponent` wrapper.** The selected state never reached iOS through it. Put them on a plain parent view (`uButtonTabs`).
+- **A label and its value are one element**: `accessible accessibilityRole="text" accessibilityLabel="Date, Dec 17, 2025"` on the row (`EventInfo`, `BookHero` rating row, chat bubbles).
+- **A placeholder is not a label.** Every input gets `accessibilityLabel`.
+- **Larger Text.** `UText` caps `maxFontSizeMultiplier`: 2x for reading variants (`body`, `text-*`, `link`, `playfair-*`), 1.3x for headings, labels and wordmarks, which are wide capitals that cannot wrap. Test with `xcrun simctl ui <device> content_size accessibility-extra-extra-extra-large`, then relaunch the app, then `content_size large` to reset.
+- **The Mobile MCP dump is not VoiceOver.** `mobilecli dump ui --device <id>` filters element types: no ScrollView, Slider, or trait-less view ever appears, and every `StaticText` has a same-label child (how React Native's text view reports itself, not a double read). Absence in the dump does not prove VoiceOver cannot reach it. Use Xcode's Accessibility Inspector or VoiceOver for the final word.
 
-- Explore's category chips (Blogs, Podcasts, Videos, Events, Community) are not in the accessibility tree at all, so VoiceOver cannot reach them. The search `TextField` has no label, and its search icon is an empty `StaticText`. Found by Mobile MCP's element list.
+### Accessibility, still to check by hand
 
-- Book detail: the About, Synopsis, Reviews and More Books tabs are not in the accessibility tree. The star rating has no label (the text says "No ratings" but the stars are silent or missing). The cover image has no label. The Order button reads ", ORDER", because the icon glyph is an empty text in the label.
-- Every `StaticText` shows up twice in the Mobile MCP element list, on every screen. Check with VoiceOver whether it reads each text twice before fixing anything.
-
-- Book detail's Listen Now button reads ", LISTEN NOW", like Order. The podcast hero icon is an empty `StaticText`. The audio `Slider` does not appear in the element list, so check that VoiceOver can scrub it.
+- VoiceOver on a device: the audio slider (should read "Playback position, 40:30 of 3:17:34", swipe up or down skips 30 s), the chips, the welcome modal, and the chat bubbles.
+- Android TalkBack has not been checked at all.
 
 ### Layout debt found, not yet fixed
 

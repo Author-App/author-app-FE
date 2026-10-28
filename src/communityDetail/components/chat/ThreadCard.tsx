@@ -4,17 +4,27 @@ import { XStack, YStack } from 'tamagui';
 import UText from '@/src/components/core/text/uText';
 import { useAppSelector } from '@/src/store/hooks';
 import { selectUser } from '@/src/store/selectors/authSelectors';
-import { formatDate } from '@/src/utils/helper';
+import { formatMessageTime } from '@/src/utils/helper';
 import { ProfileAvatar } from './ProfileAvatar';
 import type { ThreadResponse } from '@/src/types/api/community.types';
 
 /** Chat bubble: your own on the right in purple, everyone else on the left with avatar and name. */
 const ThreadCard = ({ thread }: { thread: ThreadResponse }) => {
   const isSelf = useAppSelector(selectUser)?.id === thread.userId;
-  const date = thread.createdAt ? formatDate(thread.createdAt.toString()) : null;
+  const date = thread.createdAt ? formatMessageTime(thread.createdAt) : null;
 
   return (
-    <XStack mx={16} mb={12} gap={8} ai="flex-end" jc={isSelf ? 'flex-end' : 'flex-start'}>
+    <XStack
+      mx={16}
+      mb={12}
+      gap={8}
+      ai="flex-end"
+      jc={isSelf ? 'flex-end' : 'flex-start'}
+      // One stop per message, instead of initials, name, text and time as four
+      accessible
+      accessibilityRole="text"
+      accessibilityLabel={`${isSelf ? 'You' : thread.userName}: ${thread.message.trim()}${date ? `, ${date}` : ''}`}
+    >
       {!isSelf && <ProfileAvatar imageUrl={thread.userProfileImage} userName={thread.userName} />}
 
       <YStack

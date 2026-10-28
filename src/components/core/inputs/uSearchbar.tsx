@@ -83,6 +83,8 @@ const USearchbar = ({
         onChangeText={onSearchChange}
         placeholder={placeholder}
         placeholderTextColor={muted}
+        // A placeholder is not a label: VoiceOver stops reading it once text is typed
+        accessibilityLabel={placeholder.replace(/\.+$/, '')}
         editable={!disabled}
         unstyled
         bg="transparent"

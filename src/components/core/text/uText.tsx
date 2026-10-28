@@ -182,6 +182,11 @@ const getVariantStyle = (variant: TextVariant): StylesType => {
   }
 };
 
+// Larger Text: reading text grows up to 2x. Headings, labels and wordmarks are wide capitals
+// that cannot wrap, so they stop at 1.3x; past that they broke mid-word at the largest sizes.
+const READING_VARIANTS = /^(body|text-|link|playfair-)/;
+const maxScaleFor = (variant: TextVariant) => (READING_VARIANTS.test(variant) ? 2 : 1.3);
+
 const UText = forwardRef<TamaguiTextElement, UTextProps>((props, ref) => {
   const {
     children,
@@ -197,6 +202,7 @@ const UText = forwardRef<TamaguiTextElement, UTextProps>((props, ref) => {
       ref={ref}
       {...restVariantStyles}
       fontFamily={fontFamilyProp || (fontFamily as any)}
+      maxFontSizeMultiplier={maxScaleFor(variant)}
       {...restProps}
     >
       {children}

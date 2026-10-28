@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { Platform, ActivityIndicator } from 'react-native';
 import { XStack, YStack, getTokenValue } from 'tamagui';
 import { Ionicons } from '@expo/vector-icons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Toast } from '@/src/components/core/toast/toast';
 
 import UInput from '@/src/components/core/inputs/uInput';
 import UCtaGradient from '@/src/components/core/display/uCtaGradient';
 import haptics from '@/src/utils/haptics';
+
+export const THREAD_BAR_BG = 'rgba(7,5,18,0.88)';
 
 interface ThreadInputProps {
   onSend: (message: string) => Promise<void>;
@@ -15,7 +16,6 @@ interface ThreadInputProps {
 }
 
 export function ThreadInput({ onSend, isSending }: ThreadInputProps) {
-  const { bottom } = useSafeAreaInsets();
   const [message, setMessage] = useState('');
   const canSend = message.trim().length > 0 && !isSending;
 
@@ -32,12 +32,14 @@ export function ThreadInput({ onSend, isSending }: ThreadInputProps) {
   };
 
   return (
-    <YStack px={16} pt={10} pb={Math.max(bottom, 10)} bg="rgba(7,5,18,0.88)" borderTopWidth={1} borderColor="$glassBorder">
+    // No safe-area padding here: the keyboard spacer below the bar reserves it, in the same colour
+    <YStack px={16} pt={10} pb={10} bg={THREAD_BAR_BG} borderTopWidth={1} borderColor="$glassBorder">
       <XStack ai="flex-end" gap={10} pl={16} pr={6} py={6} br={24} bg="$glass" borderWidth={1} borderColor="$glassBorder">
         <YStack flex={1}>
           <UInput
             variant="dark"
             placeholder="Type a message..."
+            accessibilityLabel="Message"
             value={message}
             onChangeText={setMessage}
             multiline

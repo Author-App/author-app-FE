@@ -9,10 +9,11 @@ interface USwitchProps {
   onCheckedChange: (checked: boolean) => void;
   /** Read by screen readers: the switch has no visible label of its own */
   label: string;
+  hint?: string;
 }
 
 /** Cyan glass switch. On: cyan thumb on the right with a glow. Off: muted thumb on the left. */
-const USwitch = ({ checked, onCheckedChange, label }: USwitchProps) => {
+const USwitch = ({ checked, onCheckedChange, label, hint }: USwitchProps) => {
   // Reanimated, not Tamagui's animation prop: that driver updates views from the JS thread
   // and crashed the app when it collided with Reanimated (BUG_LOG 5.6)
   const thumbStyle = useAnimatedStyle(() => ({
@@ -36,6 +37,7 @@ const USwitch = ({ checked, onCheckedChange, label }: USwitchProps) => {
       accessible
       accessibilityRole="switch"
       accessibilityLabel={label}
+      accessibilityHint={hint}
       accessibilityState={{ checked }}
     >
       <Animated.View style={thumbStyle}>

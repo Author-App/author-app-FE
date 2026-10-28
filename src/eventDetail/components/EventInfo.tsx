@@ -18,7 +18,8 @@ interface EventInfoProps {
 
 function InfoRow({ icon, label, value }: { icon: keyof typeof Ionicons.glyphMap; label: string; value: string }) {
   return (
-    <XStack ai="center" gap={14}>
+    // One element per row: "Date, Dec 17, 2025", not "Date" and the value as two stops
+    <XStack ai="center" gap={14} accessible accessibilityRole="text" accessibilityLabel={`${label}, ${value}`}>
       <YStack
         w={40}
         h={40}

@@ -92,10 +92,12 @@ const CheckoutScreen = ({ bookId }: { bookId: string }) => {
   const { bottom } = useSafeAreaInsets();
   const { book, isLoading: isLoadingBook, isError: isBookError, refetch } = useBookDetail(bookId);
 
-  const handleSuccess = useCallback(() => {
+  const handleSuccess = useCallback((_orderId: string, isConfirmed: boolean) => {
     Alert.alert(
-      'Order placed',
-      'Your print book order is placed. You will get an email with tracking once it ships.',
+      isConfirmed ? 'Order placed' : 'Payment received',
+      isConfirmed
+        ? 'Your print book order is placed. You will get an email with tracking once it ships.'
+        : "We're confirming your order. You will get an email once it is confirmed, then tracking once it ships.",
       [{ text: 'Done', onPress: () => router.back() }]
     );
   }, []);

@@ -108,6 +108,22 @@ export const formatDate = (isoDate: string): string => {
   return date.toLocaleDateString('en-US', options);
 };
 
+/** Chat timestamp: "4:32 PM" today, "Jan 5, 4:32 PM" this year, "Jan 5, 2025, 4:32 PM" before that. */
+export const formatMessageTime = (isoDate: string, now: Date = new Date()): string => {
+  const date = new Date(isoDate);
+  if (Number.isNaN(date.getTime())) return '';
+
+  const time = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  if (date.toDateString() === now.toDateString()) return time;
+
+  const day = date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    ...(date.getFullYear() === now.getFullYear() ? {} : { year: 'numeric' }),
+  });
+  return `${day}, ${time}`;
+};
+
 export const formatDuration = (durationSec: number): string => {
   if (!durationSec || durationSec < 0) return '00:00';
 
@@ -194,7 +210,11 @@ export const formatEventDisplay = (
       : parsedDate.toLocaleString('en-US', { month: 'short' });
 
     return {
-      dateLabel: formatDate(event.eventDate),
+      // A calendar day, not an instant: the backend sends it as UTC midnight ("2025-12-18T00:00:00.000Z"),
+      // and formatDate would convert that to local time, a day early west of UTC. Same source as the badge.
+      dateLabel: Number.isNaN(parsedDate.getTime())
+        ? ''
+        : parsedDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' }),
       timeLabel: formatTime12h(event.eventTime || ''),
       timezoneLabel: undefined,
       badgeDay: Number.isNaN(parsedDate.getTime()) ? null : parsedDate.getDate(),

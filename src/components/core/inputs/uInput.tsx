@@ -72,6 +72,7 @@ const getVariantStyle = (variant: UInputVariant = 'primary'): StylesType => {
         borderRadius: 0,
         color: '$white',
         placeholderTextColor: '$placeholderGray',
+        fontFamily: '$inter',
         py: 0,
         px: 0,
         minHeight: 30,

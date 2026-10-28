@@ -25,6 +25,7 @@ export function ReaderFooter({ currentPage, totalPages, progressPercent, padding
       borderTopWidth={1}
       borderTopColor="$glassBorder"
       accessible
+      accessibilityRole="text"
       accessibilityLabel={`Page ${currentPage} of ${totalPages}, ${progressPercent} percent read`}
     >
       <YStack h={3} br={2} bg="$track" overflow="hidden">

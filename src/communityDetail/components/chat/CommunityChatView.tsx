@@ -3,7 +3,7 @@ import { YStack } from 'tamagui';
 
 import { CommunityChatHeader } from './CommunityChatHeader';
 import ThreadCard from './ThreadCard';
-import { ThreadInput } from './ThreadInput';
+import { THREAD_BAR_BG, ThreadInput } from './ThreadInput';
 import UEmptyState from '@/src/components/core/feedback/UEmptyState';
 import UScreenLayout from '@/src/components/core/layout/UScreenLayout';
 import { URefreshableList } from '@/src/components/core/layout/uRefreshableList';
@@ -23,7 +23,7 @@ const renderThread = ({ item }: { item: ThreadResponse }) => <ThreadCard thread=
 export function CommunityChatView({ community, isSending, onSendThread, onHeaderPress, onRefresh }: CommunityChatViewProps) {
   return (
     <UScreenLayout>
-      <UKeyboardAvoidingView dismissOnTap={false}>
+      <UKeyboardAvoidingView dismissOnTap={false} color={THREAD_BAR_BG}>
         <CommunityChatHeader title={community.title} thumbnail={community.thumbnail} onPress={onHeaderPress} />
 
         <URefreshableList

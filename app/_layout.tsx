@@ -1,5 +1,6 @@
 import { Platform } from 'react-native';
 import { Slot } from 'expo-router';
+import { Feather, Ionicons } from '@expo/vector-icons';
 import Head from 'expo-router/head';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -20,6 +21,16 @@ import {
   SentryNavigationTracker,
   SentryUserSync,
 } from '@/src/services/sentry';
+
+// Icon fonts render as Text holding a private-use glyph, which a screen reader cannot speak.
+// Hide every icon; anything an icon means must be in its button's accessibilityLabel.
+for (const Icon of [Ionicons, Feather] as unknown as { defaultProps?: object }[]) {
+  Icon.defaultProps = {
+    ...Icon.defaultProps,
+    accessibilityElementsHidden: true,
+    importantForAccessibility: 'no-hide-descendants',
+  };
+}
 
 // Initialize Sentry before anything else
 initSentry({

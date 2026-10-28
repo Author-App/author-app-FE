@@ -38,6 +38,7 @@ function UStarRating({
       gap={gap}
       // Five icons and no text. A screen reader announces nothing without this.
       accessible
+      accessibilityRole="image"
       accessibilityLabel={`Rated ${rating} out of 5 stars`}
     >
       {stars.map((star) => (

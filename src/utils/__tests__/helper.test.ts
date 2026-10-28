@@ -189,6 +189,25 @@ describe('formatEventDisplay', () => {
     expect(result.badgeMonthLabel).toBe('Jul');
   });
 
+  describe('an event with a date but no start instant, viewed west of UTC', () => {
+    // The day must not depend on the viewer's offset. CI runs in UTC, where this bug is invisible.
+    const originalTz = process.env.TZ;
+    beforeAll(() => {
+      process.env.TZ = 'America/Toronto';
+    });
+    afterAll(() => {
+      process.env.TZ = originalTz;
+    });
+
+    it('shows the same calendar day on the card and the detail screen', () => {
+      // The shape the backend really sends for a date-only event: UTC midnight
+      const result = formatEventDisplay({ eventStartUtc: null, eventDate: '2025-12-18T00:00:00.000Z', eventTime: '07:00:00' });
+
+      expect(result.badgeDay).toBe(18);
+      expect(result.dateLabel).toBe('Dec 18, 2025');
+    });
+  });
+
   it('preserves legacy behavior when eventStartUtc is null', () => {
     const result = formatEventDisplay({
       eventStartUtc: null,

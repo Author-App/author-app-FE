@@ -9,6 +9,7 @@ const HomeSkeleton = () => (
     px={16}
     gap={24}
     accessible
+    accessibilityRole="text"
     accessibilityLabel="Loading home"
     accessibilityState={{ busy: true }}
   >

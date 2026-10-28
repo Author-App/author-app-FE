@@ -49,7 +49,16 @@ export function BookHero({ book, averageRating, totalRatings }: BookHeroProps) {
           {book.author}
         </UText>
 
-        <XStack ai="center" gap={8}>
+        <XStack
+          ai="center"
+          gap={8}
+          // One element for the row: otherwise "Rated 0 out of 5 stars" is read before "No ratings"
+          accessible
+          accessibilityRole="text"
+          accessibilityLabel={
+            hasRating ? `Rated ${averageRating!.toFixed(1)} out of 5, ${totalRatings} ratings` : 'No ratings yet'
+          }
+        >
           <UStarRating rating={averageRating ?? 0} size={16} gap={2} />
           {hasRating ? (
             <>

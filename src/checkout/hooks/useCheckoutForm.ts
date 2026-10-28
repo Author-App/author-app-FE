@@ -15,7 +15,7 @@ const MAX_QUANTITY = 10;
 
 interface UseCheckoutFormOptions {
   bookId: string;
-  onSuccess?: (printOrderId: string) => void;
+  onSuccess?: (printOrderId: string, isConfirmed: boolean) => void;
   onError?: (message: string) => void;
 }
 
@@ -70,10 +70,10 @@ export function useCheckoutForm({ bookId, onSuccess, onError }: UseCheckoutFormO
   const { values, errors, touched, isValid, dirty, setFieldValue, setFieldTouched } = formik;
 
   const { quote, isGettingQuote, getQuote, isCreatingOrder, createOrder } = usePrintCheckout({
-    onSuccess: (orderId) => {
+    onSuccess: (orderId, isConfirmed) => {
       isOrderPlaced.current = true;
       saveShippingAddress(values);
-      onSuccess?.(orderId);
+      onSuccess?.(orderId, isConfirmed);
     },
     onError,
     onQuoteError: setQuoteError,

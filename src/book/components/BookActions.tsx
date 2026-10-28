@@ -75,6 +75,7 @@ export function BookActions({
         onPress={handlePress}
         // Only a digital purchase waits on a request; print goes to checkout
         loading={isPurchasing && !isPrint}
+        accessibilityLabel={action.label}
         boxShadow="0 0 22px rgba(135,54,247,0.5), 0 0 40px rgba(0,240,255,0.18)"
       >
         <XStack ai="center" gap={8}>

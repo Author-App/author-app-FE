@@ -1,7 +1,7 @@
 import React, { memo, useState, useRef, useCallback } from 'react';
 import { useAudioPlayerStatus } from 'expo-audio';
 import type { AudioPlayer as ExpoAudioPlayer } from 'expo-audio';
-import { StyleSheet } from 'react-native';
+import { AccessibilityActionEvent, StyleSheet } from 'react-native';
 import { XStack, YStack, getTokenValue } from 'tamagui';
 import Slider from '@react-native-community/slider';
 import { Ionicons } from '@expo/vector-icons';
@@ -24,6 +24,9 @@ const formatTime = (ms: number) => {
   }
   return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 };
+
+const A11Y_STEP_MS = 30_000;
+const A11Y_ACTIONS = [{ name: 'increment' }, { name: 'decrement' }];
 
 interface ProgressDisplayProps {
   player: ExpoAudioPlayer;
@@ -59,10 +62,25 @@ const ProgressDisplay = memo(function ProgressDisplay({ player, onSeek }: Progre
     [onSeek, duration]
   );
 
+  // VoiceOver: swipe up or down on the slider to skip 30 seconds
+  const handleAccessibilityAction = useCallback(
+    (event: AccessibilityActionEvent) => {
+      const step = event.nativeEvent.actionName === 'increment' ? A11Y_STEP_MS : -A11Y_STEP_MS;
+      onSeek?.(Math.min(Math.max(position + step, 0), duration));
+    },
+    [onSeek, position, duration]
+  );
+
   return (
     <YStack gap={8}>
       <Slider
         style={styles.slider}
+        accessible
+        accessibilityRole="adjustable"
+        accessibilityLabel="Playback position"
+        accessibilityValue={{ text: `${formatTime(position)} of ${formatTime(duration)}` }}
+        accessibilityActions={A11Y_ACTIONS}
+        onAccessibilityAction={handleAccessibilityAction}
         value={progress}
         minimumValue={0}
         maximumValue={100}
