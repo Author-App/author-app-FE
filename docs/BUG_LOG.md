@@ -693,6 +693,16 @@ _(checked in the iPad Pro 13 simulator, portrait to landscape)_
 - **Say it.** "Two bugs stacked. An SVG id is meant to be unique, like an HTML id, and five mounted tabs shared one, so iOS drew the wrong gradient. Then a tab hidden during a rotation kept its old size. A per-instance id from `useId`, and sizing the SVG from the window with a key on that size, fixed both."
 - **Term.** Duplicate SVG ids. `useId`.
 
+### 8.6 The toast jumped in, as if it lagged
+
+_(not yet verified on device)_
+
+- **Symptom.** A toast dropped in from above the screen, went past its spot, bounced back and settled. It read as lag or a glitch.
+- **Cause.** The enter animation was `SlideInUp.springify().damping(18)`: a spring over the full toast height, under-damped enough to overshoot.
+- **Fix.** `FadeInUp.duration(220)` with an ease-out curve, and `FadeOutUp.duration(160)`: a short move with a fade, no spring. On wide screens the toast is capped at `FORM_WIDTH` and centred instead of spanning the window. `src/components/core/toast/toast.tsx`.
+- **Say it.** "A spring overshoots unless it is critically damped, and over a long distance the overshoot is visible. For a status message I used a short timed fade, which arrives and stops."
+- **Term.** Spring damping and overshoot. Layout animations (entering, exiting).
+
 ---
 
 ## 9. CI/CD
