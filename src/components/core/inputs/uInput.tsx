@@ -111,6 +111,7 @@ const GlassInput = forwardRef<any, UInputProps>(
         <XStack
           // Multiline grows from 120; single line is fixed at 50
           h={multiline ? undefined : 50}
+          $gtXs={multiline ? undefined : { h: 54 }}
           minHeight={multiline ? 120 : undefined}
           py={multiline ? 12 : 0}
           br={14}

@@ -172,6 +172,33 @@ Do not re-argue these.
 
 **Keep this section current.** After a test file lands, update the table, the "what he knows" list, and the next targets. A stale CLAUDE.md misdirects the next session. This file has already been wrong once.
 
+## Wide screens (iPad, unfolded foldables)
+
+The iPhone design never changes. Wide screens get their own layouts of the same app: same tokens, same components, same data. Design: the "Stanley Paden" Claude Design canvas (`WideSystem` artboard is the spec).
+
+**Size classes, by window width, never by device.** Never `Platform.isPad`: an iPad in Split View can be narrower than a phone, and a foldable changes width while the app runs.
+
+| Class | Width | Gutter | Content |
+|---|---|---|---|
+| compact | < 661 | 16 | iPhone design, unchanged |
+| medium | 661 to 1023 | 32 | fills the width, one pane |
+| expanded | >= 1024 | 48 | max 1280, centered, two panes where the design has them |
+
+**Where things live.**
+- `src/components/core/layout/layout.ts`: every per-class size (gutters, gaps, card minimums, reading widths) and the pure `columns(minCardWidth, contentWidth, gap)` function. No screen hard-codes a breakpoint, gutter or column count.
+- `useLayoutClass()`: `{ size, gutter, contentWidth, columns }`, from `useWindowDimensions`, so rotation and folding update it.
+- A style-only change (padding, height) is a Tamagui media prop (`$gtXs={{ ... }}`) inside the core component.
+
+**Layout files, only when the structure changes.**
+- The screen file is the container: it owns the data hook and navigation and picks a layout by `size`. Layout files only take props and render. They never fetch and never navigate.
+- `layouts/<Screen>Compact.tsx` is the iPhone screen, moved as it is. `layouts/<Screen>Wide.tsx` (or `Medium` and `Expanded` when those differ in structure) is the new arrangement.
+- Sections and cards are shared between layouts. A wide layout that only changes spacing or columns gets no file of its own: the hook covers it.
+- Wide screens have no carousels, no sideways scrolling and no full-width cards. Short sections use `UGrid` and show full rows only, with "See all". Endless lists stay virtualized (`FlashList` with `numColumns`).
+
+**Already built.** Home: `HomeScreen` (container) picks `layouts/HomeCompact` or `layouts/HomeWide`; "See all" opens Library on a filter through its `tab` route param. Tab bar: 600 wide and centered with every label on wide screens (`wide` prop on `TabItem`). Auth screens: one centered 440 column (`COLUMN_WIDTH` in `AuthLayout`) on a `$glassDeep` card, CTA under the form. `UText` grows `display-xl/l/m` and `wordmark` by `WIDE_DISPLAY_SCALE` (1.25); `NeonButton` 52 to 56, `UInput` 50 to 54. Body text, labels and links keep their size, as iOS does.
+
+**Tests.** React Native's Jest `Dimensions` mock is 750 wide, which is the medium class. The default test window is pinned to an iPhone (390) in `jest.setup-after-env.js`; a wide test sets its own width.
+
 ## Component test setup, and how to debug it
 
 Five parts. Nothing else.

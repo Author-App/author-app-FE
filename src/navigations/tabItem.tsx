@@ -44,16 +44,18 @@ const TabPill = styled(XStack, {
 interface TabItemProps {
   routeName: string;
   focused: boolean;
+  wide?: boolean;
   onPress: () => void;
 }
 
-const TabItem = ({ routeName, focused, onPress }: TabItemProps) => {
+const TabItem = ({ routeName, focused, wide, onPress }: TabItemProps) => {
   const config = TAB_CONFIG[routeName];
   const iconColor = getTokenValue(focused ? '$accentCyan' : '$textMuted');
 
   return (
     // Animate the wrapper only: the pill's variant has no "off" values, so its colors would stick
     <YStack
+      flex={wide ? 1 : undefined}
       h={TAB_BAR_HEIGHT}
       jc="center"
       onPress={onPress}
@@ -65,10 +67,10 @@ const TabItem = ({ routeName, focused, onPress }: TabItemProps) => {
       accessibilityLabel={config.label}
       testID={`tab-${routeName}`}
     >
-      <TabPill active={focused}>
-        <Ionicons name={config.icon} size={24} color={iconColor} />
-        {focused && (
-          <UText variant="meta" color="$accentCyan">
+      <TabPill active={focused} h={wide ? 48 : 44} px={wide ? 10 : undefined}>
+        <Ionicons name={config.icon} size={wide ? 22 : 24} color={iconColor} />
+        {(focused || wide) && (
+          <UText variant="meta" color={focused ? '$accentCyan' : '$textSecondary'} numberOfLines={1}>
             {config.label}
           </UText>
         )}

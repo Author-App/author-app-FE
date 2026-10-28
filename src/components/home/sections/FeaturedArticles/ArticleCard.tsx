@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { YStack, YStackProps } from 'tamagui';
+import { XStack, YStack, YStackProps } from 'tamagui';
 
 import UText from '@/src/components/core/text/uText';
 import ULocalImage from '@/src/components/core/image/uLocalImage';
@@ -14,36 +14,74 @@ export interface ArticleCardProps extends YStackProps {
   item: HomeArticle;
   index: number;
   onPress: () => void;
+  variant?: 'card' | 'row';
 }
 
-const ArticleCard = memo(({ item, index, onPress, ...props }: ArticleCardProps) => (
-  <UAnimatedView animation="fadeInUp" delay={index * 100} duration={400}>
-    <YStack
-      w={ARTICLE_WIDTH}
-      br={20}
-      overflow="hidden"
-      bg="$glass"
-      borderWidth={1}
-      borderColor="$glassBorder"
-      pressStyle={{ scale: 0.98, opacity: 0.9 }}
-      onPress={onPress}
-      accessible
-      accessibilityRole="button"
-      accessibilityLabel={item.title}
-      {...props}
-    >
-      <ULocalImage source={{ uri: item.image }} width="100%" height={135} contentFit="cover" />
-      <YStack p={12} gap={6}>
-        <UText variant="display-s" color="$textPrimary" numberOfLines={2}>
-          {item.title}
-        </UText>
-        {item.readTime && (
-          <UText variant="meta-s" color="$accentCyan">
-            {item.readTime.value} {item.readTime.unit} read
-          </UText>
-        )}
-      </YStack>
+const ROW_THUMB_WIDTH = 144;
+
+const ArticleRow = ({ item, onPress }: Pick<ArticleCardProps, 'item' | 'onPress'>) => (
+  <XStack
+    p={10}
+    gap={12}
+    br={20}
+    ai="center"
+    bg="$glass"
+    borderWidth={1}
+    borderColor="$glassBorder"
+    pressStyle={{ scale: 0.98, opacity: 0.9 }}
+    onPress={onPress}
+    accessible
+    accessibilityRole="button"
+    accessibilityLabel={item.title}
+  >
+    <YStack w={ROW_THUMB_WIDTH} h={ROW_THUMB_WIDTH * (9 / 16)} br={12} overflow="hidden">
+      <ULocalImage source={{ uri: item.image }} width="100%" height="100%" contentFit="cover" />
     </YStack>
+    <YStack flex={1} w={0} gap={6}>
+      {item.readTime && (
+        <UText variant="meta-s" color="$accentCyan">
+          {item.readTime.value} {item.readTime.unit} read
+        </UText>
+      )}
+      <UText variant="display-s" color="$textPrimary" numberOfLines={2}>
+        {item.title}
+      </UText>
+    </YStack>
+  </XStack>
+);
+
+const ArticleCard = memo(({ item, index, onPress, variant = 'card', ...props }: ArticleCardProps) => (
+  <UAnimatedView animation="fadeInUp" delay={index * 100} duration={400}>
+    {variant === 'row' ? (
+      <ArticleRow item={item} onPress={onPress} />
+    ) : (
+      <YStack
+        w={ARTICLE_WIDTH}
+        br={20}
+        overflow="hidden"
+        bg="$glass"
+        borderWidth={1}
+        borderColor="$glassBorder"
+        pressStyle={{ scale: 0.98, opacity: 0.9 }}
+        onPress={onPress}
+        accessible
+        accessibilityRole="button"
+        accessibilityLabel={item.title}
+        {...props}
+      >
+        <ULocalImage source={{ uri: item.image }} width="100%" height={135} contentFit="cover" />
+        <YStack p={12} gap={6}>
+          <UText variant="display-s" color="$textPrimary" numberOfLines={2}>
+            {item.title}
+          </UText>
+          {item.readTime && (
+            <UText variant="meta-s" color="$accentCyan">
+              {item.readTime.value} {item.readTime.unit} read
+            </UText>
+          )}
+        </YStack>
+      </YStack>
+    )}
   </UAnimatedView>
 ));
 

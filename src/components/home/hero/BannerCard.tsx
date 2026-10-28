@@ -12,6 +12,9 @@ import { HOME_GUTTER } from '@/src/components/home/sections/constants';
 interface BannerCardProps {
   item: BannerItem;
   onPress?: () => void;
+  width?: number;
+  height?: number;
+  large?: boolean;
 }
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -25,13 +28,15 @@ const COVER_WIDTH = 120;
 const COVER_HEIGHT = 180;
 const INSET = 20;
 
-const BannerCard = memo(({ item, onPress }: BannerCardProps) => {
+const BannerCard = memo(({ item, onPress, width = CARD_WIDTH, height = BANNER_HEIGHT, large }: BannerCardProps) => {
   const label = item.label || item.type;
+  const coverHeight = height - (BANNER_HEIGHT - COVER_HEIGHT);
+  const coverWidth = coverHeight * (COVER_WIDTH / COVER_HEIGHT);
 
   return (
     <YStack
-      w={CARD_WIDTH}
-      h={BANNER_HEIGHT}
+      w={width}
+      h={height}
       br={24}
       onPress={onPress}
       pressStyle={{ scale: 0.98, opacity: 0.95 }}
@@ -52,8 +57,8 @@ const BannerCard = memo(({ item, onPress }: BannerCardProps) => {
           pos="absolute"
           right={INSET}
           top={16}
-          w={COVER_WIDTH}
-          h={COVER_HEIGHT}
+          w={coverWidth}
+          h={coverHeight}
           br={10}
           boxShadow="0 16px 32px rgba(0,0,0,0.7)"
         >
@@ -68,13 +73,20 @@ const BannerCard = memo(({ item, onPress }: BannerCardProps) => {
           left={INSET}
           top={INSET}
           bottom={INSET}
-          right={INSET + COVER_WIDTH + 16}
+          right={INSET + coverWidth + 16}
           jc="space-between"
         >
           <UBadge label={label} tone="cyan" />
 
           <YStack gap={6}>
-            <UText variant="display-m" fontSize={18} lineHeight={22} letterSpacing={0} color="$textPrimary" numberOfLines={2}>
+            <UText
+              variant="display-m"
+              fontSize={large ? 28 : 18}
+              lineHeight={large ? 34 : 22}
+              letterSpacing={0}
+              color="$textPrimary"
+              numberOfLines={2}
+            >
               {item.title}
             </UText>
             {item.subtitle && (
@@ -85,7 +97,7 @@ const BannerCard = memo(({ item, onPress }: BannerCardProps) => {
           </YStack>
 
           {/* Looks like a button, but the whole card is the press target */}
-          <XStack alignSelf="flex-start" h={36} px={16} br={999} ai="center" boxShadow="0 0 16px rgba(135,54,247,0.45)">
+          <XStack alignSelf="flex-start" h={large ? 44 : 36} px={large ? 20 : 16} br={999} ai="center" boxShadow="0 0 16px rgba(135,54,247,0.45)">
             <UCtaGradient radius={999} />
             <UText variant="label-button" fontSize={11} lineHeight={14} letterSpacing={0.88} color="$textPrimary">
               View

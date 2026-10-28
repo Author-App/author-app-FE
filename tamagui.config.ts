@@ -590,6 +590,7 @@ const tokens = createTokens({
     // Glass recipes. *Solid is the Android fill, where no BlurView is used.
     glass: 'rgba(15,12,35,0.6)',
     glassSolid: '#0F0C23',
+    glassDeep: 'rgba(7,5,18,0.85)',
     glassBorder: 'rgba(255,255,255,0.08)',
     glassGlowBorder: 'rgba(135,54,247,0.3)',
     glassCyan: 'rgba(10,25,45,0.7)',

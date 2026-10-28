@@ -12,6 +12,11 @@
  */
 require('react-native-reanimated').setUpTests();
 
+// React Native's mock window is 750 wide, which is the medium layout. Tests run as an iPhone
+// unless they set their own width.
+const iPhone = { width: 390, height: 844, scale: 3, fontScale: 1 };
+require('react-native').Dimensions.set({ window: iPhone, screen: iPhone });
+
 jest.mock('@react-native-async-storage/async-storage', () =>
   require('@react-native-async-storage/async-storage/jest/async-storage-mock')
 );

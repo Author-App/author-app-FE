@@ -19,16 +19,18 @@ export interface BookCardProps {
   onPress: () => void;
   index: number;
   isAudiobook?: boolean;
+  width?: number;
 }
 
-const BookCard = memo(({ item, onPress, index, isAudiobook }: BookCardProps) => {
+const BookCard = memo(({ item, onPress, index, isAudiobook, width = COVER_WIDTH + CARD_PADDING * 2 }: BookCardProps) => {
   const price = formatPriceOrFree(item.price, item.currency);
+  const coverWidth = width - CARD_PADDING * 2;
 
   return (
     <UAnimatedView animation="fadeInUp" delay={index * 80} duration={400}>
       {/* A glass card, so the title and price read as part of the book above them */}
       <YStack
-        w={COVER_WIDTH + CARD_PADDING * 2}
+        w={width}
         p={CARD_PADDING}
         pb={10}
         gap={8}
@@ -43,7 +45,7 @@ const BookCard = memo(({ item, onPress, index, isAudiobook }: BookCardProps) => 
         accessibilityLabel={`${item.title}, ${item.hasAccess ? 'owned' : price}`}
       >
         {/* Shadow on the outer view: overflow hidden on the same view would clip it */}
-        <YStack w={COVER_WIDTH} h={COVER_HEIGHT} br={10} boxShadow="0 8px 16px rgba(0,0,0,0.6)">
+        <YStack w={coverWidth} h={coverWidth * (COVER_HEIGHT / COVER_WIDTH)} br={10} boxShadow="0 8px 16px rgba(0,0,0,0.6)">
           <YStack flex={1} br={10} overflow="hidden">
             <ULocalImage source={{ uri: item.image }} width="100%" height="100%" contentFit="cover" />
           </YStack>

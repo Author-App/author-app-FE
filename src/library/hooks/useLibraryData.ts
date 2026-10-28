@@ -1,6 +1,6 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Dimensions } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import type { Href } from 'expo-router';
 
 import { useGetBooksQuery } from '@/src/store/api/libraryApi';
@@ -19,7 +19,13 @@ import type { LibraryTab } from '../types/library.types';
 export const useLibraryData = () => {
   const router = useRouter();
 
-  const [activeTab, setActiveTab] = useState<LibraryTab>('all');
+  const { tab } = useLocalSearchParams<{ tab?: LibraryTab }>();
+  const [activeTab, setActiveTab] = useState<LibraryTab>(tab ?? 'all');
+
+  // Library stays mounted as a tab, so a "See all" link arriving later must still switch the filter
+  useEffect(() => {
+    if (tab) setActiveTab(tab);
+  }, [tab]);
 
   const { isLoading, isError, refetch } = useGetBooksQuery({});
 

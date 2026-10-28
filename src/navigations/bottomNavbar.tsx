@@ -1,12 +1,15 @@
 import React, { useCallback } from 'react';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { styled, XStack } from 'tamagui';
 import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
 import haptics from '@/src/utils/haptics';
 import TabItem from './tabItem';
 import { TAB_BAR_HEIGHT, useTabBarInset } from './hooks/useTabBarInset';
+import { getSizeClass } from '@/src/components/core/layout/layout';
+
+const WIDE_TAB_BAR_WIDTH = 600;
 
 const Capsule = styled(XStack, {
   pos: 'absolute',
@@ -26,6 +29,9 @@ const Capsule = styled(XStack, {
 
 const BottomNavbar = React.memo(({ state, navigation }: BottomTabBarProps) => {
   const { offset } = useTabBarInset();
+  const { width } = useWindowDimensions();
+  const isWide = getSizeClass(width) !== 'compact';
+  const inset = isWide ? (width - WIDE_TAB_BAR_WIDTH) / 2 : 12;
 
   const handleTabPress = useCallback(
     (route: (typeof state.routes)[number], isFocused: boolean) => {
@@ -52,7 +58,7 @@ const BottomNavbar = React.memo(({ state, navigation }: BottomTabBarProps) => {
         style={styles.scrim}
         pointerEvents="none"
       />
-      <Capsule bottom={offset}>
+      <Capsule bottom={offset} left={inset} right={inset} gap={isWide ? 4 : 0}>
         {state.routes.map((route, index) => {
           const isFocused = state.index === index;
 
@@ -61,6 +67,7 @@ const BottomNavbar = React.memo(({ state, navigation }: BottomTabBarProps) => {
               key={route.key}
               routeName={route.name}
               focused={isFocused}
+              wide={isWide}
               onPress={() => handleTabPress(route, isFocused)}
             />
           );

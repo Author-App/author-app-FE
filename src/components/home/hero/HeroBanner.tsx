@@ -8,16 +8,28 @@ import BannerCard, { CARD_GAP, CARD_WIDTH } from './BannerCard';
 import { HOME_GUTTER } from '@/src/components/home/sections/constants';
 import PaginationDots from './PaginationDots';
 
-const STEP = CARD_WIDTH + CARD_GAP;
-const CONTENT_STYLE = { paddingHorizontal: HOME_GUTTER, gap: CARD_GAP };
 
 interface HeroBannerProps {
   items: BannerItem[];
   onPressItem?: (item: BannerItem) => void;
   autoPlayInterval?: number;
+  width?: number;
+  height?: number;
+  gutter?: number;
+  large?: boolean;
 }
 
-const HeroBanner: React.FC<HeroBannerProps> = ({ items, onPressItem, autoPlayInterval = 4000 }) => {
+const HeroBanner: React.FC<HeroBannerProps> = ({
+  items,
+  onPressItem,
+  autoPlayInterval = 4000,
+  width = CARD_WIDTH,
+  height,
+  gutter = HOME_GUTTER,
+  large,
+}) => {
+  const step = width + CARD_GAP;
+  const contentStyle = useMemo(() => ({ paddingHorizontal: gutter, gap: CARD_GAP }), [gutter]);
   // One source of truth: the timer and a settled swipe are the only writers, and a ref
   // mirrors the state so the timer never needs a side effect inside a setState updater
   const [activeIndex, setActiveIndex] = useState(0);
@@ -37,10 +49,10 @@ const HeroBanner: React.FC<HeroBannerProps> = ({ items, onPressItem, autoPlayInt
     autoPlayTimerRef.current = setInterval(() => {
       if (isUserScrollingRef.current) return;
       const next = (indexRef.current + 1) % items.length;
-      flatListRef.current?.scrollToOffset({ offset: next * STEP, animated: true });
+      flatListRef.current?.scrollToOffset({ offset: next * step, animated: true });
       goTo(next);
     }, autoPlayInterval);
-  }, [items.length, autoPlayInterval, goTo]);
+  }, [items.length, autoPlayInterval, goTo, step]);
 
   const stopAutoPlay = useCallback(() => {
     if (autoPlayTimerRef.current) {
@@ -71,13 +83,15 @@ const HeroBanner: React.FC<HeroBannerProps> = ({ items, onPressItem, autoPlayInt
 
   // Fires once when a swipe settles, not on every frame the cards pass a visibility line
   const onMomentumScrollEnd = useCallback(
-    (e: NativeSyntheticEvent<NativeScrollEvent>) => goTo(Math.round(e.nativeEvent.contentOffset.x / STEP)),
-    [goTo]
+    (e: NativeSyntheticEvent<NativeScrollEvent>) => goTo(Math.round(e.nativeEvent.contentOffset.x / step)),
+    [goTo, step]
   );
 
   const renderItem = useCallback(
-    ({ item }: { item: BannerItem }) => <BannerCard item={item} onPress={() => onPressItem?.(item)} />,
-    [onPressItem]
+    ({ item }: { item: BannerItem }) => (
+      <BannerCard item={item} width={width} height={height} large={large} onPress={() => onPressItem?.(item)} />
+    ),
+    [onPressItem, width, height, large]
   );
 
   const keyExtractor = useCallback((item: BannerItem) => item.id, []);
@@ -93,15 +107,15 @@ const HeroBanner: React.FC<HeroBannerProps> = ({ items, onPressItem, autoPlayInt
         keyExtractor={keyExtractor}
         horizontal
         showsHorizontalScrollIndicator={false}
-        snapToInterval={STEP}
+        snapToInterval={step}
         decelerationRate="fast"
-        contentContainerStyle={CONTENT_STYLE}
+        contentContainerStyle={contentStyle}
         onScrollBeginDrag={onScrollBeginDrag}
         onScrollEndDrag={onScrollEndDrag}
         onMomentumScrollEnd={onMomentumScrollEnd}
       />
     ),
-    [items, renderItem, keyExtractor, onScrollBeginDrag, onScrollEndDrag, onMomentumScrollEnd]
+    [items, renderItem, keyExtractor, contentStyle, step, onScrollBeginDrag, onScrollEndDrag, onMomentumScrollEnd]
   );
 
   if (!items.length) return null;

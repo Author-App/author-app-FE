@@ -30,3 +30,14 @@ export type HomeSectionItem =
   | { type: 'audiobooks'; title: string; subtitle: string; data: HomeBook[] }
   | { type: 'articles'; title: string; subtitle: string; data: HomeArticle[] }
   | { type: 'continueReading'; title: string; subtitle: string; data: ContinueReadingBook[] };
+
+export interface HomeLayoutProps {
+  sections: HomeSectionItem[];
+  onBannerPress: (item: BannerItem) => void;
+  onBookPress: (book: HomeBook) => void;
+  onArticlePress: (article: HomeArticle) => void;
+  onContinueReadingPress: (book: ContinueReadingBook) => void;
+  onSeeAll: (section: HomeSectionItem['type']) => void;
+  refreshControl: React.ReactNode;
+  refreshProps: object;
+}

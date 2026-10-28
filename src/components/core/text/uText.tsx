@@ -1,5 +1,5 @@
 import { forwardRef, memo, useMemo } from 'react';
-import { TamaguiTextElement, Text, TextProps } from 'tamagui';
+import { TamaguiTextElement, Text, TextProps, useMedia } from 'tamagui';
 
 import { TextVariant } from '@/src/components/core/types/text/textVariant';
 
@@ -187,6 +187,16 @@ const getVariantStyle = (variant: TextVariant): StylesType => {
 const READING_VARIANTS = /^(body|text-|link|playfair-)/;
 const maxScaleFor = (variant: TextVariant) => (READING_VARIANTS.test(variant) ? 2 : 1.3);
 
+// Not rounded: Onboarding's wordmark scales down onto Login's and the spacing must match
+export const WIDE_DISPLAY_SCALE = 1.25;
+const WIDE_DISPLAY_VARIANTS = new Set<TextVariant>(['display-xl', 'display-l', 'display-m', 'wordmark']);
+const scaleType = (style: StylesType, k: number): StylesType => ({
+  ...style,
+  fontSize: (style.fontSize as number) * k,
+  lineHeight: Math.round((style.lineHeight as number) * k),
+  letterSpacing: (style.letterSpacing as number) * k,
+});
+
 const UText = forwardRef<TamaguiTextElement, UTextProps>((props, ref) => {
   const {
     children,
@@ -194,7 +204,12 @@ const UText = forwardRef<TamaguiTextElement, UTextProps>((props, ref) => {
     fontFamily: fontFamilyProp,
     ...restProps
   } = props;
-  const variantStyle = useMemo(() => getVariantStyle(variant), [variant]);
+  const { gtXs } = useMedia();
+  const isWideDisplay = gtXs && WIDE_DISPLAY_VARIANTS.has(variant);
+  const variantStyle = useMemo(
+    () => (isWideDisplay ? scaleType(getVariantStyle(variant), WIDE_DISPLAY_SCALE) : getVariantStyle(variant)),
+    [variant, isWideDisplay]
+  );
   const { fontFamily, ...restVariantStyles } = variantStyle;
 
   return (

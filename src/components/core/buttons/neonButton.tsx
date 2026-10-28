@@ -115,6 +115,7 @@ export function NeonButton({
     return (
         <Button
             h={52}
+            $gtXs={{ h: 56 }}
             px={24}
             br={9999}
             backgroundColor={colors.bg}
