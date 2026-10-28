@@ -10,6 +10,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import UText from '@/src/components/core/text/uText';
 import { NeonButton } from '@/src/components/core/buttons/neonButton';
+import { FORM_WIDTH } from '@/src/components/core/layout/layout';
 import { sentryService } from '@/src/services/sentry';
 import { usePushNotifications } from '../hooks/usePushNotifications';
 
@@ -114,6 +115,8 @@ const NotificationPermissionSheet: React.FC = () => {
         px={24}
         pt={12}
         pb={Math.max(bottom, 16) + 8}
+        // Wide screens: a floating card, not a 1000pt-wide sheet
+        $gtXs={{ w: '100%', maw: FORM_WIDTH, als: 'center', mb: 24, br: 28, borderWidth: 1, pb: 24 }}
       >
         <Sheet.Handle bg="$track" />
 

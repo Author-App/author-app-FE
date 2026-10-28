@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
-import Animated, { SlideInUp, SlideOutUp } from 'react-native-reanimated';
+import Animated, { Easing, FadeInUp, FadeOutUp } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { XStack, YStack, getTokenValue } from 'tamagui';
 
 import UText from '@/src/components/core/text/uText';
+import { FORM_WIDTH } from '@/src/components/core/layout/layout';
 
 /** Optional action button, passed as Toast.show({ props: { action } }) */
 export interface ToastAction {
@@ -94,16 +95,19 @@ export function ToastHost() {
   const colors = TONES[toast.type ?? 'success'];
   const action = toast.props?.action;
 
-  // Keyed by id: a new toast exits the old one and slides itself in
+  // Keyed by id: a new toast exits the old one and fades itself in.
+  // A short timed fade, not a spring from off screen: the spring overshot and read as a lag
   return (
     <Animated.View
       key={toast.id}
-      entering={SlideInUp.springify().damping(18)}
-      exiting={SlideOutUp.duration(180)}
+      entering={FadeInUp.duration(220).easing(Easing.out(Easing.cubic))}
+      exiting={FadeOutUp.duration(160)}
       style={[styles.host, { top: top + 8 }]}
       pointerEvents="box-none"
     >
       <XStack
+        w="100%"
+        maw={FORM_WIDTH}
         minHeight={56}
         py={10}
         pl={14}
@@ -156,5 +160,5 @@ export function ToastHost() {
 }
 
 const styles = StyleSheet.create({
-  host: { position: 'absolute', left: 16, right: 16, zIndex: 9999 },
+  host: { position: 'absolute', left: 16, right: 16, zIndex: 9999, alignItems: 'center' },
 });
