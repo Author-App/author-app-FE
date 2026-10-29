@@ -1,17 +1,16 @@
 import React, { memo } from 'react';
-import { XStack, YStack, YStackProps, getTokenValue } from 'tamagui';
+import { ActivityIndicator } from 'react-native';
+import { XStack, YStack, getTokenValue } from 'tamagui';
 import { Ionicons } from '@expo/vector-icons';
-
 import UText from '@/src/components/core/text/uText';
 import ULocalImage from '@/src/components/core/image/uLocalImage';
-import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
-import haptics from '@/src/utils/haptics';
+import UCtaGradient from '@/src/components/core/display/uCtaGradient';
 import type { CommunityResponse } from '@/src/explore/types/explore.types';
 
-interface CommunityCardProps extends YStackProps {
+interface CommunityCardProps {
   data: CommunityResponse;
-  onPress: () => void;
-  onToggleJoin: () => void;
+  onPress: (data: CommunityResponse) => void;
+  onToggleJoin: (data: CommunityResponse) => void;
   isToggling?: boolean;
 }
 
@@ -20,145 +19,103 @@ const CommunityCard: React.FC<CommunityCardProps> = ({
   onPress,
   onToggleJoin,
   isToggling,
-  ...props
 }) => {
-  const teal = getTokenValue('$brandTeal', 'color');
-  const white = getTokenValue('$white', 'color');
-  const neutral = getTokenValue('$neutral1', 'color');
+  const threads = `${data.threadCount} ${data.threadCount === 1 ? 'thread' : 'threads'}`;
+
   return (
-    <UAnimatedView animation="fadeInUp" duration={400}>
-      <YStack
-        mx={20}
-        mb={16}
-        bg="$searchbarBg"
-        borderRadius={20}
-        overflow="hidden"
-        onPress={onPress}
+    <XStack
+      mb={14}
+      p={12}
+      gap={12}
+      ai="center"
+      br={20}
+      bg="$glass"
+      borderWidth={1}
+      borderColor="$glassBorder"
+    >
+      {/* Siblings, not nested: an accessible card would hide the Join button from VoiceOver */}
+      <XStack
+        flex={1}
+        gap={12}
+        ai="center"
+        onPress={() => onPress(data)}
         pressStyle={{ scale: 0.98, opacity: 0.9 }}
-        animation="quick"
-        borderWidth={1}
-        borderColor="$searchbarBorder"
-        {...props}
+        accessible
+        accessibilityRole="button"
+        accessibilityLabel={`${data.title}, ${threads}`}
       >
-        {/* Thumbnail */}
-        <YStack h={140} w="100%" position="relative">
-          {data.thumbnail ? (
-            <ULocalImage
-              source={{ uri: data.thumbnail }}
-              width="100%"
-              height={140}
-              contentFit="cover"
-            />
-          ) : (
-            <YStack flex={1} bg="$brandOcean" ai="center" jc="center">
-              <Ionicons name="people" size={48} color={teal} style={{ opacity: 0.5 }} />
-            </YStack>
+        <YStack w={56} h={56} br={16} overflow="hidden" bg="$glassSolid">
+          {data.thumbnail && (
+            <ULocalImage source={{ uri: data.thumbnail }} width="100%" height="100%" contentFit="cover" />
           )}
-
-          {/* Joined badge */}
-          {data.isJoined && (
-            <XStack
-              position="absolute"
-              top={12}
-              left={12}
-              bg="$brandTeal"
-              px={10}
-              py={5}
-              br={20}
-              ai="center"
-              gap={4}
-            >
-              <Ionicons name="checkmark-circle" size={12} color={white} />
-              <UText variant="text-xs" color="$white" fontWeight="600">
-                Joined
-              </UText>
-            </XStack>
-          )}
-
-          {/* Thread count badge */}
-          <XStack
-            position="absolute"
-            bottom={12}
-            right={12}
-            bg="rgba(0,0,0,0.6)"
-            px={10}
-            py={5}
-            br={20}
-            ai="center"
-            gap={4}
-          >
-            <Ionicons name="chatbubbles-outline" size={12} color={neutral} />
-            <UText variant="text-xs" color="$neutral1" fontWeight="500">
-              {data.threadCount} {data.threadCount === 1 ? 'thread' : 'threads'}
-            </UText>
-          </XStack>
         </YStack>
 
-        {/* Content */}
-        <YStack p={16} gap={12}>
-          {/* Title */}
-          <UText
-            variant="text-md"
-            color="$white"
-            fontWeight="600"
-            numberOfLines={2}
-            lineHeight={24}
-          >
+        <YStack flex={1} w={0} gap={4}>
+          <UText variant="display-s" color="$textPrimary" numberOfLines={2} reserveLines={2}>
             {data.title}
           </UText>
-
-          {/* Description */}
-          {data.description && (
-            <UText
-              variant="text-sm"
-              color="$neutral1"
-              numberOfLines={2}
-              lineHeight={20}
-              opacity={0.8}
-            >
-              {data.description}
-            </UText>
-          )}
-
-          {/* Join/Exit button */}
-          <XStack
-            mt={4}
-            bg={data.isJoined ? 'transparent' : '$brandTeal'}
-            borderWidth={1}
-            borderColor={data.isJoined ? '$brandCrimson' : '$brandTeal'}
-            br={12}
-            py={10}
-            ai="center"
-            jc="center"
-            gap={8}
-            opacity={isToggling ? 0.5 : 1}
-            onPress={(e) => {
-              e.stopPropagation?.();
-              if (!isToggling) {
-                haptics.medium();
-                onToggleJoin();
-              }
-            }}
-            pressStyle={{ opacity: 0.7, scale: 0.98 }}
-            animation="quick"
-          >
-            <Ionicons
-              name={data.isJoined ? 'exit-outline' : 'enter-outline'}
-              size={16}
-              color={data.isJoined ? getTokenValue('$brandCrimson', 'color') : white}
-            />
-            <UText
-              variant="text-sm"
-              color={data.isJoined ? '$brandCrimson' : '$white'}
-              fontWeight="600"
-            >
-              {data.isJoined ? 'Leave Community' : 'Join Community'}
-            </UText>
-          </XStack>
+          <UText variant="body-s" color="$textMuted">
+            {threads}
+          </UText>
         </YStack>
-      </YStack>
-    </UAnimatedView>
+      </XStack>
+
+      <JoinButton
+        joined={data.isJoined}
+        pending={!!isToggling}
+        title={data.title}
+        onPress={() => onToggleJoin(data)}
+      />
+    </XStack>
   );
 };
+
+interface JoinButtonProps {
+  joined: boolean;
+  pending: boolean;
+  title: string;
+  onPress: () => void;
+}
+
+/** Join (gradient), pending (spinner, ignores presses), Joined (cyan outline, press to leave). */
+const JoinButton = ({ joined, pending, title, onPress }: JoinButtonProps) => (
+  <XStack
+    h={44}
+    minWidth={88}
+    px={joined ? 14 : 16}
+    gap={6}
+    br={999}
+    ai="center"
+    jc="center"
+    borderWidth={1}
+    borderColor={pending ? 'rgba(255,255,255,0.15)' : joined ? 'rgba(103,232,249,0.55)' : 'transparent'}
+    bg={pending ? 'rgba(255,255,255,0.06)' : joined ? 'rgba(0,240,255,0.08)' : 'transparent'}
+    boxShadow={pending || joined ? 'none' : '0 0 14px rgba(135,54,247,0.4)'}
+    onPress={pending ? undefined : onPress}
+    pressStyle={{ opacity: 0.7 }}
+    accessible
+    accessibilityRole="button"
+    accessibilityLabel={joined ? `Leave ${title}` : `Join ${title}`}
+    accessibilityState={{ busy: pending, disabled: pending }}
+  >
+    {!pending && !joined && <UCtaGradient radius={999} />}
+    {pending ? (
+      <ActivityIndicator size="small" color={getTokenValue('$accentCyan', 'color')} />
+    ) : (
+      <>
+        {joined && <Ionicons name="checkmark" size={14} color={getTokenValue('$accentCyan', 'color')} />}
+        <UText
+          variant="label-button"
+          fontSize={11}
+          lineHeight={14}
+          letterSpacing={0.66}
+          color={joined ? '$accentCyan' : '$textPrimary'}
+        >
+          {joined ? 'Joined' : 'Join'}
+        </UText>
+      </>
+    )}
+  </XStack>
+);
 
 export default memo(CommunityCard);

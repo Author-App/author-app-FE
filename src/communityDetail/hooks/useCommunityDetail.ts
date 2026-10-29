@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import {
+  exploreApi,
   useGetCommunityDetailQuery,
   useSendThreadMutation,
   useJoinCommunityMutation,
@@ -9,7 +10,13 @@ import type { CommunityDetailResponse } from '@/src/types/api/community.types';
 // Polling interval for fresh messages (30 seconds)
 const POLLING_INTERVAL_MS = 30 * 1000;
 
-export const useCommunityDetail = (communityId: string | undefined) => {
+/** `isChatVisible`: poll only while the chat is on screen, not on the About view or before joining */
+export const useCommunityDetail = (communityId: string | undefined, isChatVisible: boolean) => {
+  // Reads the cached entry without subscribing, so polling can depend on the result it polls
+  const isJoined = exploreApi.endpoints.getCommunityDetail.useQueryState(communityId ?? '', {
+    skip: !communityId,
+  }).data?.data?.isJoined;
+
   const {
     data,
     isLoading,
@@ -19,7 +26,7 @@ export const useCommunityDetail = (communityId: string | undefined) => {
   } = useGetCommunityDetailQuery(communityId!, {
     skip: !communityId,
     // Use cached data on mount, poll in background for fresh messages
-    pollingInterval: POLLING_INTERVAL_MS,
+    pollingInterval: isJoined && isChatVisible ? POLLING_INTERVAL_MS : 0,
     // Only show loading spinner on first load, not on polls
     refetchOnMountOrArgChange: false,
   });
@@ -37,11 +44,8 @@ export const useCommunityDetail = (communityId: string | undefined) => {
         id: communityId,
         body: { message: message.trim() },
       }).unwrap();
-
-      // Refetch to get updated threads
-      refetch();
     },
-    [communityId, sendThreadMutation, refetch]
+    [communityId, sendThreadMutation]
   );
 
   const joinCommunity = useCallback(async () => {

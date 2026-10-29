@@ -1,9 +1,10 @@
-import React, { memo, useCallback } from 'react';
+import React, { memo } from 'react';
 import { Alert, Linking } from 'react-native';
-import { YStack } from 'tamagui';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { XStack, getTokenValue } from 'tamagui';
+import { Ionicons } from '@expo/vector-icons';
 
 import { NeonButton } from '@/src/components/core/buttons/neonButton';
+import UText from '@/src/components/core/text/uText';
 import haptics from '@/src/utils/haptics';
 import { EventType } from '@/src/types/api/explore.types';
 import { JoinStatus } from '@/src/eventDetail/hooks/useEventDetail';
@@ -15,79 +16,53 @@ interface EventActionsProps {
   googleMeetLink?: string;
 }
 
+const LABELS: Record<JoinStatus, string> = {
+  upcoming: 'Join opens 10 min before',
+  live: 'Join Meeting Now',
+  ended: 'Event has ended',
+};
+
+/** Fixed bar over the home indicator: directions for in-person events, the meeting link for online ones. */
 export const EventActions = memo(function EventActions({
   eventType,
   joinStatus,
   locationGoogleMapLink,
   googleMeetLink,
 }: EventActionsProps) {
-  const { bottom } = useSafeAreaInsets();
+  const isOffline = eventType === 'offline';
+  const url = isOffline ? locationGoogleMapLink : googleMeetLink;
+  const hasEnded = joinStatus === 'ended';
+  const isDisabled = !url || hasEnded || (!isOffline && joinStatus !== 'live');
+  const label = hasEnded
+    ? LABELS.ended
+    : isOffline
+      ? 'Open in Maps'
+      : joinStatus
+        ? LABELS[joinStatus]
+        : 'Time to be announced';
 
-  const openMap = async () => {
-    if (!locationGoogleMapLink) {
-      Alert.alert('Error', 'Map location not available');
-      return;
-    }
-
-    const supported = await Linking.canOpenURL(locationGoogleMapLink);
-
-    if (supported) {
-      await Linking.openURL(locationGoogleMapLink);
-    } else {
-      Alert.alert('Error', 'Unable to open map link');
-    }
-  };
-
-  const joinMeeting = () => {
-    if (googleMeetLink) {
-      Linking.openURL(googleMeetLink);
-    }
-  };
-
-  const handlePress = useCallback(() => {
+  const handlePress = async () => {
+    if (!url) return;
     haptics.medium();
-    if (eventType === 'offline') {
-      openMap();
-    } else {
-      joinMeeting();
-    }
-  }, [eventType, locationGoogleMapLink, googleMeetLink]);
-
-  const getJoinButtonText = () => {
-    switch (joinStatus) {
-      case 'upcoming':
-        return 'Join available 10 mins before';
-      case 'live':
-        return 'Join Meeting Now';
-      case 'ended':
-        return 'Event has ended';
-      default:
-        return 'Join Meeting';
+    try {
+      await Linking.openURL(url);
+    } catch {
+      Alert.alert('Unable to open link', 'Please try again later.');
     }
   };
-
-  const isDisabled = eventType === 'online' && joinStatus !== 'live';
 
   return (
-    <YStack
-      position="absolute"
-      bottom={0}
-      left={0}
-      right={0}
-      px={20}
-      pb={bottom + 16}
-      pt={16}
-      bg="rgba(10, 25, 47, 0.95)"
-      borderTopWidth={1}
-      borderTopColor="rgba(255, 255, 255, 0.1)"
-    >
-      <NeonButton
-        onPress={handlePress}
-        disabled={isDisabled}
-        opacity={isDisabled ? 0.5 : 1}
-        width="100%"
-        title={eventType === 'offline' ? 'Open in Maps' : getJoinButtonText()}
-      />
-    </YStack>
+      <NeonButton tone={isDisabled ? 'neutral' : 'primary'} disabled={isDisabled} accessibilityLabel={label} onPress={handlePress}>
+        <XStack ai="center" gap={8}>
+          <Ionicons
+            name={isOffline ? 'map-outline' : 'videocam-outline'}
+            size={18}
+            color={getTokenValue(isDisabled ? '$textMuted' : '$textPrimary', 'color')}
+          />
+          <UText variant="label-button" color={isDisabled ? '$textMuted' : '$textPrimary'}>
+            {label}
+          </UText>
+        </XStack>
+      </NeonButton>
   );
 });

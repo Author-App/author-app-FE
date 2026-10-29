@@ -4,3 +4,7 @@ allowBuilds:
   detox: true
   dtrace-provider: false
   esbuild: false
+  unrs-resolver: false
+
+overrides:
+  react-native-web: 0.21.2

@@ -1,11 +1,11 @@
 import React, { memo, useCallback } from 'react';
-import { FlatList, ListRenderItem, useWindowDimensions } from 'react-native';
+import { FlatList, ListRenderItem } from 'react-native';
 import { YStack } from 'tamagui';
 
 import type { ContinueReadingBook } from '@/src/types/api/home.types';
 import SectionHeader from '../SectionHeader';
-import ContinueReadingCard from './ContinueReadingCard';
-import { HORIZONTAL_PADDING, CARD_GAP } from './constants';
+import { HOME_GUTTER } from '../constants';
+import ContinueReadingCard, { CARD_GAP, CARD_WIDTH } from './ContinueReadingCard';
 
 interface ContinueReadingProps {
   title?: string;
@@ -14,32 +14,17 @@ interface ContinueReadingProps {
   onPressItem: (item: ContinueReadingBook) => void;
 }
 
-const MAX_CARD_WIDTH = 380;
-
 const ContinueReading: React.FC<ContinueReadingProps> = ({
   title = 'Continue Exploring',
   subtitle = 'Pick up where you left off',
   data,
   onPressItem,
 }) => {
-  const { width: screenWidth } = useWindowDimensions();
-
-  const cardWidth = Math.min(
-    screenWidth - HORIZONTAL_PADDING * 2,
-    MAX_CARD_WIDTH
-  );
-  const snapInterval = cardWidth + CARD_GAP;
-
   const renderItem: ListRenderItem<ContinueReadingBook> = useCallback(
     ({ item, index }) => (
-      <ContinueReadingCard
-        item={item}
-        index={index}
-        cardWidth={cardWidth}
-        onPress={() => onPressItem(item)}
-      />
+      <ContinueReadingCard item={item} index={index} onPress={() => onPressItem(item)} />
     ),
-    [onPressItem, cardWidth]
+    [onPressItem]
   );
 
   const keyExtractor = useCallback((item: ContinueReadingBook) => item.id, []);
@@ -47,11 +32,8 @@ const ContinueReading: React.FC<ContinueReadingProps> = ({
   if (!data.length) return null;
 
   return (
-    <YStack py={24}>
-      <SectionHeader
-        title={title}
-        subtitle={subtitle}
-      />
+    <YStack gap={12}>
+      <SectionHeader title={title} subtitle={subtitle} />
 
       <FlatList
         data={data}
@@ -59,11 +41,9 @@ const ContinueReading: React.FC<ContinueReadingProps> = ({
         keyExtractor={keyExtractor}
         horizontal
         showsHorizontalScrollIndicator={false}
-        snapToInterval={snapInterval}
+        snapToInterval={CARD_WIDTH + CARD_GAP}
         decelerationRate="fast"
-        contentContainerStyle={{
-          paddingHorizontal: HORIZONTAL_PADDING,
-        }}
+        contentContainerStyle={{ paddingHorizontal: HOME_GUTTER, gap: CARD_GAP }}
       />
     </YStack>
   );

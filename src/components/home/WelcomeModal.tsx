@@ -9,6 +9,7 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import LottieView from 'lottie-react-native';
+import { getTokenValue } from 'tamagui';
 
 import { haptics } from '@/src/utils/haptics';
 
@@ -22,9 +23,7 @@ const CARD_MAX_WIDTH = 440;
 
 interface WelcomeModalProps {
   visible: boolean;
-  firstName?: string;
   onDismiss: () => void;
-  isDismissing?: boolean;
 }
 
 const WelcomeModal: React.FC<WelcomeModalProps> = ({ visible, onDismiss }) => {
@@ -51,9 +50,13 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ visible, onDismiss }) => {
   }, [onDismiss]);
 
   return (
-    <Modal visible={visible} animationType="fade" statusBarTranslucent transparent>
+    <Modal visible={visible} animationType="fade" statusBarTranslucent transparent onRequestClose={handleDismiss}>
       {/* Backdrop: tapping outside the card dismisses (mainly relevant on tablet). */}
-      <Pressable style={styles.backdrop} onPress={handleDismiss}>
+      <Pressable
+        style={[styles.backdrop, { backgroundColor: getTokenValue('$bgPage', 'color') }]}
+        onPress={handleDismiss}
+        accessible={false}
+      >
         <ScrollView
           style={styles.scroll}
           contentContainerStyle={styles.scrollContent}
@@ -66,7 +69,14 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ visible, onDismiss }) => {
             style={[styles.card, { width: cardWidth, height: cardHeight }]}
             onStartShouldSetResponder={() => false}
           >
-            <Pressable onPress={handleDismiss} style={StyleSheet.absoluteFill}>
+            {/* The whole message is in the picture, so its words go in the label */}
+            <Pressable
+              onPress={handleDismiss}
+              style={StyleSheet.absoluteFill}
+              accessibilityRole="button"
+              accessibilityLabel={WELCOME_TEXT}
+              accessibilityHint="Closes the welcome message"
+            >
               <Image
                 source={require('@/assets/images/welcomeBanner.jpeg')}
                 style={styles.image}
@@ -88,10 +98,15 @@ const WelcomeModal: React.FC<WelcomeModalProps> = ({ visible, onDismiss }) => {
   );
 };
 
+const WELCOME_TEXT =
+  'Welcome to Your App, Stanley Paden! The journey from idea to reality starts here. ' +
+  "The app is officially live, and we couldn't be prouder to have built this with you. " +
+  "Take a look around, test the features, and feel the magic of what you've created. " +
+  "This is just the beginning of something great. Let's Explore!";
+
 const styles = StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: '#000B33',
   },
   scroll: {
     flex: 1,

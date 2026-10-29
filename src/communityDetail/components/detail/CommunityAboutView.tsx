@@ -1,108 +1,56 @@
 import React from 'react';
-import { ScrollView } from 'react-native';
-import { YStack, XStack } from 'tamagui';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { YStack } from 'tamagui';
 
 import UText from '@/src/components/core/text/uText';
+import UBadge from '@/src/components/core/display/uBadge';
+import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
+import { UDetailScaffold } from '@/src/components/core/layout/UDetailScaffold';
 import { NeonButton } from '@/src/components/core/buttons/neonButton';
-import { CommunityHero } from './CommunityHero';
-import { CommunityDescription } from './CommunityDescription';
 import type { CommunityDetailResponse } from '@/src/types/api/community.types';
 
 interface CommunityAboutViewProps {
   community: CommunityDetailResponse;
-  onJoin?: () => void;
-  onViewDiscussions?: () => void;
-  isJoining?: boolean;
+  onJoin: () => void;
+  isJoining: boolean;
+  /** Joined members came here from the chat, so back and the CTA both return to it */
+  onShowChat?: () => void;
 }
 
-export const CommunityAboutView: React.FC<CommunityAboutViewProps> = ({
-  community,
-  onJoin,
-  onViewDiscussions,
-  isJoining,
-}) => {
-  const { bottom } = useSafeAreaInsets();
-
-  // Show action button at bottom if not joined or if can view discussions
-  const showBottomAction = !community.isJoined || onViewDiscussions;
-  const scrollPaddingBottom = showBottomAction ? bottom + 100 : bottom + 20;
+export function CommunityAboutView({ community, onJoin, isJoining, onShowChat }: CommunityAboutViewProps) {
+  const threadCount = community.threads.length;
 
   return (
-    <YStack flex={1} backgroundColor="$brandNavy">
-      <ScrollView
-        contentContainerStyle={{ flexGrow: 1, paddingBottom: scrollPaddingBottom }}
-        showsVerticalScrollIndicator={false}
-      >
-        <CommunityHero
-          title={community.title}
-          thumbnail={community.thumbnail}
-          threadCount={community.threads.length}
-          isJoined={community.isJoined}
-        />
-
-        <YStack px={20} pt={20}>
-          <CommunityDescription description={community.description} />
-
-          {/* Stats section */}
-          <YStack
-            bg="rgba(255, 255, 255, 0.08)"
-            borderWidth={1}
-            borderColor="rgba(255, 255, 255, 0.12)"
-            br={16}
-            p={16}
-            mb={20}
-          >
-            <UText variant="heading-h2" color="$white" mb={12}>
-              Community Stats
+    <UDetailScaffold
+      title={community.title}
+      thumbnail={community.thumbnail}
+      icon="people-outline"
+      onBack={onShowChat}
+      badges={
+        <>
+          <UBadge label={`${threadCount} ${threadCount === 1 ? 'discussion' : 'discussions'}`} tone="purple" onImage />
+          {community.isJoined && <UBadge label="Joined" tone="cyan" onImage />}
+        </>
+      }
+      action={
+        community.isJoined ? (
+          <NeonButton onPress={onShowChat} title="View Discussions" />
+        ) : (
+          <NeonButton onPress={onJoin} loading={isJoining} title="Join Community" />
+        )
+      }
+    >
+      {community.description && (
+        <UAnimatedView animation="fadeInUp" delay={200}>
+          <YStack gap={10}>
+            <UText variant="display-m" color="$textPrimary" accessibilityRole="header">
+              About
             </UText>
-            <XStack gap={20}>
-              <YStack flex={1} ai="center">
-                <UText variant="heading-h1" color="$brandCrimson">
-                  {community.threads.length}
-                </UText>
-                <UText variant="text-xs" color="$neutral4">
-                  Discussions
-                </UText>
-              </YStack>
-              <YStack
-                w={1}
-                bg="rgba(255, 255, 255, 0.1)"
-              />
-              <YStack flex={1} ai="center">
-                <UText variant="heading-h1" color="$brandCrimson">
-                  {community.isJoined ? '✓' : '—'}
-                </UText>
-                <UText variant="text-xs" color="$neutral4">
-                  {community.isJoined ? 'Joined' : 'Not Joined'}
-                </UText>
-              </YStack>
-            </XStack>
+            <UText variant="body" color="$textSecondary">
+              {community.description}
+            </UText>
           </YStack>
-        </YStack>
-      </ScrollView>
-
-      {/* Bottom action */}
-      {showBottomAction && (
-        <YStack
-          position="absolute"
-          bottom={0}
-          left={0}
-          right={0}
-          bg="$brandNavy"
-          borderTopWidth={1}
-          borderColor="rgba(255, 255, 255, 0.1)"
-          px={20}
-          pt={16}
-          pb={bottom + 16}
-        >
-          {community.isJoined ? (
-            <NeonButton onPress={onViewDiscussions} title='View Discussions' />
-          ) : (
-            <NeonButton onPress={onJoin} loading={isJoining} title='Join Community' />
-          )}
-        </YStack>
+        </UAnimatedView>
       )}
-    </YStack>
+    </UDetailScaffold>
   );
-};
+}

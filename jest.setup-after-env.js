@@ -12,12 +12,21 @@
  */
 require('react-native-reanimated').setUpTests();
 
+// React Native's mock window is 750 wide, which is the medium layout. Tests run as an iPhone
+// unless they set their own width.
+const iPhone = { width: 390, height: 844, scale: 3, fontScale: 1 };
+require('react-native').Dimensions.set({ window: iPhone, screen: iPhone });
+
 jest.mock('@react-native-async-storage/async-storage', () =>
   require('@react-native-async-storage/async-storage/jest/async-storage-mock')
 );
 
 // Native module with no JS fallback.
 jest.mock('react-native-pdf', () => 'Pdf');
+
+// Icon fonts load asynchronously and set state after a test ends, which floods
+// the output with act() warnings. Icons are decoration; tests query labels and text.
+jest.mock('@expo/vector-icons', () => ({ Ionicons: () => null, Feather: () => null }));
 
 // Native vibration module. Every button in the app calls it.
 jest.mock('react-native-haptic-feedback', () => ({

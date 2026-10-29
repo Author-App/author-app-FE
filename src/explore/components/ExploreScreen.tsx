@@ -1,10 +1,15 @@
-import React, { memo, useCallback } from 'react';
-import { YStack } from 'tamagui';
+import React, { memo, useCallback, useState } from 'react';
 import { Href, router } from 'expo-router';
+import { useWindowDimensions } from 'react-native';
+import { XStack, YStack } from 'tamagui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTabBarInset } from '@/src/navigations/hooks/useTabBarInset';
+import { useLayoutClass } from '@/src/components/core/layout/useLayoutClass';
+import { CARD_MIN_LIST, CARD_MIN_MEDIA } from '@/src/components/core/layout/layout';
 
 import { useExploreData } from '@/src/explore/hooks/useExploreData';
 import UScreenLayout from '@/src/components/core/layout/UScreenLayout';
+import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
 import haptics from '@/src/utils/haptics';
 import type {
   ExploreSectionItem,
@@ -14,11 +19,11 @@ import type {
   CommunityResponse,
 } from '@/src/explore/types/explore.types';
 
-import AppLoader from '@/src/components/core/loaders/AppLoader';
+import { ContentCardSkeleton } from '@/src/components/core/skeletons';
+import UEmptyState from '@/src/components/core/feedback/UEmptyState';
 import UScreenError from '@/src/components/core/feedback/UScreenError';
 import { URefreshableList } from '@/src/components/core/layout/uRefreshableList';
-import ExploreHeader from './ExploreHeader';
-import UText from '@/src/components/core/text/uText';
+import ExploreHeader, { EXPLORE_TABS } from './ExploreHeader';
 
 import BlogCard from '@/src/components/explore/cards/BlogCard';
 import PodcastCard from '@/src/components/explore/cards/PodcastCard';
@@ -27,7 +32,8 @@ import EventCard from '@/src/components/explore/cards/EventCard';
 import CommunityCard from '@/src/components/explore/cards/CommunityCard';
 
 const ExploreScreen: React.FC = () => {
-  const { top, bottom } = useSafeAreaInsets();
+  const { top } = useSafeAreaInsets();
+  const { clearance } = useTabBarInset();
   const {
     activeTab,
     setActiveTab,
@@ -40,9 +46,13 @@ const ExploreScreen: React.FC = () => {
     refetch,
     handleJoinCommunity,
     handleExitCommunity,
-    isJoining,
-    isExiting,
   } = useExploreData();
+
+  const { size, side, contentWidth, gridGap, columns } = useLayoutClass();
+  const { width, height } = useWindowDimensions();
+  const hasImage = activeTab === 'Blogs' || activeTab === 'Videos';
+  const numColumns = columns(hasImage ? CARD_MIN_MEDIA : CARD_MIN_LIST);
+  const cardWidth = (contentWidth - gridGap * (numColumns - 1)) / numColumns;
 
   const handleBlogPress = useCallback((article: ArticleResponse) => {
     haptics.light();
@@ -78,36 +88,49 @@ const ExploreScreen: React.FC = () => {
     } as Href);
   }, []);
 
+  // Per community: the join and exit mutations share one isLoading across every card
+  const [pendingIds, setPendingIds] = useState<ReadonlySet<string>>(new Set());
+
   const handleCommunityToggle = useCallback(
     async (community: CommunityResponse) => {
       haptics.light();
-      if (community.isJoined) {
-        await handleExitCommunity(community.id);
-      } else {
-        await handleJoinCommunity(community.id);
+      setPendingIds((ids) => new Set(ids).add(community.id));
+      try {
+        if (community.isJoined) {
+          await handleExitCommunity(community.id);
+        } else {
+          await handleJoinCommunity(community.id);
+        }
+      } finally {
+        // Clear only this one: another card may still be in flight
+        setPendingIds((ids) => {
+          const next = new Set(ids);
+          next.delete(community.id);
+          return next;
+        });
       }
     },
     [handleJoinCommunity, handleExitCommunity]
   );
 
-  const renderItem = useCallback(
-    ({ item }: { item: ExploreSectionItem }) => {
+  const renderCard = useCallback(
+    (item: ExploreSectionItem) => {
       switch (item.type) {
         case 'blog':
-          return <BlogCard data={item.data} onPress={() => handleBlogPress(item.data)} />;
+          return <BlogCard data={item.data} onPress={handleBlogPress} />;
         case 'podcast':
-          return <PodcastCard data={item.data} onPress={() => handlePodcastPress(item.data)} />;
+          return <PodcastCard data={item.data} onPress={handlePodcastPress} />;
         case 'video':
-          return <VideoCard data={item.data} onPress={() => handleVideoPress(item.data)} />;
+          return <VideoCard data={item.data} onPress={handleVideoPress} />;
         case 'event':
-          return <EventCard data={item.data} onPress={() => handleEventPress(item.data)} />;
+          return <EventCard data={item.data} onPress={handleEventPress} />;
         case 'community':
           return (
             <CommunityCard
               data={item.data}
-              onPress={() => handleCommunityPress(item.data)}
-              onToggleJoin={() => handleCommunityToggle(item.data)}
-              isToggling={isJoining || isExiting}
+              onPress={handleCommunityPress}
+              onToggleJoin={handleCommunityToggle}
+              isToggling={pendingIds.has(item.data.id)}
             />
           );
         default:
@@ -121,9 +144,14 @@ const ExploreScreen: React.FC = () => {
       handleEventPress,
       handleCommunityPress,
       handleCommunityToggle,
-      isJoining,
-      isExiting,
+      pendingIds,
     ]
+  );
+
+  // FlashList splits the row into equal cells: half a gap on each side of every card
+  const renderItem = useCallback(
+    ({ item }: { item: ExploreSectionItem }) => <YStack px={gridGap / 2}>{renderCard(item)}</YStack>,
+    [gridGap, renderCard]
   );
 
   const keyExtractor = useCallback((item: ExploreSectionItem, index: number) => {
@@ -132,42 +160,53 @@ const ExploreScreen: React.FC = () => {
 
   const renderEmpty = useCallback(() => {
     if (isLoading) return null;
+    const icon = EXPLORE_TABS.find((tab) => tab.label === activeTab)?.icon ?? 'search-outline';
     return (
-      <YStack flex={1} jc="center" ai="center" pt={80}>
-        <UText variant="text-md" color="$brandTeal">
-          No {activeTab.toLowerCase()} found
-        </UText>
-      </YStack>
+      <UEmptyState
+        icon={icon}
+        title={`No ${activeTab.toLowerCase()} found`}
+        message={search ? 'Try a different search, or clear it.' : 'Pull down to refresh.'}
+      />
     );
-  }, [activeTab, isLoading]);
+  }, [activeTab, isLoading, search]);
 
   const renderContent = () => {
     if (isLoading && items.length === 0) {
       return (
-        <YStack jc="center" ai="center" flex={1} pb={64 + Math.max(bottom, 24)}>
-          <AppLoader size={150} bg="transparent"/>
-        </YStack>
+        <XStack flexWrap="wrap" px={side} gap={gridGap}>
+          {Array.from({ length: numColumns * 4 }, (_, i) => (
+            <YStack key={i} w={cardWidth}>
+              <ContentCardSkeleton />
+            </YStack>
+          ))}
+        </XStack>
       );
     }
 
     if (isError) {
-      return <UScreenError message={errorMessage} onRetry={refetch} pb={64+Math.max(bottom, 24)}/>;
+      return <UScreenError message={errorMessage} onRetry={refetch} pb={clearance}/>;
     }
 
+    // Animated once per tab, not per card: FlashList recycles cells, so a per-card
+    // mount animation played for some cards and not others
     return (
+      <UAnimatedView key={activeTab} animation="fadeInUp" duration={400} flex={1}>
       <URefreshableList
         data={items}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
+        numColumns={numColumns}
+        key={numColumns}
         ListEmptyComponent={renderEmpty}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
-          paddingBottom: 64 + Math.max(bottom, 24),
+          paddingBottom: clearance,
+          paddingHorizontal: side - gridGap / 2,
           flexGrow: 1,
         }}
-        key={activeTab}
         onRefresh={refetch}
       />
+      </UAnimatedView>
     );
   };
 
@@ -178,6 +217,9 @@ const ExploreScreen: React.FC = () => {
         onSearchChange={setSearch}
         activeTab={activeTab}
         onTabChange={setActiveTab}
+        inset={side}
+        wide={size !== 'compact'}
+        chipsBeside={size === 'expanded' && width > height}
       />
 
       {renderContent()}

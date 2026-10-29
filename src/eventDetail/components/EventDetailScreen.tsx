@@ -1,14 +1,14 @@
 import React from 'react';
-import { ScrollView } from 'react-native';
-import { YStack, XStack } from 'tamagui';
+import { YStack } from 'tamagui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import UBackButton from '@/src/components/core/buttons/uBackButton';
-import AppLoader from '@/src/components/core/loaders/AppLoader';
+import UScreenLayout from '@/src/components/core/layout/UScreenLayout';
+import { UDetailScaffold, UDetailScaffoldSkeleton } from '@/src/components/core/layout/UDetailScaffold';
+import UBadge from '@/src/components/core/display/uBadge';
 import UScreenError from '@/src/components/core/feedback/UScreenError';
 
 import { useEventDetail } from '@/src/eventDetail/hooks/useEventDetail';
-import { EventHero } from '@/src/eventDetail/components/EventHero';
 import { EventInfo } from '@/src/eventDetail/components/EventInfo';
 import { EventDescription } from '@/src/eventDetail/components/EventDescription';
 import { EventActions } from '@/src/eventDetail/components/EventActions';
@@ -21,65 +21,63 @@ export const EventDetailScreen: React.FC<EventDetailScreenProps> = ({ eventId })
   const { top, bottom } = useSafeAreaInsets();
   const { event, isLoading, isError, joinStatus, refetch } = useEventDetail(eventId);
 
-  // Loading state
+  const backButton = (
+    <YStack pos="absolute" top={top + 8} left={16} zIndex={2}>
+      <UBackButton variant="glass-md" />
+    </YStack>
+  );
+
   if (isLoading) {
     return (
-      <YStack flex={1} backgroundColor="$brandNavy">
-        <XStack pt={top + 8} pb={12} px={16} backgroundColor="$brandNavy">
-          <UBackButton variant="glass-md" />
-        </XStack>
-        <AppLoader bg="transparent" />
-      </YStack>
+      <UScreenLayout>
+        {backButton}
+        <UDetailScaffoldSkeleton withInfo />
+      </UScreenLayout>
     );
   }
 
-  // Error state
   if (isError || !event) {
     return (
-      <YStack flex={1} backgroundColor="$brandNavy">
-        <XStack pt={top + 8} pb={12} px={16} backgroundColor="$brandNavy">
-          <UBackButton variant="glass-md" />
-        </XStack>
-        <UScreenError
-          message="Unable to load event. Please try again."
-          onRetry={refetch}
-        />
-      </YStack>
+      <UScreenLayout pt={top} pb={bottom}>
+        {backButton}
+        <UScreenError message="Unable to load event. Please try again." onRetry={refetch} />
+      </UScreenLayout>
     );
   }
 
+  const isOnline = event.eventType === 'online';
+
   return (
-    <YStack flex={1} backgroundColor="$brandNavy">
-      <ScrollView
-        contentContainerStyle={{ flexGrow: 1, paddingBottom: bottom + 100 }}
-        showsVerticalScrollIndicator={false}
-      >
-        <EventHero
-          title={event.title}
-          thumbnail={event.thumbnail}
+    <UDetailScaffold
+      title={event.title}
+      thumbnail={event.thumbnail}
+      icon="calendar-outline"
+      badges={
+        <>
+          <UBadge label={isOnline ? 'Online' : 'In person'} tone={isOnline ? 'cyan' : 'purple'} onImage />
+          {joinStatus === 'live' && <UBadge label="Live now" tone="red" onImage />}
+        </>
+      }
+      info={
+        <EventInfo
+          eventStartUtc={event.eventStartUtc}
+          eventDate={event.eventDate}
+          eventTime={event.eventTime}
+          timezone={event.timezone}
           eventType={event.eventType}
+          location={event.location}
         />
-
-        <YStack px={20} pt={20}>
-          <EventInfo
-            eventStartUtc={event.eventStartUtc}
-            eventDate={event.eventDate}
-            eventTime={event.eventTime}
-            timezone={event.timezone}
-            eventType={event.eventType}
-            location={event.location}
-          />
-
-          <EventDescription description={event.description} />
-        </YStack>
-      </ScrollView>
-
-      <EventActions
-        eventType={event.eventType}
-        joinStatus={joinStatus}
-        locationGoogleMapLink={event.locationGoogleMapLink}
-        googleMeetLink={event.googleMeetLink}
-      />
-    </YStack>
+      }
+      action={
+        <EventActions
+          eventType={event.eventType}
+          joinStatus={joinStatus}
+          locationGoogleMapLink={event.locationGoogleMapLink}
+          googleMeetLink={event.googleMeetLink}
+        />
+      }
+    >
+      <EventDescription description={event.description} />
+    </UDetailScaffold>
   );
 };

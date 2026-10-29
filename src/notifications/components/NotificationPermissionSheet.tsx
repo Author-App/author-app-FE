@@ -1,352 +1,147 @@
 import React, { useState, useCallback, useEffect } from 'react';
+import { Linking, Platform } from 'react-native';
 import { Sheet } from '@tamagui/sheet';
-import { YStack, XStack } from 'tamagui';
+import { XStack, YStack } from 'tamagui';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
-import { Linking, Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import LottieView from 'lottie-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import UText from '@/src/components/core/text/uText';
-import { usePushNotifications } from '../hooks/usePushNotifications';
-import DevPushTokenView from './DevPushTokenView';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { NeonButton } from '@/src/components/core/buttons/neonButton';
+import { FORM_WIDTH } from '@/src/components/core/layout/layout';
 import { sentryService } from '@/src/services/sentry';
+import { usePushNotifications } from '../hooks/usePushNotifications';
 
-type SheetView = 'permission' | 'settings' | 'token';
+const LAST_PROMPTED_KEY = 'NOTIFICATION_PROMPT_LAST_SHOWN';
+// Not Now means not now, not every launch. Settings has the toggle for anyone who changes their mind.
+const REPROMPT_AFTER_MS = 7 * 24 * 60 * 60 * 1000;
+const OPEN_DELAY_MS = 500;
 
+type SheetView = 'permission' | 'settings';
+
+const CONTENT: Record<SheetView, { title: string; message: string; cta: string }> = {
+  permission: {
+    title: 'Allow notifications',
+    message: 'Stay updated with new content, community messages and event reminders.',
+    cta: 'Allow',
+  },
+  settings: {
+    title: 'Notifications are off',
+    message: 'Turn them on in Settings to hear about new content, community messages and event reminders.',
+    cta: 'Open Settings',
+  },
+};
+
+const breadcrumb = (message: string, data?: Record<string, unknown>) =>
+  sentryService.addBreadcrumb({ category: 'notification', message, data, level: 'info' });
+
+/** Soft prompt before the system one, or a nudge to Settings once the system one was denied. */
 const NotificationPermissionSheet: React.FC = () => {
-  const { expoPushToken, registerForPushNotifications } = usePushNotifications();
-  
-  const { bottom } = useSafeAreaInsets(); 
-  
+  const { registerForPushNotifications } = usePushNotifications();
+  const { bottom } = useSafeAreaInsets();
+
   const [isOpen, setIsOpen] = useState(false);
-  const [currentView, setCurrentView] = useState<SheetView>('permission');
+  const [view, setView] = useState<SheetView>('permission');
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    const checkAndShowSheet = async () => {
-      sentryService.addBreadcrumb({
-        category: 'notification',
-        message: 'Checking notification permission status',
-        data: { isDevice: Device.isDevice },
-        level: 'info',
-      });
+    if (!Device.isDevice) return;
+    let timer: ReturnType<typeof setTimeout> | undefined;
 
-      // Skip if not physical device
-      if (!Device.isDevice) {
-        sentryService.addBreadcrumb({
-          category: 'notification',
-          message: 'Skipped - not a physical device',
-          level: 'info',
-        });
-        return;
-      }
-
-      // Check permission status
+    (async () => {
       const { status } = await Notifications.getPermissionsAsync();
+      if (status !== 'undetermined' && status !== 'denied') return;
 
-      sentryService.addBreadcrumb({
-        category: 'notification',
-        message: `Permission status: ${status}`,
-        data: { status },
-        level: 'info',
-      });
+      const lastPrompted = Number(await AsyncStorage.getItem(LAST_PROMPTED_KEY)) || 0;
+      if (Date.now() - lastPrompted < REPROMPT_AFTER_MS) return;
 
-      if (status === 'undetermined') {
-        sentryService.addBreadcrumb({
-          category: 'notification',
-          message: 'Opening permission sheet',
-          level: 'info',
-        });
-        // Small delay for better UX after app loads
-        setTimeout(() => {
-          setCurrentView('permission');
-          setIsOpen(true);
-        }, 500);
-      } else if (status === 'denied') {
-        // On Android 13+, if user previously denied, we need to redirect to settings
-        // Show a sheet prompting them to enable in settings
-        sentryService.addBreadcrumb({
-          category: 'notification',
-          message: 'Permission denied - showing settings prompt',
-          level: 'info',
-        });
-        setTimeout(() => {
-          setCurrentView('settings');
-          setIsOpen(true);
-        }, 500);
-      } else {
-        sentryService.addBreadcrumb({
-          category: 'notification',
-          message: `Sheet not shown - status already: ${status}`,
-          level: 'info',
-        });
-      }
-    };
+      breadcrumb('Showing permission sheet', { status });
+      timer = setTimeout(() => {
+        setView(status === 'denied' ? 'settings' : 'permission');
+        setIsOpen(true);
+        AsyncStorage.setItem(LAST_PROMPTED_KEY, String(Date.now()));
+      }, OPEN_DELAY_MS);
+    })();
 
-    checkAndShowSheet();
+    return () => clearTimeout(timer);
   }, []);
 
-  const handleDeny = useCallback(() => {
-    setIsOpen(false);
-  }, []);
-  
+  const close = useCallback(() => setIsOpen(false), []);
+
   const handleAllow = useCallback(async () => {
     setIsLoading(true);
-    sentryService.addBreadcrumb({
-      category: 'notification',
-      message: 'User tapped Allow button',
-      level: 'info',
-    });
-
     try {
       await registerForPushNotifications();
-
-      // Check if permission was actually granted
       const { status } = await Notifications.getPermissionsAsync();
-
-      sentryService.addBreadcrumb({
-        category: 'notification',
-        message: `Permission result after Allow: ${status}`,
-        data: { status },
-        level: 'info',
-      });
-
-      if (status !== 'granted') {
-        // User denied in native popup
-        sentryService.addBreadcrumb({
-          category: 'notification',
-          message: 'User denied in native popup',
-          level: 'info',
-        });
-        setIsOpen(false);
-        return;
-      }
-
-      // Token POST handled by registerForPushNotifications() in the hook
-      sentryService.addBreadcrumb({
-        category: 'notification',
-        message: 'Permission granted - closing sheet',
-        level: 'info',
-      });
-      setIsOpen(false);
+      breadcrumb('Permission result after Allow', { status });
     } catch (error) {
-      sentryService.captureError(error, {
-        tags: { type: 'notification_error' },
-        extra: { action: 'handleAllow' },
-      });
-      setIsOpen(false);
+      sentryService.captureError(error, { tags: { type: 'notification_error' }, extra: { action: 'handleAllow' } });
     } finally {
       setIsLoading(false);
+      setIsOpen(false);
     }
   }, [registerForPushNotifications]);
 
-  const handleDone = useCallback(() => {
+  const handleOpenSettings = useCallback(async () => {
+    try {
+      await (Platform.OS === 'ios' ? Linking.openURL('app-settings:') : Linking.openSettings());
+    } catch (error) {
+      sentryService.captureError(error, { tags: { type: 'notification_error' }, extra: { action: 'handleOpenSettings' } });
+    }
     setIsOpen(false);
   }, []);
 
-  const handleOpenSettings = useCallback(async () => {
-    sentryService.addBreadcrumb({
-      category: 'notification',
-      message: 'User tapped Open Settings button',
-      level: 'info',
-    });
-    
-    try {
-      if (Platform.OS === 'ios') {
-        await Linking.openURL('app-settings:');
-      } else {
-        await Linking.openSettings();
-      }
-    } catch (error) {
-      sentryService.captureError(error, {
-        tags: { type: 'notification_error' },
-        extra: { action: 'handleOpenSettings' },
-      });
-    }
-    
-    setIsOpen(false);
-  }, []);
+  const content = CONTENT[view];
 
   return (
     <Sheet
       modal
       open={isOpen}
       onOpenChange={setIsOpen}
-      snapPoints={[50]}
+      snapPointsMode="fit"
       dismissOnSnapToBottom
       zIndex={100_000}
       animation="medium"
     >
-      <Sheet.Overlay
-        animation="lazy"
-        enterStyle={{ opacity: 0 }}
-        exitStyle={{ opacity: 0 }}
-        backgroundColor="rgba(0, 0, 0, 0.5)"
-      />
+      <Sheet.Overlay animation="lazy" enterStyle={{ opacity: 0 }} exitStyle={{ opacity: 0 }} bg="rgba(2,1,3,0.7)" />
       <Sheet.Frame
-        backgroundColor="$brandNavy"
-        borderTopLeftRadius={24}
-        borderTopRightRadius={24}
-        paddingHorizontal={24}
-        paddingTop={16}
-        paddingBottom={bottom}
+        bg="rgba(10,8,20,0.98)"
+        borderTopLeftRadius={28}
+        borderTopRightRadius={28}
+        borderTopWidth={1}
+        borderColor="$glassBorder"
+        px={24}
+        pt={12}
+        pb={Math.max(bottom, 16) + 8}
+        // Wide screens: a floating card, not a 1000pt-wide sheet
+        $gtXs={{ w: '100%', maw: FORM_WIDTH, als: 'center', mb: 24, br: 28, borderWidth: 1, pb: 24 }}
       >
-        <Sheet.Handle backgroundColor="$neutral6" opacity={0.5} />
+        <Sheet.Handle bg="$track" />
 
-        {currentView === 'permission' ? (
-          <PermissionContent
-            isLoading={isLoading}
-            onAllow={handleAllow}
-            onDeny={handleDeny}
-          />
-        ) : currentView === 'settings' ? (
-          <SettingsPromptContent
-            onOpenSettings={handleOpenSettings}
-            onDeny={handleDeny}
-          />
-        ) : (
-          <DevPushTokenView
-            token={expoPushToken ?? ''}
-            onDone={handleDone}
-          />
-        )}
+        <YStack ai="center" gap={14} pt={12}>
+          <LottieView source={require('@/assets/animations/notificationBell.json')} autoPlay loop style={{ width: 96, height: 96 }} />
+          <UText variant="display-l" fontSize={20} lineHeight={26} color="$textPrimary" textAlign="center" accessibilityRole="header">
+            {content.title}
+          </UText>
+          <UText variant="body" color="$textSecondary" textAlign="center" px={8}>
+            {content.message}
+          </UText>
+
+          <XStack gap={12} w="100%" pt={12}>
+            <NeonButton flex={1} tone="neutral" onPress={close} disabled={isLoading} title="Not Now" />
+            <NeonButton
+              flex={1}
+              onPress={view === 'settings' ? handleOpenSettings : handleAllow}
+              loading={isLoading}
+              title={content.cta}
+            />
+          </XStack>
+        </YStack>
       </Sheet.Frame>
     </Sheet>
   );
 };
-
-
-interface PermissionContentProps {
-  isLoading: boolean;
-  onAllow: () => void;
-  onDeny: () => void;
-}
-
-const PermissionContent: React.FC<PermissionContentProps> = ({
-  isLoading,
-  onAllow,
-  onDeny,
-}) => (
-  <YStack ai="center" gap={20} pt={20}>
-    {/* Notification Bell Animation */}
-    <LottieView
-      source={require('@/assets/animations/notificationBell.json')}
-      autoPlay
-      loop
-      style={{ width: 100, height: 100 }}
-    />
-
-    {/* Title */}
-    <UText variant="heading-h2" color="$white" textAlign="center">
-      Allow Notifications
-    </UText>
-
-    {/* Description */}
-    <UText variant="text-sm" color="$neutral4" textAlign="center" px={20}>
-      Stay updated with new content, community messages, and event reminders.
-    </UText>
-
-    {/* Buttons */}
-    <XStack gap={12} w="100%" pt={8}>
-      {/* Deny Button */}
-      <YStack
-        f={1}
-        bg="rgba(255, 255, 255, 0.1)"
-        py={14}
-        borderRadius={12}
-        ai="center"
-        pressStyle={{ opacity: 0.7 }}
-        onPress={onDeny}
-        disabled={isLoading}
-      >
-        <UText variant="label-md" color="$neutral3">
-          Not Now
-        </UText>
-      </YStack>
-
-      {/* Allow Button */}
-      <YStack
-        f={1}
-        bg="$brandCrimson"
-        py={14}
-        borderRadius={12}
-        ai="center"
-        pressStyle={{ opacity: 0.7 }}
-        onPress={onAllow}
-        disabled={isLoading}
-        opacity={isLoading ? 0.6 : 1}
-      >
-        <UText variant="label-md" color="$white">
-          {isLoading ? 'Loading...' : 'Allow'}
-        </UText>
-      </YStack>
-    </XStack>
-  </YStack>
-);
-
-
-interface SettingsPromptContentProps {
-  onOpenSettings: () => void;
-  onDeny: () => void;
-}
-
-const SettingsPromptContent: React.FC<SettingsPromptContentProps> = ({
-  onOpenSettings,
-  onDeny,
-}) => (
-  <YStack ai="center" gap={20} pt={20}>
-    {/* Notification Bell Animation */}
-    <LottieView
-      source={require('@/assets/animations/notificationBell.json')}
-      autoPlay
-      loop
-      style={{ width: 100, height: 100 }}
-    />
-
-    {/* Title */}
-    <UText variant="heading-h2" color="$white" textAlign="center">
-      Enable Notifications
-    </UText>
-
-    {/* Description */}
-    <UText variant="text-sm" color="$neutral4" textAlign="center" px={20}>
-      Notifications are currently disabled. Enable them in Settings to receive updates about new content, community messages, and event reminders.
-    </UText>
-
-    {/* Buttons */}
-    <XStack gap={12} w="100%" pt={8}>
-      {/* Deny Button */}
-      <YStack
-        f={1}
-        bg="rgba(255, 255, 255, 0.1)"
-        py={14}
-        borderRadius={12}
-        ai="center"
-        pressStyle={{ opacity: 0.7 }}
-        onPress={onDeny}
-      >
-        <UText variant="label-md" color="$neutral3">
-          Not Now
-        </UText>
-      </YStack>
-
-      {/* Open Settings Button */}
-      <YStack
-        f={1}
-        bg="$brandCrimson"
-        py={14}
-        borderRadius={12}
-        ai="center"
-        pressStyle={{ opacity: 0.7 }}
-        onPress={onOpenSettings}
-      >
-        <UText variant="label-md" color="$white">
-          Open Settings
-        </UText>
-      </YStack>
-    </XStack>
-  </YStack>
-);
 
 export default NotificationPermissionSheet;

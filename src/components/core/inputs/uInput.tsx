@@ -1,5 +1,6 @@
-import { forwardRef, memo, useMemo } from 'react';
-import { GetProps, GetThemeValueForKey, Input as TamaguiInput, YStack } from 'tamagui';
+import { forwardRef, memo, useMemo, useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import { GetProps, GetThemeValueForKey, Input as TamaguiInput, XStack, YStack, getTokenValue } from 'tamagui';
 
 import { UInputVariant } from '@/src/components/core/types/input/inputVariants';
 import UText from '@/src/components/core/text/uText';
@@ -7,6 +8,8 @@ import UText from '@/src/components/core/text/uText';
 interface UInputProps extends Omit<GetProps<typeof TamaguiInput>, 'variant'> {
   variant?: UInputVariant;
   error?: string;
+  /** Shown above the field and read by screen readers. Only the glass variant renders it. */
+  label?: string;
   textAlignVertical?: 'top' | 'center' | 'bottom';
 }
 
@@ -19,12 +22,8 @@ const getErrorColor = (variant: UInputVariant = 'primary') => {
   switch (variant) {
     case 'primary':
       return '$white';
-    case 'secondary':
-      return '$negative5'; 
     case 'tertiary':
       return '$orange8';
-    case 'quaternary':
-      return '$red9';
     default:
       return '$white';
   }
@@ -55,33 +54,12 @@ const getVariantStyle = (variant: UInputVariant = 'primary'): StylesType => {
       return {
         ...baseStyles,
       };
-    case 'secondary':
-      return {
-        ...baseStyles,
-        backgroundColor: '$transparent',
-        borderColor: '$primary7',
-        borderWidth: 1,
-        hoverBackgroundColor: '$primaryAlpha1',
-        pressBackgroundColor: '$primaryAlpha2',
-        placeholderTextColor: '$placeholderGray',
-        color: '$black'
-      };
     case 'tertiary':
       return {
         ...baseStyles,
         backgroundColor: '$transparent',
         hoverBackgroundColor: '$primaryAlpha1',
         pressBackgroundColor: '$primaryAlpha2',
-      };
-    case 'quaternary':
-      return {
-        ...baseStyles,
-        backgroundColor: '$transparent',
-        hoverBackgroundColor: '$primaryAlpha1',
-        pressBackgroundColor: '$primaryAlpha2',
-        borderColor: '$transparent',
-        color: '$black',
-        placeholderTextColor: '$black'
       };
     case 'dark':
       return {
@@ -94,6 +72,7 @@ const getVariantStyle = (variant: UInputVariant = 'primary'): StylesType => {
         borderRadius: 0,
         color: '$white',
         placeholderTextColor: '$placeholderGray',
+        fontFamily: '$inter',
         py: 0,
         px: 0,
         minHeight: 30,
@@ -103,6 +82,101 @@ const getVariantStyle = (variant: UInputVariant = 'primary'): StylesType => {
       return baseStyles;
   }
 };
+
+/** Inline error under a field. Announced by screen readers without moving focus. */
+export const FieldError = ({ message }: { message: string }) => (
+  <XStack gap={6} ai="center" accessibilityLiveRegion="polite">
+    <Ionicons name="alert-circle-outline" size={14} color={getTokenValue('$errorText', 'color')} />
+    <UText variant="body-s" color="$errorText">
+      {message}
+    </UText>
+  </XStack>
+);
+
+const GlassInput = forwardRef<any, UInputProps>(
+  ({ label, error, secureTextEntry, multiline, onFocus, onBlur, ...props }, ref) => {
+    const [focused, setFocused] = useState(false);
+    const [hidden, setHidden] = useState(true);
+
+    // Error wins over focus, so the problem stays visible while the user fixes it.
+    const state = error ? 'error' : focused ? 'focused' : 'default';
+
+    return (
+      <YStack gap={6}>
+        {label && (
+          <UText variant="meta" color={focused ? '$accentCyan' : '$textSecondary'}>
+            {label}
+          </UText>
+        )}
+        <XStack
+          // Multiline grows from 120; single line is fixed at 50
+          h={multiline ? undefined : 50}
+          $gtXs={multiline ? undefined : { h: 54 }}
+          minHeight={multiline ? 120 : undefined}
+          py={multiline ? 12 : 0}
+          br={14}
+          pl={14}
+          pr={secureTextEntry ? 4 : 14}
+          ai={multiline ? 'flex-start' : 'center'}
+          borderWidth={1}
+          bg={state === 'error' ? '$inputErrorBg' : state === 'focused' ? '$glassCyan' : '$glass'}
+          borderColor={
+            state === 'error' ? '$inputErrorBorder' : state === 'focused' ? '$accentCyan' : '$inputBorder'
+          }
+          boxShadow={
+            state === 'focused'
+              ? '0 0 0 3px rgba(0,240,255,0.18), 0 0 18px rgba(0,240,255,0.25)'
+              : undefined
+          }
+        >
+          <TamaguiInput
+            ref={ref}
+            unstyled
+            flex={1}
+            h={multiline ? undefined : '100%'}
+            minHeight={multiline ? 96 : undefined}
+            multiline={multiline}
+            textAlignVertical={multiline ? 'top' : 'center'}
+            fontFamily="$inter"
+            fontSize={15}
+            color="$textPrimary"
+            placeholderTextColor="$textMuted"
+            accessibilityLabel={label}
+            secureTextEntry={secureTextEntry && hidden}
+            onFocus={(e) => {
+              setFocused(true);
+              onFocus?.(e);
+            }}
+            onBlur={(e) => {
+              setFocused(false);
+              onBlur?.(e);
+            }}
+            {...props}
+          />
+          {secureTextEntry && (
+            <YStack
+              w={44}
+              h={44}
+              ai="center"
+              jc="center"
+              onPress={() => setHidden((h) => !h)}
+              accessible
+              accessibilityRole="button"
+              accessibilityLabel={hidden ? 'Show password' : 'Hide password'}
+            >
+              <Ionicons
+                name={hidden ? 'eye-outline' : 'eye-off-outline'}
+                size={20}
+                color={getTokenValue('$textMuted', 'color')}
+              />
+            </YStack>
+          )}
+        </XStack>
+        {error && <FieldError message={error} />}
+      </YStack>
+    );
+  }
+);
 
 const UInput = forwardRef<any, UInputProps>(
   ({ variant = 'tertiary', disabled, borderColor, error, ...props }, ref) => {
@@ -114,6 +188,11 @@ const UInput = forwardRef<any, UInputProps>(
     } = useMemo(() => getVariantStyle(variant), [variant]);
 
      const errorColor = getErrorColor(variant);
+
+    // After the hooks above, so the hook order never changes between renders.
+    if (variant === 'glass') {
+      return <GlassInput ref={ref} error={error} disabled={disabled} {...props} />;
+    }
     return (
       <>
         <YStack gap={2} marginBottom={0}>

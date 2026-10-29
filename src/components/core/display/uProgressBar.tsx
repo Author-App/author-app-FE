@@ -46,7 +46,11 @@ const UProgressBar = ({
   const progressWidth = useSharedValue(isAnimate ? 0 : percentage);
 
   useEffect(() => {
-    if (!isAnimate) return;
+    // useSharedValue only reads its first value, so a new percentage has to be pushed in
+    if (!isAnimate) {
+      progressWidth.value = percentage;
+      return;
+    }
 
     const backgroundTimer = setTimeout(() => {
       backgroundWidth.value = withTiming(100, { duration: duration * 0.6 });

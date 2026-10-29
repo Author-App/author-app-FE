@@ -36,9 +36,7 @@ const UButtonTabItem = memo(<T extends string>({
   showIcon = true,
 }: UButtonTabItemProps<T>) => {
   const scale = useSharedValue(1);
-  const crimson = getTokenValue('$brandCrimson', 'color');
-  const teal = getTokenValue('$brandTeal', 'color');
-  const white = getTokenValue('$white', 'color');
+  const iconColor = getTokenValue(isActive ? '$accentCyan' : '$textSecondary', 'color');
 
   const animatedStyle = useAnimatedStyle(() => {
     return {
@@ -55,42 +53,41 @@ const UButtonTabItem = memo(<T extends string>({
   }, []);
 
   return (
-    <AnimatedXStack
-      style={animatedStyle}
-      ai="center"
-      jc="center"
-      gap={6}
-      px={16}
-      py={10}
-      br={999}
-      borderWidth={1}
-      backgroundColor={isActive ? '$brandCrimson' : 'transparent'}
-      borderColor={isActive ? '$brandCrimson' : '$searchbarBorder'}
+    // Press and accessibility live on a plain view: through the animated wrapper the
+    // selected state never reached iOS, and "tab" dropped the chip from the tree entirely
+    <XStack
       onPress={onPress}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
       onLayout={onLayout}
-      shadowColor={isActive ? '$brandCrimson' : 'transparent'}
-      shadowOffset={{ width: 0, height: 0 }}
-      shadowOpacity={isActive ? 0.4 : 0}
-      shadowRadius={isActive ? 12 : 0}
-      elevation={isActive ? 8 : 0}
+      // 40pt pill, 44pt touch target
+      hitSlop={{ top: 2, bottom: 2 }}
+      accessible
+      accessibilityRole="button"
+      accessibilityState={{ selected: isActive }}
+      accessibilityLabel={item.label}
     >
-      {showIcon && item.icon && (
-        <Ionicons
-          name={item.icon}
-          size={16}
-          color={isActive ? white : teal}
-        />
-      )}
-      <UText
-        variant="text-sm"
-        color={isActive ? '$white' : '$brandTeal'}
-        fontWeight="500"
+      <AnimatedXStack
+        style={animatedStyle}
+        ai="center"
+        jc="center"
+        gap={6}
+        h={40}
+        px={16}
+        br={999}
+        borderWidth={1}
+        backgroundColor={isActive ? '$pillActiveBg' : 'rgba(255,255,255,0.04)'}
+        borderColor={isActive ? '$pillActiveBorder' : '$borderSoft'}
+        boxShadow={isActive ? '0 0 16px rgba(135,54,247,0.4)' : 'none'}
       >
-        {item.label}
-      </UText>
-    </AnimatedXStack>
+        {showIcon && item.icon && (
+          <Ionicons name={item.icon} size={16} color={iconColor} />
+        )}
+        <UText variant="meta-pill" color={isActive ? '$accentCyan' : '$textSecondary'}>
+          {item.label}
+        </UText>
+      </AnimatedXStack>
+    </XStack>
   );
 }) as (<T extends string>(props: UButtonTabItemProps<T>) => React.ReactElement) & { displayName?: string };
 
@@ -102,6 +99,7 @@ interface UButtonTabsProps<T extends string = string> {
   onTabChange: (tab: T) => void;
   showIcons?: boolean;
   gap?: number;
+  inset?: number;
 }
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
@@ -112,11 +110,12 @@ const UButtonTabs = <T extends string = string>({
   activeTab,
   onTabChange,
   showIcons = true,
-  gap = 10,
+  gap = 8,
+  inset = 16,
 }: UButtonTabsProps<T>) => {
   const scrollViewRef = useRef<ScrollView>(null);
   const tabPositions = useRef<Record<string, { x: number; width: number }>>({});
-  const scrollViewWidth = useRef(SCREEN_WIDTH - 40); // Default minus padding
+  const scrollViewWidth = useRef(SCREEN_WIDTH);
 
   const handleTabLayout = useCallback((label: string, event: LayoutChangeEvent) => {
     const { x, width } = event.nativeEvent.layout;
@@ -176,7 +175,9 @@ const UButtonTabs = <T extends string = string>({
       ref={scrollViewRef}
       horizontal
       showsHorizontalScrollIndicator={false}
-      contentContainerStyle={{ gap }}
+      // Full-bleed: pills start at the gutter and scroll past the screen edge
+      contentContainerStyle={{ gap, paddingHorizontal: inset }}
+      accessibilityRole="tablist"
       onLayout={handleScrollViewLayout}
     >
       {tabs.map((tab) => (

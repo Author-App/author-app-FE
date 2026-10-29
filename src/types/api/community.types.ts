@@ -4,7 +4,8 @@ export interface ThreadResponse {
   userName: string;
   userProfileImage?: string;
   message: string;
-  createdAt: Date | null;
+  // ISO string: this comes straight from JSON
+  createdAt: string | null;
 }
 
 

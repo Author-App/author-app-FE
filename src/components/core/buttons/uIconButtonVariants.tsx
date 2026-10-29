@@ -196,16 +196,20 @@ const getVariantStyle = (variant: ButtonVariant = 'primary-md'): StylesType => {
         iconSize: 18,
       };
     case 'glass-md':
+      // The floating back button over heroes: glass circle, 44pt touch target
       return {
         ...baseStyles,
-        backgroundColor: 'rgba(255, 255, 255, 0.15)',
-        pressBackgroundColor: 'rgba(255, 255, 255, 0.25)',
-        hoverBackgroundColor: 'rgba(255, 255, 255, 0.2)',
-        iconColor: '$white',
-        width: 40,
-        height: 40,
-        padding: 6,
-        iconSize: 20,
+        backgroundColor: '$glass',
+        pressBackgroundColor: '$glassSolid',
+        hoverBackgroundColor: '$glassSolid',
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.14)',
+        pressBorderColor: 'rgba(255,255,255,0.14)',
+        iconColor: '$textPrimary',
+        width: 44,
+        height: 44,
+        padding: 10,
+        iconSize: 22,
       };
     case 'glass-lg':
       return {

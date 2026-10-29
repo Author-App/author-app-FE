@@ -2,6 +2,7 @@ import { useCallback, useRef, useEffect, useState } from 'react';
 import { useStripe } from '@stripe/stripe-react-native';
 import { useGetPrintQuoteMutation, useCreatePrintOrderMutation, useLazyGetPrintOrderStatusQuery } from '@/src/store/api/printApi';
 import { sentryService } from '@/src/services/sentry';
+import { extractErrorMessage } from '@/src/services/error.service';
 import type { 
   ShippingAddress, 
   ShippingOption, 
@@ -13,7 +14,8 @@ const VERIFICATION_POLL_INTERVAL = 2000;
 const MAX_VERIFICATION_ATTEMPTS = 15;
 
 interface UsePrintCheckoutOptions {
-  onSuccess?: (printOrderId: string) => void;
+  /** `isConfirmed` is false when the card was charged but the server has not confirmed it yet */
+  onSuccess?: (printOrderId: string, isConfirmed: boolean) => void;
   onError?: (message: string) => void; // For order errors (shows alert)
   onQuoteError?: (message: string) => void; // For quote errors (silent/inline)
 }
@@ -32,9 +34,6 @@ interface UsePrintCheckoutReturn {
   // Order
   isCreatingOrder: boolean;
   createOrder: () => Promise<void>;
-  
-  // Combined state
-  isProcessing: boolean;
 }
 
 /**
@@ -70,13 +69,17 @@ export function usePrintCheckout(options: UsePrintCheckoutOptions = {}): UsePrin
     shipping: ShippingAddress;
   } | null>(null);
 
+  // Only the newest quote request may set state: an older, slower response would
+  // otherwise overwrite it and the order would be placed with stale params
+  const latestQuoteRequest = useRef(0);
+
   // Stripe
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
 
   // RTK Query
   const [getPrintQuote, { isLoading: isGettingQuote }] = useGetPrintQuoteMutation();
   const [createPrintOrder, { isLoading: isCreatingOrder }] = useCreatePrintOrderMutation();
-  const [getPrintOrderStatus, { isFetching: isVerifying }] = useLazyGetPrintOrderStatusQuery();
+  const [getPrintOrderStatus] = useLazyGetPrintOrderStatusQuery();
 
   // Get quote from Lulu
   const getQuote = useCallback(async (params: {
@@ -91,10 +94,13 @@ export function usePrintCheckout(options: UsePrintCheckoutOptions = {}): UsePrin
       data: { bookId: params.bookId, shippingOption: params.shippingOption },
     });
 
+    const requestId = ++latestQuoteRequest.current;
+
     try {
       const result = await getPrintQuote(params).unwrap();
       const quoteData = result.data;
-      
+      if (requestId !== latestQuoteRequest.current) return null;
+
       setQuote(quoteData);
       setOrderParams(params);
       
@@ -106,6 +112,11 @@ export function usePrintCheckout(options: UsePrintCheckoutOptions = {}): UsePrin
       
       return quoteData;
     } catch (error: unknown) {
+      if (requestId !== latestQuoteRequest.current) return null;
+      // A failed quote must not leave the previous one payable
+      setQuote(null);
+      setOrderParams(null);
+
       sentryService.captureError(error, {
         tags: { type: 'print_quote_error' },
         extra: { bookId: params.bookId, params },
@@ -279,7 +290,16 @@ export function usePrintCheckout(options: UsePrintCheckoutOptions = {}): UsePrin
         printOrderId,
       });
       
-      await pollPaymentVerification(printOrderId);
+      // The card is charged now. Only a definite "failed" from the server may send the user
+      // back to Pay; a timeout or a dropped connection must never invite a second charge.
+      let isConfirmed = true;
+      try {
+        await pollPaymentVerification(printOrderId);
+      } catch (verifyError) {
+        if (verifyError instanceof Error && verifyError.message === 'Payment failed') throw verifyError;
+        isConfirmed = false;
+        sentryService.capturePaymentError(verifyError, 'verify_payment', { bookId: orderParams.bookId, printOrderId });
+      }
 
       // 5. Success!
       sentryService.trackPaymentStep('success', { 
@@ -291,7 +311,7 @@ export function usePrintCheckout(options: UsePrintCheckoutOptions = {}): UsePrin
       setQuote(null);
       setOrderParams(null);
       
-      onSuccessRef.current?.(printOrderId);
+      onSuccessRef.current?.(printOrderId, isConfirmed);
 
     } catch (error) {
       sentryService.capturePaymentError(error, 'error', { 
@@ -299,40 +319,34 @@ export function usePrintCheckout(options: UsePrintCheckoutOptions = {}): UsePrin
         type: 'print_order',
       });
       
-      // Provide user-friendly error messages
-      let message = 'Order failed';
+      // unwrap() rejects with RTK Query's { status, data }, not an Error, so read both kinds
+      const rawMessage = extractErrorMessage(error);
+      const errorMsg = rawMessage.toLowerCase();
+      let message = rawMessage;
       let shouldClearQuote = false;
-      
-      if (error instanceof Error) {
-        const errorMsg = error.message.toLowerCase();
-        
-        // Quote mismatch - price changed, need to refresh
-        if (errorMsg.includes('mismatch') || errorMsg.includes('quote') || errorMsg.includes('price changed')) {
-          message = 'Price has changed. Please review and try again.';
-          shouldClearQuote = true; // This will trigger auto-refresh
-        }
-        // Stripe environment mismatch
-        else if (errorMsg.includes('no such payment_intent') || errorMsg.includes('no such payment intent')) {
-          message = 'Payment configuration error. Please contact support.';
-        }
-        // Payment cancelled by user
-        else if (errorMsg.includes('canceled') || errorMsg.includes('cancelled')) {
-          return; // Don't show error for user cancellation
-        }
-        // Card declined
-        else if (errorMsg.includes('declined') || errorMsg.includes('insufficient_funds')) {
-          message = 'Your card was declined. Please try a different payment method.';
-        }
-        // Network/timeout
-        else if (errorMsg.includes('timeout') || errorMsg.includes('network')) {
-          message = 'Connection error. Please check your internet and try again.';
-        }
-        // Generic
-        else {
-          message = error.message;
-        }
+
+      // Quote mismatch - price changed, need to refresh
+      if (errorMsg.includes('mismatch') || errorMsg.includes('quote') || errorMsg.includes('price changed')) {
+        message = 'Price has changed. Please review and try again.';
+        shouldClearQuote = true; // This will trigger auto-refresh
       }
-      
+      // Stripe environment mismatch
+      else if (errorMsg.includes('no such payment_intent') || errorMsg.includes('no such payment intent')) {
+        message = 'Payment configuration error. Please contact support.';
+      }
+      // Payment cancelled by user
+      else if (errorMsg.includes('canceled') || errorMsg.includes('cancelled')) {
+        return; // Don't show error for user cancellation
+      }
+      // Card declined
+      else if (errorMsg.includes('declined') || errorMsg.includes('insufficient_funds')) {
+        message = 'Your card was declined. Please try a different payment method.';
+      }
+      // Network/timeout
+      else if (errorMsg.includes('timeout') || errorMsg.includes('network')) {
+        message = 'Connection error. Please check your internet and try again.';
+      }
+
       // Clear quote on mismatch to force refresh
       if (shouldClearQuote) {
         setQuote(null);
@@ -351,8 +365,5 @@ export function usePrintCheckout(options: UsePrintCheckoutOptions = {}): UsePrin
     // Order
     isCreatingOrder,
     createOrder,
-    
-    // Combined state
-    isProcessing: isGettingQuote || isCreatingOrder || isVerifying,
   };
 }

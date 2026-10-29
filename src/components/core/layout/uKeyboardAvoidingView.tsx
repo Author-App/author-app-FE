@@ -1,11 +1,11 @@
 import type { PropsWithChildren } from 'react';
 import { Keyboard } from 'react-native';
-import { ColorTokens, YStack, YStackProps } from 'tamagui';
+import { YStack, YStackProps } from 'tamagui';
 
 import UKeyboardSpacer from '@/src/components/core/layout/uKeyboardSpacer';
 
 interface UKeyboardAvoidingViewProps extends PropsWithChildren<YStackProps> {
-  color?: ColorTokens;
+  color?: YStackProps['bg'];
   /** When true, tapping outside inputs will dismiss the keyboard. Defaults to true. */
   dismissOnTap?: boolean;
 }

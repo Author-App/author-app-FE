@@ -5,12 +5,12 @@ import UButtonTabs, { TabItem } from '@/src/components/core/buttons/uButtonTabs'
 import type { LibraryTab } from '@/src/library/types/library.types';
 
 const LIBRARY_TABS: TabItem<string>[] = [
-  { label: 'All Books', icon: 'library-outline' },
-  { label: 'My Books', icon: 'bookmark-outline' },
-  { label: 'E-Books', icon: 'book-outline' },
-  { label: 'Audiobooks', icon: 'headset-outline' },
-  { label: 'Hardcover', icon: 'albums-outline' },
-  { label: 'Paperback', icon: 'newspaper-outline' },
+  { label: 'All Books' },
+  { label: 'My Books' },
+  { label: 'E-Books' },
+  { label: 'Audiobooks' },
+  { label: 'Hardcover' },
+  { label: 'Paperback' },
 ];
 
 const TAB_TO_TYPE: Record<string, LibraryTab> = {
@@ -34,11 +34,13 @@ const TYPE_TO_TAB: Record<LibraryTab, string> = {
 interface LibraryFiltersProps extends YStackProps {
   activeTab: LibraryTab;
   onTabChange: (value: LibraryTab) => void;
+  inset?: number;
 }
 
 const LibraryFilters: React.FC<LibraryFiltersProps> = ({
   activeTab,
   onTabChange,
+  inset,
   ...props
 }) => {
 
@@ -56,6 +58,8 @@ const LibraryFilters: React.FC<LibraryFiltersProps> = ({
           tabs={LIBRARY_TABS}
           activeTab={activeTabLabel}
           onTabChange={handleTabChange}
+          showIcons={false}
+          inset={inset}
         />
       </UAnimatedView>
     </YStack>

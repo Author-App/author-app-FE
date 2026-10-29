@@ -11,6 +11,8 @@ export type PlanType = 'free' | 'pro';
 export interface Benefit {
   id: number;
   label: string;
+  /** false renders a cross: a limit of the plan, not a perk */
+  included?: boolean;
 }
 
 export interface PlanPricing {

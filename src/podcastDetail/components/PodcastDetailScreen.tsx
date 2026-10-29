@@ -1,108 +1,83 @@
 import React from 'react';
-import { ScrollView } from 'react-native';
 import { YStack } from 'tamagui';
 import { useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import UHeader from '@/src/components/core/layout/uHeader';
 import UBackButton from '@/src/components/core/buttons/uBackButton';
 import UScreenLayout from '@/src/components/core/layout/UScreenLayout';
-import AppLoader from '@/src/components/core/loaders/AppLoader';
+import { STICKY_BAR_HEIGHT } from '@/src/components/core/layout/uStickyTitleBar';
+import { useLayoutClass } from '@/src/components/core/layout/useLayoutClass';
 import UScreenError from '@/src/components/core/feedback/UScreenError';
-import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
 
-import { AudioPlayer } from '@/src/components/core/audio';
+import { AudioSkeleton, useAudioPlayer } from '@/src/components/core/audio';
 import { usePodcastDetail } from '../hooks/usePodcastDetail';
 import { useSaveMediaProgress } from '@/src/hooks/useSaveMediaProgress';
-import { PodcastHero } from './PodcastHero';
-import { PodcastDescription } from './PodcastDescription';
-import { RelatedPodcastList } from './RelatedPodcastList';
+import PodcastCompact from './layouts/PodcastCompact';
+import PodcastExpanded, { PodcastExpandedSkeleton } from './layouts/PodcastExpanded';
 
 export function PodcastDetailScreen() {
   const { podcastId } = useLocalSearchParams<{ podcastId: string }>();
-  const { bottom } = useSafeAreaInsets();
+  const { top, bottom } = useSafeAreaInsets();
+  const { size, side } = useLayoutClass();
 
-  const {
-    podcast,
-    relatedPodcasts,
-    formattedDuration,
-    isLoading,
-    isError,
-    refetch,
-  } = usePodcastDetail(podcastId);
+  const { podcast, relatedPodcasts, formattedDuration, isLoading, isError, refetch } = usePodcastDetail(podcastId);
 
-  // Calculate initial position from saved progress
-  const initialPosition = podcast?.progress?.currentPositionSec
-    ? podcast.progress.currentPositionSec * 1000
-    : 0;
+  const initialPosition = (podcast?.progress?.currentPositionSec ?? 0) * 1000;
 
-  // Handle saving progress when leaving
+  // Saves progress before going back, so the previous screen shows the new resume point
   const { handleBack, handleProgressUpdate } = useSaveMediaProgress(podcastId);
 
-  // Loading state
-  if (isLoading) {
+  // One player for the screen: the full controls and the mini player drive the same audio
+  const audio = useAudioPlayer(podcast?.fileUrl, {
+    autoPlay: true,
+    initialPosition,
+    onProgressUpdate: handleProgressUpdate,
+  });
+
+  const backButton = (
+    <YStack pos="absolute" top={top + 8} left={16} zIndex={2}>
+      <UBackButton variant="glass-md" />
+    </YStack>
+  );
+
+  if (isLoading && size === 'expanded') {
     return (
       <UScreenLayout>
-        <UHeader
-          title="Podcast"
-          leftControl={<UBackButton variant="glass-md" />}
-        />
-        <YStack flex={1} ai="center" jc="center">
-          <AppLoader bg="transparent" />
-        </YStack>
+        {backButton}
+        <PodcastExpandedSkeleton />
       </UScreenLayout>
     );
   }
 
-  // Error state
-  if (isError || !podcast) {
+  if (isLoading) {
     return (
-      <UScreenLayout>
-        <UHeader
-          title="Podcast"
-          leftControl={<UBackButton variant="glass-md" />}
-        />
-        <UScreenError
-          message="Unable to load podcast. Please try again."
-          onRetry={refetch}
-        />
+      <UScreenLayout pt={top + STICKY_BAR_HEIGHT} px={size === 'compact' ? 20 : side}>
+        {backButton}
+        <AudioSkeleton />
       </UScreenLayout>
     );
   }
+
+  if (isError || !podcast) {
+    return (
+      <UScreenLayout pt={top} pb={bottom}>
+        {backButton}
+        <UScreenError message="Unable to load podcast. Please try again." onRetry={refetch} />
+      </UScreenLayout>
+    );
+  }
+
+  const Layout = size === 'expanded' ? PodcastExpanded : PodcastCompact;
 
   return (
     <UScreenLayout>
-      <UHeader
-        title="Podcast"
-        leftControl={<UBackButton variant="glass-md" onPress={handleBack} />}
+      <Layout
+        podcast={podcast}
+        relatedPodcasts={relatedPodcasts}
+        formattedDuration={formattedDuration}
+        audio={audio}
+        onBack={handleBack}
       />
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: bottom + 24 }}
-      >
-        <YStack px={20}>
-          <PodcastHero
-            title={podcast.name}
-            duration={formattedDuration}
-            thumbnail={podcast.thumbnail}
-          />
-
-          <UAnimatedView animation="fadeInUp" delay={200}>
-            <AudioPlayer
-              audioUrl={podcast.fileUrl}
-              autoPlay
-              initialPosition={initialPosition}
-              onProgressUpdate={handleProgressUpdate}
-            />
-          </UAnimatedView>
-
-          {podcast.description && (
-            <PodcastDescription description={podcast.description} />
-          )}
-
-          <RelatedPodcastList podcasts={relatedPodcasts} />
-        </YStack>
-      </ScrollView>
     </UScreenLayout>
   );
 }

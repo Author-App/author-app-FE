@@ -7,7 +7,6 @@
 
 import { createSelector } from '@reduxjs/toolkit';
 import { exploreApi } from '@/src/store/api/exploreApi';
-import { getJoinStatus } from '@/src/utils/helper';
 import type { EventResponse } from '@/src/types/api/explore.types';
 
 export type JoinStatus = 'upcoming' | 'live' | 'ended';
@@ -26,15 +25,3 @@ export const selectEvent = (eventId: string) =>
     [selectEventDetailResult(eventId)],
     (result): EventResponse | undefined => result?.data?.data
   );
-
-/**
- * Select computed join status for online events
- */
-export const selectJoinStatus = (eventId: string) =>
-  createSelector([selectEvent(eventId)], (event): JoinStatus | null => {
-    if (!event) return null;
-    if (event.eventType !== 'online') return null;
-    if (!event.eventDate || !event.eventTime) return null;
-
-    return getJoinStatus(event);
-  });

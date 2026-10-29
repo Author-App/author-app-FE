@@ -7,9 +7,6 @@ export * from './api.schemas';
 // User/profile schemas
 export * from './user.schemas';
 
-// Home feed schemas
-export * from './home.schemas';
-
 // Explore schemas (articles, media, events, communities)
 export * from './explore.schemas';
 

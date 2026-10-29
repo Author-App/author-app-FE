@@ -1,69 +1,29 @@
-import React, { memo } from 'react';
+import React from 'react';
 import { ScrollView } from 'react-native';
-import { YStack } from 'tamagui';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTabBarInset } from '@/src/navigations/hooks/useTabBarInset';
+import { useLayoutClass } from '@/src/components/core/layout/useLayoutClass';
 
 import { useProfileData } from '../hooks/useProfileData';
 
-import AppLoader from '@/src/components/core/loaders/AppLoader';
 import UScreenLayout from '@/src/components/core/layout/UScreenLayout';
-import ProfileHeader from './ProfileHeader';
-import AuthorCard from './AuthorCard';
-import SocialLinks from './SocialLinks';
-import AboutSection from './AboutSection';
-import WritingProcess from './WritingProcess';
+import ProfileCompact from './layouts/ProfileCompact';
+import ProfileWide from './layouts/ProfileWide';
 
 const ProfileScreen: React.FC = () => {
-  const { top, bottom } = useSafeAreaInsets();
-  const { author, isLoading, isError } = useProfileData();
-
-  if (isLoading) {
-    return (
-      <UScreenLayout>
-        <AppLoader />
-      </UScreenLayout>
-    );
-  }
-
-  // TODO: Add error state component when API is integrated
-  if (isError) {
-    return (
-      <UScreenLayout ai="center" jc="center">
-        {/* Error state */}
-        <></>
-      </UScreenLayout>
-    );
-  }
+  const { top } = useSafeAreaInsets();
+  const { clearance } = useTabBarInset();
+  const { author } = useProfileData();
+  const { size } = useLayoutClass();
+  const Layout = size === 'compact' ? ProfileCompact : ProfileWide;
 
   return (
     <UScreenLayout pt={top}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{
-          paddingBottom: 64 + Math.max(bottom, 24),
-        }}
-      >
-        <ProfileHeader />
-
-        <YStack px={20} gap={16}>
-          <AuthorCard
-            name={author.name}
-            title={author.title}
-            image={author.image}
-          />
-
-          <SocialLinks links={author.socialLinks} />
-
-          <AboutSection bio={author.bio} />
-
-          <WritingProcess
-            description={author.writingProcess.description}
-            points={author.writingProcess.points}
-          />
-        </YStack>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: clearance }}>
+        <Layout author={author} />
       </ScrollView>
     </UScreenLayout>
   );
 };
 
-export default ProfileScreen
+export default ProfileScreen;

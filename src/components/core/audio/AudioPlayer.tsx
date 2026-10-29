@@ -1,101 +1,92 @@
-import React, { memo, useState, useEffect, useCallback } from 'react';
-import { StyleSheet } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { XStack, YStack } from 'tamagui';
+import React, { memo, useState, useRef, useCallback } from 'react';
+import { useAudioPlayerStatus } from 'expo-audio';
+import type { AudioPlayer as ExpoAudioPlayer } from 'expo-audio';
+import { AccessibilityActionEvent, StyleSheet } from 'react-native';
+import { XStack, YStack, getTokenValue } from 'tamagui';
 import Slider from '@react-native-community/slider';
+import { Ionicons } from '@expo/vector-icons';
 
-import IconPlayCircle from '@/assets/icons/iconPlayCircle';
-import IconPauseCircle from '@/assets/icons/iconPauseCircle';
 import IconRewind10 from '@/assets/icons/iconRewind10';
 import IconForward10 from '@/assets/icons/iconForward10';
 import UText from '@/src/components/core/text/uText';
+import UCtaGradient from '@/src/components/core/display/uCtaGradient';
 import haptics from '@/src/utils/haptics';
 
-import { useAudioPlayer } from './hooks/useAudioPlayer';
-import type { AudioProgressData } from './types/types';
+import type { UseAudioPlayerReturn } from './types/types';
+
+const formatTime = (ms: number) => {
+  const totalSeconds = Math.floor(ms / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  if (hours > 0) {
+    return `${hours}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  }
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+};
+
+const A11Y_STEP_MS = 30_000;
+const A11Y_ACTIONS = [{ name: 'increment' }, { name: 'decrement' }];
 
 interface ProgressDisplayProps {
-  isPlaying: boolean;
-  progressRef: React.MutableRefObject<AudioProgressData>;
-  formatTime: (ms: number) => string;
+  player: ExpoAudioPlayer;
   onSeek?: (positionMs: number) => void;
 }
 
-const ProgressDisplay = memo(function ProgressDisplay({
-  isPlaying,
-  progressRef,
-  formatTime,
-  onSeek,
-}: ProgressDisplayProps) {
-  const [displayProgress, setDisplayProgress] = useState({
-    progress: 0,
-    position: 0,
-    duration: 1,
-    positionText: '0:00',
-    durationText: '0:00',
-  });
+// The only component that listens to every status tick, so a tick re-renders this, not the screen
+const ProgressDisplay = memo(function ProgressDisplay({ player, onSeek }: ProgressDisplayProps) {
+  const status = useAudioPlayerStatus(player);
+  // Set only while the thumb is held: the Slider also fires onValueChange when its value prop moves
+  const [dragValue, setDragValue] = useState<number | null>(null);
+  const isDraggingRef = useRef(false);
 
-  const [isSeeking, setIsSeeking] = useState(false);
-
-  // Update progress display using interval when playing
-  useEffect(() => {
-    const updateProgress = () => {
-      if (isSeeking) return;
-      const current = progressRef.current;
-      setDisplayProgress({
-        progress: current.progress,
-        position: current.position,
-        duration: current.duration,
-        positionText: formatTime(current.position),
-        durationText: formatTime(current.duration),
-      });
-    };
-
-    updateProgress();
-
-    if (!isPlaying) return;
-
-    const intervalId = setInterval(updateProgress, 500);
-    return () => clearInterval(intervalId);
-  }, [isPlaying, progressRef, formatTime, isSeeking]);
+  const duration = status.duration * 1000 || 1;
+  const progress = dragValue ?? ((status.currentTime * 1000) / duration) * 100;
+  const position = (progress / 100) * duration;
 
   const handleSliderStart = useCallback(() => {
-    setIsSeeking(true);
+    isDraggingRef.current = true;
   }, []);
 
-  const handleSliderChange = useCallback(
-    (value: number) => {
-      const newPosition = (value / 100) * displayProgress.duration;
-      setDisplayProgress((prev) => ({
-        ...prev,
-        position: newPosition,
-        progress: value,
-        positionText: formatTime(newPosition),
-      }));
-    },
-    [displayProgress.duration, formatTime]
-  );
+  const handleSliderChange = useCallback((value: number) => {
+    if (isDraggingRef.current) setDragValue(value);
+  }, []);
 
   const handleSliderComplete = useCallback(
     (value: number) => {
       haptics.selection();
-      setIsSeeking(false);
-      const newPosition = (value / 100) * progressRef.current.duration;
-      onSeek?.(newPosition);
+      isDraggingRef.current = false;
+      setDragValue(null);
+      onSeek?.((value / 100) * duration);
     },
-    [onSeek, progressRef]
+    [onSeek, duration]
+  );
+
+  // VoiceOver: swipe up or down on the slider to skip 30 seconds
+  const handleAccessibilityAction = useCallback(
+    (event: AccessibilityActionEvent) => {
+      const step = event.nativeEvent.actionName === 'increment' ? A11Y_STEP_MS : -A11Y_STEP_MS;
+      onSeek?.(Math.min(Math.max(position + step, 0), duration));
+    },
+    [onSeek, position, duration]
   );
 
   return (
     <YStack gap={8}>
       <Slider
         style={styles.slider}
-        value={displayProgress.progress}
+        accessible
+        accessibilityRole="adjustable"
+        accessibilityLabel="Playback position"
+        accessibilityValue={{ text: `${formatTime(position)} of ${formatTime(duration)}` }}
+        accessibilityActions={A11Y_ACTIONS}
+        onAccessibilityAction={handleAccessibilityAction}
+        value={progress}
         minimumValue={0}
         maximumValue={100}
-        minimumTrackTintColor="#8B1538"
-        maximumTrackTintColor="rgba(255, 255, 255, 0.2)"
-        thumbTintColor="#FFFFFF"
+        minimumTrackTintColor={getTokenValue('$accentCyan', 'color')}
+        maximumTrackTintColor={getTokenValue('$track', 'color')}
+        thumbTintColor={getTokenValue('$textPrimary', 'color')}
         onSlidingStart={handleSliderStart}
         onValueChange={handleSliderChange}
         onSlidingComplete={handleSliderComplete}
@@ -103,11 +94,11 @@ const ProgressDisplay = memo(function ProgressDisplay({
 
       {/* Time display */}
       <XStack jc="space-between" px={4}>
-        <UText variant="text-xs" color="$neutral3">
-          {displayProgress.positionText}
+        <UText variant="meta-s" color="$accentCyan">
+          {formatTime(position)}
         </UText>
-        <UText variant="text-xs" color="$neutral3">
-          {displayProgress.durationText}
+        <UText variant="meta-s" color="$textMuted">
+          {formatTime(duration)}
         </UText>
       </XStack>
     </YStack>
@@ -138,8 +129,10 @@ const PlayerControls = memo(function PlayerControls({
         ai="center"
         jc="center"
         onPress={onRewind}
+        accessible
+        accessibilityRole="button"
+        accessibilityLabel="Rewind 10 seconds"
         pressStyle={{ opacity: 0.7, scale: 0.95 }}
-        animation="quick"
       >
         <IconRewind10 dimen={36} />
       </YStack>
@@ -151,24 +144,24 @@ const PlayerControls = memo(function PlayerControls({
         br={36}
         ai="center"
         jc="center"
-        overflow="hidden"
+        boxShadow="0 0 24px rgba(0,240,255,0.35)"
         opacity={isLoading ? 0.5 : 1}
         onPress={onPlayPause}
         disabled={isLoading}
+        accessible
+        accessibilityRole="button"
+        accessibilityLabel={isPlaying ? 'Pause' : 'Play'}
+        accessibilityState={{ disabled: isLoading, busy: isLoading }}
         pressStyle={{ opacity: 0.7, scale: 0.95 }}
-        animation="quick"
       >
-        <LinearGradient
-          colors={['#A91D3A', '#8B1538', '#6B1028']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={StyleSheet.absoluteFill}
+        <UCtaGradient radius={36} />
+        {/* The play glyph sits a little left of centre, so nudge it */}
+        <Ionicons
+          name={isPlaying ? 'pause' : 'play'}
+          size={30}
+          color={getTokenValue('$textPrimary', 'color')}
+          style={isPlaying ? undefined : styles.playGlyph}
         />
-        {isPlaying ? (
-          <IconPauseCircle dimen={32} />
-        ) : (
-          <IconPlayCircle dimen={36} />
-        )}
       </YStack>
 
       {/* Forward 10s */}
@@ -178,8 +171,10 @@ const PlayerControls = memo(function PlayerControls({
         ai="center"
         jc="center"
         onPress={onForward}
+        accessible
+        accessibilityRole="button"
+        accessibilityLabel="Forward 10 seconds"
         pressStyle={{ opacity: 0.7, scale: 0.95 }}
-        animation="quick"
       >
         <IconForward10 dimen={36} />
       </YStack>
@@ -188,35 +183,12 @@ const PlayerControls = memo(function PlayerControls({
 });
 
 interface AudioPlayerProps {
-  audioUrl: string | undefined;
-  autoPlay?: boolean;
-  initialPosition?: number;
-  onProgressUpdate?: (data: AudioProgressData) => void;
-  onPlaybackComplete?: () => void;
+  /** From useAudioPlayer, called by the screen so other controls (the mini player) share one player */
+  audio: UseAudioPlayerReturn;
 }
 
-export const AudioPlayer = memo(function AudioPlayer({
-  audioUrl,
-  autoPlay = false,
-  initialPosition = 0,
-  onProgressUpdate,
-  onPlaybackComplete,
-}: AudioPlayerProps) {
-  const {
-    isPlaying,
-    isLoading,
-    togglePlayPause,
-    seekTo,
-    rewind,
-    forward,
-    progressRef,
-    formatTime,
-  } = useAudioPlayer(audioUrl, {
-    autoPlay,
-    initialPosition,
-    onProgressUpdate,
-    onPlaybackComplete,
-  });
+export const AudioPlayer = memo(function AudioPlayer({ audio }: AudioPlayerProps) {
+  const { player, isPlaying, isLoading, togglePlayPause, seekTo, rewind, forward } = audio;
 
   const handleRewind = useCallback(() => {
     haptics.light();
@@ -236,12 +208,7 @@ export const AudioPlayer = memo(function AudioPlayer({
   return (
     <YStack gap={24}>
       {/* Progress Slider */}
-      <ProgressDisplay
-        isPlaying={isPlaying}
-        progressRef={progressRef}
-        formatTime={formatTime}
-        onSeek={seekTo}
-      />
+      <ProgressDisplay player={player} onSeek={seekTo} />
 
       {/* Controls */}
       <PlayerControls
@@ -260,4 +227,5 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 40,
   },
+  playGlyph: { marginLeft: 3 },
 });

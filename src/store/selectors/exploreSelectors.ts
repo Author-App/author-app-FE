@@ -9,24 +9,14 @@ import { createSelector } from '@reduxjs/toolkit';
 import { exploreApi } from '@/src/store/api/exploreApi';
 import type {
   ArticleResponse,
-  MediaResponse,
   EventResponse,
   CommunityResponse,
-  MediaQueryParams,
 } from '@/src/types/api/explore.types';
 
 /**
  * Base selectors for query results
  */
 export const selectArticlesResult = exploreApi.endpoints.getArticles.select();
-
-export const selectPodcastsResult = exploreApi.endpoints.getMedia.select({
-  mediaType: 'podcast',
-} as MediaQueryParams);
-
-export const selectVideosResult = exploreApi.endpoints.getMedia.select({
-  mediaType: 'video',
-} as MediaQueryParams);
 
 export const selectEventsResult = exploreApi.endpoints.getEvents.select();
 
@@ -39,22 +29,6 @@ export const selectCommunitiesResult =
 export const selectArticles = createSelector(
   [selectArticlesResult],
   (result): ArticleResponse[] => result?.data?.data?.articles ?? []
-);
-
-/**
- * Select podcasts list from cache
- */
-export const selectPodcasts = createSelector(
-  [selectPodcastsResult],
-  (result): MediaResponse[] => result?.data?.data?.media ?? []
-);
-
-/**
- * Select videos list from cache
- */
-export const selectVideos = createSelector(
-  [selectVideosResult],
-  (result): MediaResponse[] => result?.data?.data?.media ?? []
 );
 
 /**
@@ -71,32 +45,4 @@ export const selectEvents = createSelector(
 export const selectCommunities = createSelector(
   [selectCommunitiesResult],
   (result): CommunityResponse[] => result?.data?.data?.communities ?? []
-);
-
-/**
- * Select error from current query result
- */
-export const selectArticlesError = createSelector(
-  [selectArticlesResult],
-  (result) => result?.error ?? null
-);
-
-export const selectPodcastsError = createSelector(
-  [selectPodcastsResult],
-  (result) => result?.error ?? null
-);
-
-export const selectVideosError = createSelector(
-  [selectVideosResult],
-  (result) => result?.error ?? null
-);
-
-export const selectEventsError = createSelector(
-  [selectEventsResult],
-  (result) => result?.error ?? null
-);
-
-export const selectCommunitiesError = createSelector(
-  [selectCommunitiesResult],
-  (result) => result?.error ?? null
 );

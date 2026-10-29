@@ -1,83 +1,87 @@
 import React, { memo } from 'react';
-import { YStack, XStack, XStackProps } from 'tamagui';
+import { XStack, YStack, YStackProps } from 'tamagui';
 
 import UText from '@/src/components/core/text/uText';
 import ULocalImage from '@/src/components/core/image/uLocalImage';
 import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
 import type { HomeArticle } from '@/src/home/types/home.types';
-import { CARD_HEIGHT, CARD_GAP, IMAGE_WIDTH } from './constants';
 
-export interface ArticleCardProps extends XStackProps {
+// Not in the artboards: built from the Continue Reading card's glass recipe
+export const ARTICLE_WIDTH = 240;
+export const ARTICLE_GAP = 12;
+
+export interface ArticleCardProps extends YStackProps {
   item: HomeArticle;
   index: number;
-  cardWidth: number;
   onPress: () => void;
+  variant?: 'card' | 'row';
 }
 
-const ArticleCard = memo(({ item, index, cardWidth, onPress, ...props }: ArticleCardProps) => (
-  <UAnimatedView animation="fadeInUp" delay={index * 100} duration={400}>
-    <XStack
-      w={cardWidth}
-      h={CARD_HEIGHT}
-      mr={CARD_GAP}
-      bg="$neutralAlphaLight1"
-      borderRadius={16}
-      overflow="hidden"
-      pressStyle={{ scale: 0.98, opacity: 0.9 }}
-      animation="quick"
-      borderWidth={1}
-      borderColor="$neutralAlphaLight1"
-      onPress={onPress}
-      {...props}
-    >
-      <YStack w={IMAGE_WIDTH} h={CARD_HEIGHT}>
-        <ULocalImage
-          source={{ uri: item.image }}
-          width={IMAGE_WIDTH}
-          height={CARD_HEIGHT}
-          contentFit="cover"
-        />
-      </YStack>
+const ROW_THUMB_WIDTH = 144;
 
-      <YStack flex={1} p={16} jc="space-between" w={0}>
-        <XStack>
-          <YStack
-            bg="$brandOcean"
-            px={10}
-            py={4}
-            borderRadius={4}
-          >
-            <UText
-              variant="text-xs"
-              color="$white"
-              fontWeight="600"
-              textTransform="uppercase"
-            >
-              Article
-            </UText>
-          </YStack>
-        </XStack>
-
-        <UText
-          variant="text-md"
-          color="$white"
-          fontWeight="500"
-          numberOfLines={3}
-          lineHeight={22}
-        >
-          {item.title}
+const ArticleRow = ({ item, onPress }: Pick<ArticleCardProps, 'item' | 'onPress'>) => (
+  <XStack
+    p={10}
+    gap={12}
+    br={20}
+    ai="center"
+    bg="$glass"
+    borderWidth={1}
+    borderColor="$glassBorder"
+    pressStyle={{ scale: 0.98, opacity: 0.9 }}
+    onPress={onPress}
+    accessible
+    accessibilityRole="button"
+    accessibilityLabel={item.title}
+  >
+    <YStack w={ROW_THUMB_WIDTH} h={ROW_THUMB_WIDTH * (9 / 16)} br={12} overflow="hidden">
+      <ULocalImage source={{ uri: item.image }} width="100%" height="100%" contentFit="cover" />
+    </YStack>
+    <YStack flex={1} w={0} gap={6}>
+      {item.readTime && (
+        <UText variant="meta-s" color="$accentCyan">
+          {item.readTime.value} {item.readTime.unit} read
         </UText>
+      )}
+      <UText variant="display-s" color="$textPrimary" numberOfLines={2}>
+        {item.title}
+      </UText>
+    </YStack>
+  </XStack>
+);
 
-        <XStack ai="center" gap={8}>
-          <YStack w={4} h={4} borderRadius={2} bg="$brandTeal" />
+const ArticleCard = memo(({ item, index, onPress, variant = 'card', ...props }: ArticleCardProps) => (
+  <UAnimatedView animation="fadeInUp" delay={index * 100} duration={400}>
+    {variant === 'row' ? (
+      <ArticleRow item={item} onPress={onPress} />
+    ) : (
+      <YStack
+        w={ARTICLE_WIDTH}
+        br={20}
+        overflow="hidden"
+        bg="$glass"
+        borderWidth={1}
+        borderColor="$glassBorder"
+        pressStyle={{ scale: 0.98, opacity: 0.9 }}
+        onPress={onPress}
+        accessible
+        accessibilityRole="button"
+        accessibilityLabel={item.title}
+        {...props}
+      >
+        <ULocalImage source={{ uri: item.image }} width="100%" height={135} contentFit="cover" />
+        <YStack p={12} gap={6}>
+          <UText variant="display-s" color="$textPrimary" numberOfLines={2}>
+            {item.title}
+          </UText>
           {item.readTime && (
-            <UText variant="text-xs" color="$neutralAlphaLight6">
+            <UText variant="meta-s" color="$accentCyan">
               {item.readTime.value} {item.readTime.unit} read
             </UText>
           )}
-        </XStack>
+        </YStack>
       </YStack>
-    </XStack>
+    )}
   </UAnimatedView>
 ));
 

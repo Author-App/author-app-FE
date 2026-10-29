@@ -58,9 +58,10 @@ export const mediaApi = createApi({
         method: 'PUT',
         body: { currentPositionSec },
       }),
-      // Invalidate the media detail cache so it refetches with new progress
+      // Detail and lists both show progress
       invalidatesTags: (result, error, { mediaId }) => [
         { type: 'MediaDetail', id: mediaId },
+        'Media',
       ],
     }),
   }),

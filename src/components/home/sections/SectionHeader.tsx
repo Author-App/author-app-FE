@@ -1,26 +1,43 @@
 import React, { memo } from 'react';
-import { YStack, XStack } from 'tamagui';
+import { XStack, YStack } from 'tamagui';
 
 import UText from '@/src/components/core/text/uText';
-import { HORIZONTAL_PADDING } from './FeaturedBooks/constants';
+import { HOME_GUTTER } from './constants';
 
 export interface SectionHeaderProps {
   title: string;
   subtitle?: string;
+  onSeeAll?: () => void;
+  px?: number;
 }
 
-const SectionHeader = memo(({ title, subtitle }: SectionHeaderProps) => (
-  <XStack jc="space-between" ai="flex-end" px={HORIZONTAL_PADDING} mb={20}>
-    <YStack flex={1} mr={16}>
-      <UText variant="playfair-lg" color="$white" fontWeight={700}>
+const SectionHeader = memo(({ title, subtitle, onSeeAll, px = HOME_GUTTER }: SectionHeaderProps) => (
+  <XStack px={px} ai="flex-end" gap={12}>
+    <YStack flex={1} gap={2}>
+      <UText variant="display-m" color="$textPrimary" accessibilityRole="header">
         {title}
       </UText>
       {subtitle && (
-        <UText variant="text-sm" color="$neutralAlphaLight6" mt={4}>
+        <UText variant="body-s" color="$textMuted">
           {subtitle}
         </UText>
       )}
     </YStack>
+    {onSeeAll && (
+      <YStack
+        minHeight={44}
+        jc="center"
+        onPress={onSeeAll}
+        pressStyle={{ opacity: 0.7 }}
+        accessible
+        accessibilityRole="button"
+        accessibilityLabel={`See all ${title}`}
+      >
+        <UText variant="link" color="$accentCyan">
+          See all
+        </UText>
+      </YStack>
+    )}
   </XStack>
 ));
 

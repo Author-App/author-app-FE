@@ -8,16 +8,16 @@
       "androidMode": "default",
       "androidCollapsedTitle": "New notification"
     },
-    "version": "1.0.9",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/images/mainLogo.png",
     "scheme": "stanleypaden",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/mainLogo.png",
+      "image": "./assets/images/splashLogo.png",
       "resizeMode": "contain",
-      "backgroundColor": "#132440"
+      "backgroundColor": "#020103"
     },
     "ios": {
       "supportsTablet": true,

@@ -1,10 +1,10 @@
 import React, { memo } from 'react';
-import { YStack, XStack, Progress, YStackProps } from 'tamagui';
+import { YStack, XStack, YStackProps } from 'tamagui';
 
 import UText from '@/src/components/core/text/uText';
 import UStarRating from '@/src/components/core/rating/UStarRating';
+import { NeonButton } from '@/src/components/core/buttons/neonButton';
 import type { RatingStats } from '@/src/types/api/library.types';
-import { UButton } from '@/src/components/core/buttons/uButton';
 
 interface RatingStatsCardProps extends YStackProps {
   ratingStats: RatingStats;
@@ -23,72 +23,34 @@ export function RatingStatsCard({
   const canReview = hasAccess && onWriteReview;
 
   return (
-    <YStack
-      bg="rgba(255, 255, 255, 0.08)"
-      borderWidth={1}
-      borderColor="rgba(255, 255, 255, 0.12)"
-      br={16}
-      p={20}
-      {...props}
-    >
-      {/* Overall Rating - Centered */}
-      <YStack ai="center" mb={8}>
-        <XStack ai="center" gap={6}>
-          <UText variant="heading-h1" color="$white">
+    <YStack p={20} gap={16} br={24} bg="$glass" borderWidth={1} borderColor="$glassBorder" {...props}>
+      <YStack ai="center" gap={6}>
+        <XStack ai="center" gap={10}>
+          <UText variant="display-l" fontSize={32} lineHeight={38} letterSpacing={0} color="$textPrimary">
             {ratingStats.average.toFixed(1)}
           </UText>
-          <UStarRating rating={ratingStats.average} size={20} />
+          <UStarRating rating={ratingStats.average} size={20} gap={2} />
         </XStack>
-        <UText variant="text-sm" color="$neutral3" mt={4}>
+        <UText variant="body-s" color="$textMuted">
           {ratingStats.total} {ratingStats.total === 1 ? 'rating' : 'ratings'}
+        </UText>
+        <UText variant="meta" color="$accentCyan">
+          {ratingStats.recommended}% recommended
         </UText>
       </YStack>
 
-      {/* Recommended */}
-      <YStack ai="center" mb={20}>
-        <XStack ai="center" gap={6}>
-          <UText variant="heading-h2" color="$brandTeal">
-            {ratingStats.recommended}%
-          </UText>
-          <UText variant="text-md" color="$neutral1">
-            Recommended
-          </UText>
-        </XStack>
-      </YStack>
-
-      {/* Rating Breakdown */}
-      <YStack gap={10} mb={canReview ? 20 : 0}>
-        {breakdownEntries.map(([star, count]) => {
-          const percentage = maxCount > 0 ? ((count as number) / maxCount) * 100 : 0;
-          return (
-            <BreakdownRow
-              key={star}
-              star={star}
-              count={count as number}
-              percentage={percentage}
-            />
-          );
-        })}
+      <YStack gap={10}>
+        {breakdownEntries.map(([star, count]) => (
+          <BreakdownRow key={star} star={star} count={count as number} percentage={((count as number) / maxCount) * 100} />
+        ))}
       </YStack>
 
       {canReview && (
-        <UButton 
-          onPress={onWriteReview} 
-          mt={15}
-          h={48}
-          bg="$brandTeal"
-          br={24}
-          pressStyle={{ opacity: 0.8 }}
-        >
-          <UText variant="text-md" color="$white" fontWeight="600">
-            Write a Review
-          </UText>
-        </UButton>
+        <NeonButton tone="secondary" h={44} onPress={onWriteReview} title="Write a Review" />
       )}
     </YStack>
   );
 }
-
 
 interface BreakdownRowProps {
   star: string;
@@ -98,23 +60,20 @@ interface BreakdownRowProps {
 
 const BreakdownRow = memo(function BreakdownRow({ star, count, percentage }: BreakdownRowProps) {
   return (
-    <XStack ai="center" gap={8}>
-      <XStack ai="center" gap={4} width={36}>
-        <UText variant="text-md" color="$white">
-          {star}
-        </UText>
-        <UText variant="text-sm" color="$secondary">★</UText>
-      </XStack>
-      <Progress
-        value={percentage}
-        backgroundColor="rgba(255, 255, 255, 0.1)"
-        height={8}
-        flex={1}
-        br={4}
-      >
-        <Progress.Indicator backgroundColor="$secondary" br={4} />
-      </Progress>
-      <UText variant="text-sm" color="$neutral3" width={30} textAlign="right">
+    <XStack
+      ai="center"
+      gap={10}
+      accessible
+      accessibilityRole="text"
+      accessibilityLabel={`${star} stars, ${count} ${count === 1 ? 'rating' : 'ratings'}`}
+    >
+      <UText variant="meta-s" color="$textSecondary" w={28}>
+        {star} ★
+      </UText>
+      <YStack flex={1} h={6} br={3} bg="$track" overflow="hidden">
+        <YStack h={6} br={3} bg="$gold" w={`${percentage}%`} />
+      </YStack>
+      <UText variant="meta-s" color="$textMuted" w={28} textAlign="right">
         {count}
       </UText>
     </XStack>

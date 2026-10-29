@@ -1,78 +1,113 @@
 import { NeonButton } from '@/src/components/core/buttons/neonButton';
 import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
-import { useRouter } from 'expo-router';
-import React, { useCallback, memo, useState } from 'react';
-import { ImageBackground, StyleSheet } from 'react-native';
+import { useFocusEffect, useRouter } from 'expo-router';
+import React, { useCallback, memo, useRef } from 'react';
+import { StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { YStack, View } from 'tamagui';
+import { LinearGradient } from 'expo-linear-gradient';
+import { YStack, getTokenValue, useMedia } from 'tamagui';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
+  withSequence,
+  withDelay,
+  withRepeat,
+  cancelAnimation,
+  useReducedMotion,
+  SharedValue,
   Easing,
   runOnJS,
   interpolate,
 } from 'react-native-reanimated';
-import ULocalImage from '@/src/components/core/image/uLocalImage';
+import AuthBackground from '@/src/auth/components/AuthBackground';
+import { FORM_WIDTH } from '@/src/components/core/layout/layout';
+import UGlitchWordmark, { burst } from '@/src/components/core/text/uGlitchWordmark';
+import { WIDE_DISPLAY_SCALE } from '@/src/components/core/text/uText';
 
-const authScreenBg = require('@/assets/images/authScreenBg.jpg');
-const mainLogo = require('@/assets/images/mainLogo.png');
+const LOGIN_WORDMARK_SIZE = 14;
+// "STANLEY PADEN" is 11.55em wide with 0.12em spacing, measured from Orbitron-Black.ttf
+const WORDMARK_WIDTH_EM = 11.55;
+const WORDMARK_SIZE = 26;
+const WIDE_WORDMARK_SIZE = 48;
+const GUTTER = 24;
 
-const LOGO_WIDTH = 255;
-const LOGO_HEIGHT = 336;
+// glitch: -1..1 drives the RGB split and the jitter, 0 at rest. Uneven gaps so it is not mechanical
+const loopGlitch = (glitch: SharedValue<number>) => {
+  glitch.value = withDelay(
+    600,
+    withRepeat(
+      withSequence(burst(), withDelay(900, burst(0.5)), withDelay(3200, withTiming(0, { duration: 0 }))),
+      -1
+    )
+  );
+};
 
-// Final logo position on auth screens (left is fixed, top is relative to safe area)
-const AUTH_LOGO_LEFT = 0;
-const AUTH_LOGO_WIDTH = 130;
-const AUTH_LOGO_HEIGHT = 70;
-
-const styles = StyleSheet.create({
-  background: { flex: 1 },
-});
+const WORDMARK = 'Stanley Paden';
 
 const OnboardingScreen = memo(() => {
   const router = useRouter();
-  const { top: safeTop } = useSafeAreaInsets();
-  const [initialPosition, setInitialPosition] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
+  const { top, bottom } = useSafeAreaInsets();
+  const { width: screenWidth, fontScale } = useWindowDimensions();
+  const { gtXs: isWide } = useMedia();
+  const wordmarkSize = isWide ? WIDE_WORDMARK_SIZE : WORDMARK_SIZE;
+  const exitScale = (LOGIN_WORDMARK_SIZE * (isWide ? WIDE_DISPLAY_SCALE : 1)) / wordmarkSize;
 
-  // Animation progress (0 = initial centered, 1 = at auth position)
+  // Scaled down to fit the gutter at large Dynamic Type; +8 absorbs kerning and rounding
+  const wordmarkWidth = Math.ceil(wordmarkSize * fontScale * WORDMARK_WIDTH_EM) + 8;
+  const fitScale = Math.min(1, (screenWidth - GUTTER * 2) / wordmarkWidth);
+  // Left edge of Login's wordmark: the gutter, plus the margin of its centered column
+  const loginWordmarkX = GUTTER + Math.max(0, (screenWidth - GUTTER * 2 - FORM_WIDTH) / 2);
+  const wordmarkRef = useRef<View>(null);
+  const accentColors = [getTokenValue('$glowPurple', 'color'), getTokenValue('$glowCyan', 'color')] as const;
+
+  // Animation progress (0 = in place, 1 = at Login's wordmark position)
   const exitProgress = useSharedValue(0);
+  const exitOffsetX = useSharedValue(0);
+  const exitOffsetY = useSharedValue(0);
   const isAnimating = useSharedValue(false);
+  const glitch = useSharedValue(0);
+  const reduceMotion = useReducedMotion();
 
-  // Animated style for logo movement
-  const animatedLogoStyle = useAnimatedStyle(() => {
-    const top = interpolate(exitProgress.value, [0, 1], [initialPosition.top, safeTop + 8]);
-    const left = interpolate(exitProgress.value, [0, 1], [initialPosition.left, AUTH_LOGO_LEFT]);
-    const width = interpolate(exitProgress.value, [0, 1], [LOGO_WIDTH, AUTH_LOGO_WIDTH]);
-    const height = interpolate(exitProgress.value, [0, 1], [LOGO_HEIGHT, AUTH_LOGO_HEIGHT]);
+  // Reset on every focus, and stop the loop on blur: Login is pushed on top of this screen
+  useFocusEffect(
+    useCallback(() => {
+      exitProgress.value = 0;
+      isAnimating.value = false;
+      if (!reduceMotion) loopGlitch(glitch);
+      return () => cancelAnimation(glitch);
+    }, [exitProgress, isAnimating, glitch, reduceMotion])
+  );
 
-    return {
-      position: 'absolute',
-      top,
-      left,
-      width,
-      height,
-      zIndex: 10,
-    };
-  });
+  const animatedWordmarkStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: exitProgress.value * exitOffsetX.value },
+      { translateY: exitProgress.value * exitOffsetY.value },
+      { scale: interpolate(exitProgress.value, [0, 1], [fitScale, exitScale]) },
+    ],
+  }));
 
   const navigateToScreen = useCallback((screen: 'login' | 'signup') => {
-    if (screen === 'login') return router.push('/(public)/login');
-    else if (screen === 'signup') return router.push('/(public)/signup');
-
+    router.push(screen === 'login' ? '/(public)/login' : '/(public)/signup');
   }, [router]);
 
   const animateAndNavigate = useCallback((screen: 'login' | 'signup') => {
     if (isAnimating.value) return;
     isAnimating.value = true;
+    if (!reduceMotion) glitch.value = burst();
 
-    exitProgress.value = withTiming(1, {
-      duration: 400,
-      easing: Easing.out(Easing.cubic),
-    }, () => {
-      runOnJS(navigateToScreen)(screen);
+    wordmarkRef.current?.measureInWindow((x, y) => {
+      // Login draws its wordmark at the top inset + 16
+      exitOffsetX.value = loginWordmarkX - x;
+      exitOffsetY.value = top + 16 - y;
+      exitProgress.value = withTiming(1, {
+        duration: 400,
+        easing: Easing.out(Easing.cubic),
+      }, () => {
+        runOnJS(navigateToScreen)(screen);
+      });
     });
-  }, [navigateToScreen]);
+  }, [navigateToScreen, top, loginWordmarkX, glitch, reduceMotion]);
 
   const handleLoginPress = useCallback(() => {
     animateAndNavigate('login');
@@ -82,42 +117,50 @@ const OnboardingScreen = memo(() => {
     animateAndNavigate('signup');
   }, [animateAndNavigate]);
 
-  const onPlaceholderLayout = useCallback((event: any) => {
-    const { y, x } = event.nativeEvent.layout;
-    setInitialPosition({ top: y, left: x });
-  }, []);
   return (
-    <ImageBackground
-      source={authScreenBg}
-      resizeMode="cover"
-      style={styles.background}
-    >
-      {/* Absolutely positioned logo - animates to top-left */}
-      <UAnimatedView animation="fadeInScale" duration={600}>
-        <Animated.View style={animatedLogoStyle}>
-          <ULocalImage
-            source={mainLogo}
-            width="100%"
-            height="100%"
+    <YStack flex={1} bg="$bgPage">
+      <AuthBackground />
+
+      <YStack flex={1} px={GUTTER} pt={top + 16} pb={bottom + 16}>
+        <YStack flex={1} jc="center" gap={20} pb={40}>
+          <UAnimatedView animation="fadeInScale" duration={600}>
+            {/* Fixed width so the text can never wrap; the scale keeps it inside the gutter */}
+            <Animated.View
+              ref={wordmarkRef}
+              style={[styles.wordmark, isWide && styles.centered, { width: wordmarkWidth }, animatedWordmarkStyle]}
+            >
+              <UGlitchWordmark glitch={glitch} size={wordmarkSize}>
+                {WORDMARK}
+              </UGlitchWordmark>
+            </Animated.View>
+          </UAnimatedView>
+          <LinearGradient
+            colors={accentColors}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={[styles.accent, isWide && styles.centered]}
           />
-        </Animated.View>
-      </UAnimatedView>
+        </YStack>
 
-      <YStack flex={1} jc="center" ai="center" px={10}>
-        
-        {/* Transparent placeholder to maintain layout */}
-        <View height={LOGO_HEIGHT} width={LOGO_WIDTH} onLayout={onPlaceholderLayout}/>
+        <YStack gap={12} w="100%" maw={FORM_WIDTH} als="center">
+          <UAnimatedView animation="fadeInUp" delay={300}>
+            <NeonButton scan testID="onboarding-login" onPress={handleLoginPress} title="Log In" />
+          </UAnimatedView>
 
-        <UAnimatedView animation="fadeInUp" delay={300}>
-          <NeonButton testID="onboarding-login" onPress={handleLoginPress} width={280} title="Log In" />
-        </UAnimatedView>
-
-        <UAnimatedView animation="fadeInUp" delay={450}>
-          <NeonButton onPress={handleSignupPress} mt={15} width={280} title="Sign Up" />
-        </UAnimatedView>
+          <UAnimatedView animation="fadeInUp" delay={450}>
+            <NeonButton tone="secondary" onPress={handleSignupPress} title="Sign Up" />
+          </UAnimatedView>
+        </YStack>
       </YStack>
-    </ImageBackground>
+    </YStack>
   );
+});
+
+const styles = StyleSheet.create({
+  // Scale from the top-left corner, so the wordmark shrinks toward Login's position
+  wordmark: { alignSelf: 'flex-start', transformOrigin: 'left top' },
+  centered: { alignSelf: 'center' },
+  accent: { width: 56, height: 2, borderRadius: 1, boxShadow: '0 0 10px rgba(0,240,255,0.6)' },
 });
 
 OnboardingScreen.displayName = 'OnboardingScreen';

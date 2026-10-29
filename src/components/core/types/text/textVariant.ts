@@ -15,4 +15,17 @@ export type TextVariant =
   | 'playfair-md'
   | 'playfair-lg'
   | 'playfair-xl'
-  | 'playfair-2xl';
+  | 'playfair-2xl'
+  | 'display-xl'
+  | 'wordmark'
+  | 'wordmark-lg'
+  | 'display-l'
+  | 'display-m'
+  | 'display-s'
+  | 'label-button'
+  | 'meta'
+  | 'meta-s'
+  | 'meta-pill'
+  | 'body'
+  | 'body-s'
+  | 'link';

@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import Toast from 'react-native-toast-message';
+import { Toast } from '@/src/components/core/toast/toast';
 import { authApi } from '@/src/store/api/authApi';
 import { saveAuthTokens, clearAuthTokens } from '@/src/storage/authStorage';
 import type { User } from '@/src/types/api/auth.types';

@@ -13,7 +13,6 @@ import Animated, {
   Extrapolation,
 } from 'react-native-reanimated';
 import { getTokenValue } from 'tamagui';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Svg, { Circle } from 'react-native-svg';
 import IconArrowDown from '@/assets/icons/iconArrowDown';
 
@@ -45,9 +44,7 @@ export function useURefreshControl({
   pullThreshold = 80,
   color,
 }: URefreshControlConfig): URefreshControlReturn {
-  const { top } = useSafeAreaInsets();
-  const brandCrimson = getTokenValue('$brandCrimson', 'color') as string;
-  const progressColor = color || brandCrimson;
+  const progressColor = color || (getTokenValue('$accentCyan', 'color') as string);
 
   const pullProgress = useSharedValue(0);
   const rotation = useSharedValue(0);
@@ -168,7 +165,7 @@ export function useURefreshControl({
         </Svg>
       </Animated.View>
       <Animated.View style={[styles.arrowContainer, arrowRotationStyle]}>
-        <IconArrowDown color="$brandCrimson" dimen={arrowSize} />
+        <IconArrowDown color="$accentCyan" dimen={arrowSize} />
       </Animated.View>
     </Animated.View>
   );

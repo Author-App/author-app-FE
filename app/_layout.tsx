@@ -1,18 +1,18 @@
 import { Platform } from 'react-native';
 import { Slot } from 'expo-router';
+import { Feather, Ionicons } from '@expo/vector-icons';
 import Head from 'expo-router/head';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
-import Toast from 'react-native-toast-message';
 
 import { persistor, store } from '@/src/store';
 import AppTamaguiProvider from '@/src/components/providers/appTamaguiProvider';
 import FontProvider from '@/src/components/providers/fontProvider';
 import { AppStripeProvider } from '@/src/components/providers/appStripeProvider';
 import { OTAUpdateTracker } from '@/src/components/providers/OTAUpdateTracker';
-import toastConfig from '@/src/components/core/toast/toastConfig';
+import { ToastHost } from '@/src/components/core/toast/toast';
 import { NotificationDeepLinkHandler } from '@/src/notifications';
 import {
   initSentry,
@@ -22,20 +22,30 @@ import {
   SentryUserSync,
 } from '@/src/services/sentry';
 
+// Icon fonts render as Text holding a private-use glyph, which a screen reader cannot speak.
+// Hide every icon; anything an icon means must be in its button's accessibilityLabel.
+for (const Icon of [Ionicons, Feather] as unknown as { defaultProps?: object }[]) {
+  Icon.defaultProps = {
+    ...Icon.defaultProps,
+    accessibilityElementsHidden: true,
+    importantForAccessibility: 'no-hide-descendants',
+  };
+}
+
 // Initialize Sentry before anything else
 initSentry({
   enableInDev: false,
   tracesSampleRate: 0.2,
 });
 
-// Brand colors
-const BRAND_NAVY = '#132440';
+// $bgPage, as a literal: this renders before the Tamagui provider. Matches the splash background.
+const BG_PAGE = '#020103';
 
 export default sentryWrap(function RootLayout() {
   return (
     <SentryErrorBoundary>
-      <SafeAreaProvider style={{ backgroundColor: BRAND_NAVY }}>
-        <GestureHandlerRootView style={{ flex: 1, backgroundColor: BRAND_NAVY }}>
+      <SafeAreaProvider style={{ backgroundColor: BG_PAGE }}>
+        <GestureHandlerRootView style={{ flex: 1, backgroundColor: BG_PAGE }}>
           <AppHead />
           <Provider store={store}>
             <PersistGate loading={null} persistor={persistor}>
@@ -47,7 +57,7 @@ export default sentryWrap(function RootLayout() {
                     <SentryUserSync />
                     <NotificationDeepLinkHandler />
                     <Slot />
-                    <Toast config={toastConfig} topOffset={0} />
+                    <ToastHost />
                   </FontProvider>
                 </AppTamaguiProvider>
               </AppStripeProvider>
@@ -65,7 +75,7 @@ function AppHead() {
   return (
     <Head>
       <title>Author App</title>
-      <meta name="theme-color" content="#132440" />
+      <meta name="theme-color" content="#020103" />
     </Head>
   );
 }

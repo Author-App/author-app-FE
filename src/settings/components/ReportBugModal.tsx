@@ -1,12 +1,13 @@
-import React, { memo, useState, useCallback } from 'react';
-import { Modal, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
-import { YStack, XStack, getTokenValue, Input } from 'tamagui';
+import React, { memo, useState, useCallback, useEffect } from 'react';
+import { ScrollView } from 'react-native';
+import { XStack, YStack, getTokenValue } from 'tamagui';
 import { Ionicons } from '@expo/vector-icons';
-import { BlurView } from 'expo-blur';
 import { haptics } from '@/src/utils/haptics';
 
 import UText from '@/src/components/core/text/uText';
-import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
+import UInput from '@/src/components/core/inputs/uInput';
+import UModal from '@/src/components/core/modals/uModal';
+import { NeonButton } from '@/src/components/core/buttons/neonButton';
 
 interface ReportBugModalProps {
   visible: boolean;
@@ -14,6 +15,8 @@ interface ReportBugModalProps {
   onCancel: () => void;
   onSubmit: (title: string, description: string) => void;
 }
+
+const DESCRIPTION_MAX = 2000;
 
 const ReportBugModal: React.FC<ReportBugModalProps> = ({
   visible,
@@ -26,25 +29,25 @@ const ReportBugModal: React.FC<ReportBugModalProps> = ({
   const [titleError, setTitleError] = useState('');
   const [descriptionError, setDescriptionError] = useState('');
 
-  const brandTeal = getTokenValue('$brandTeal', 'color');
-
-  const resetForm = useCallback(() => {
-    setTitle('');
-    setDescription('');
-    setTitleError('');
-    setDescriptionError('');
-  }, []);
+  // Start empty every time it opens, whether it closed by cancel or by a successful submit
+  useEffect(() => {
+    if (!visible) {
+      setTitle('');
+      setDescription('');
+      setTitleError('');
+      setDescriptionError('');
+    }
+  }, [visible]);
 
   const handleCancel = useCallback(() => {
+    if (isSubmitting) return;
     haptics.light();
-    resetForm();
     onCancel();
-  }, [onCancel, resetForm]);
+  }, [isSubmitting, onCancel]);
 
   const handleSubmit = useCallback(() => {
     let hasError = false;
 
-    // Validate title (3-200 characters)
     if (title.trim().length < 3) {
       setTitleError('Title must be at least 3 characters');
       hasError = true;
@@ -55,11 +58,10 @@ const ReportBugModal: React.FC<ReportBugModalProps> = ({
       setTitleError('');
     }
 
-    // Validate description (max 2000 characters)
     if (!description.trim()) {
       setDescriptionError('Please describe the bug');
       hasError = true;
-    } else if (description.trim().length > 2000) {
+    } else if (description.trim().length > DESCRIPTION_MAX) {
       setDescriptionError('Description must be less than 2000 characters');
       hasError = true;
     } else {
@@ -75,193 +77,74 @@ const ReportBugModal: React.FC<ReportBugModalProps> = ({
     onSubmit(title.trim(), description.trim());
   }, [title, description, onSubmit]);
 
-  // Reset form when modal closes
-  const handleModalClose = useCallback(() => {
-    if (!visible) {
-      resetForm();
-    }
-  }, [visible, resetForm]);
-
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={handleCancel}
-      onDismiss={handleModalClose}
-    >
-      <BlurView intensity={20} tint="dark" style={{ flex: 1 }}>
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={{ flex: 1 }}
-        >
-          <YStack
-            flex={1}
-            jc="center"
-            ai="center"
-            px={20}
-            onPress={handleCancel}
-          >
-            <YStack onPress={(e) => e.stopPropagation()} w="100%" maxWidth={360}>
-              <UAnimatedView animation="fadeInUp" duration={300}>
-                <YStack
-                  bg="$brandNavy"
-                  borderRadius={24}
-                  borderWidth={1}
-                  borderColor="rgba(255,255,255,0.1)"
-                  overflow="hidden"
-                >
-                  {/* Header */}
-                  <YStack ai="center" pt={28} pb={20} gap={16}>
-                    <YStack
-                      w={64}
-                      h={64}
-                      br={32}
-                      bg="rgba(77, 169, 169, 0.15)"
-                      jc="center"
-                      ai="center"
-                    >
-                      <Ionicons name="bug-outline" size={32} color={brandTeal} />
-                    </YStack>
+    <UModal visible={visible} onClose={handleCancel} tone="glow">
+      <YStack
+        w={60}
+        h={60}
+        br={30}
+        ai="center"
+        jc="center"
+        bg="rgba(135,54,247,0.16)"
+        borderWidth={1}
+        borderColor="$glassGlowBorder"
+        boxShadow="0 0 22px rgba(135,54,247,0.35)"
+      >
+        <Ionicons name="bug-outline" size={28} color={getTokenValue('$accentPurple', 'color')} />
+      </YStack>
 
-                    <YStack ai="center" gap={8} px={24}>
-                      <UText variant="playfair-lg" color="$white" textAlign="center">
-                        Report a Bug
-                      </UText>
-                      <UText
-                        variant="text-sm"
-                        color="$neutral1"
-                        textAlign="center"
-                        opacity={0.8}
-                      >
-                        Help us improve by describing the issue you encountered
-                      </UText>
-                    </YStack>
-                  </YStack>
+      <UText variant="display-l" fontSize={18} lineHeight={24} letterSpacing={0} color="$textPrimary" textAlign="center" accessibilityRole="header">
+        Report a Bug
+      </UText>
+      <UText variant="body" color="$textSecondary" textAlign="center">
+        Help us improve by describing the issue you encountered
+      </UText>
 
-                  {/* Form */}
-                  <ScrollView 
-                    style={{ maxHeight: 300 }} 
-                    keyboardShouldPersistTaps="handled"
-                  >
-                    <YStack px={20} pb={20} gap={16}>
-                      {/* Title Input */}
-                      <YStack gap={6}>
-                        <UText variant="text-sm" color="$neutral1" opacity={0.8}>
-                          Title
-                        </UText>
-                        <Input
-                          value={title}
-                          onChangeText={setTitle}
-                          placeholder="Brief summary of the bug"
-                          placeholderTextColor="rgba(255,255,255,0.4)"
-                          bg="rgba(255,255,255,0.08)"
-                          borderWidth={1}
-                          borderColor={titleError ? '$brandCrimson' : 'rgba(255,255,255,0.1)'}
-                          borderRadius={12}
-                          color="$white"
-                          px={14}
-                          py={12}
-                          fontSize={14}
-                          maxLength={200}
-                          editable={!isSubmitting}
-                        />
-                        {titleError ? (
-                          <UText variant="text-xs" color="$brandCrimson">
-                            {titleError}
-                          </UText>
-                        ) : null}
-                      </YStack>
-
-                      {/* Description Input */}
-                      <YStack gap={6}>
-                        <UText variant="text-sm" color="$neutral1" opacity={0.8}>
-                          Description
-                        </UText>
-                        <Input
-                          value={description}
-                          onChangeText={setDescription}
-                          placeholder="What happened? What were you trying to do?"
-                          placeholderTextColor="rgba(255,255,255,0.4)"
-                          bg="rgba(255,255,255,0.08)"
-                          borderWidth={1}
-                          borderColor={descriptionError ? '$brandCrimson' : 'rgba(255,255,255,0.1)'}
-                          borderRadius={12}
-                          color="$white"
-                          px={14}
-                          py={12}
-                          fontSize={14}
-                          multiline
-                          numberOfLines={4}
-                          maxLength={2000}
-                          textAlignVertical="top"
-                          minHeight={100}
-                          editable={!isSubmitting}
-                        />
-                        {descriptionError ? (
-                          <UText variant="text-xs" color="$brandCrimson">
-                            {descriptionError}
-                          </UText>
-                        ) : null}
-                        <UText variant="text-xs" color="$neutral1" opacity={0.5} textAlign="right">
-                          {description.length}/2000
-                        </UText>
-                      </YStack>
-                    </YStack>
-                  </ScrollView>
-
-                  {/* Divider */}
-                  <YStack h={1} bg="rgba(255,255,255,0.08)" />
-
-                  {/* Buttons */}
-                  <XStack>
-                    {/* Cancel Button */}
-                    <YStack
-                      flex={1}
-                      py={16}
-                      ai="center"
-                      borderRightWidth={1}
-                      borderRightColor="rgba(255,255,255,0.08)"
-                      pressStyle={{ opacity: 0.7 }}
-                      disabled={isSubmitting}
-                      onPress={handleCancel}
-                    >
-                      <UText variant="text-md" color="$neutral1" fontWeight="500">
-                        Cancel
-                      </UText>
-                    </YStack>
-
-                    {/* Submit Button */}
-                    <YStack
-                      flex={1}
-                      py={16}
-                      ai="center"
-                      opacity={isSubmitting ? 0.7 : 1}
-                      pressStyle={{ opacity: 0.7 }}
-                      disabled={isSubmitting}
-                      onPress={handleSubmit}
-                    >
-                      {isSubmitting ? (
-                        <XStack ai="center" gap={8}>
-                          <Ionicons name="sync-outline" size={16} color={brandTeal} />
-                          <UText variant="text-md" color="$brandTeal" fontWeight="600">
-                            Submitting...
-                          </UText>
-                        </XStack>
-                      ) : (
-                        <UText variant="text-md" color="$brandTeal" fontWeight="600">
-                          Submit
-                        </UText>
-                      )}
-                    </YStack>
-                  </XStack>
-                </YStack>
-              </UAnimatedView>
-            </YStack>
+      {/* Scrolls on short screens while the keyboard is open */}
+      <ScrollView style={{ maxHeight: 320, width: '100%' }} keyboardShouldPersistTaps="handled">
+        <YStack gap={14}>
+          <UInput
+            variant="glass"
+            label="Title"
+            placeholder="Brief summary of the bug"
+            value={title}
+            onChangeText={setTitle}
+            error={titleError || undefined}
+            maxLength={200}
+            editable={!isSubmitting}
+          />
+          <YStack gap={6}>
+            <UInput
+              variant="glass"
+              label="Description"
+              placeholder="What happened? What were you trying to do?"
+              value={description}
+              onChangeText={setDescription}
+              error={descriptionError || undefined}
+              multiline
+              maxLength={DESCRIPTION_MAX}
+              editable={!isSubmitting}
+            />
+            <UText variant="meta-s" color="$textMuted" textAlign="right">
+              {description.length}/{DESCRIPTION_MAX}
+            </UText>
           </YStack>
-        </KeyboardAvoidingView>
-      </BlurView>
-    </Modal>
+        </YStack>
+      </ScrollView>
+
+      <XStack w="100%" gap={10} mt={6}>
+        <NeonButton tone="neutral" flex={1} h={50} px={0} disabled={isSubmitting} onPress={handleCancel}>
+          <UText variant="label-button" fontSize={12} lineHeight={16} letterSpacing={0.72} color="$textPrimary">
+            Cancel
+          </UText>
+        </NeonButton>
+        <NeonButton tone="primary" flex={1} h={50} px={0} loading={isSubmitting} onPress={handleSubmit}>
+          <UText variant="label-button" fontSize={12} lineHeight={16} letterSpacing={0.72} color="$textPrimary">
+            Submit
+          </UText>
+        </NeonButton>
+      </XStack>
+    </UModal>
   );
 };
 

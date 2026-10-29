@@ -1,3 +1,5 @@
+import type { AudioPlayer } from 'expo-audio';
+
 export interface AudioProgressData {
   position: number; 
   duration: number; 
@@ -12,12 +14,11 @@ export interface UseAudioPlayerOptions {
 }
 
 export interface UseAudioPlayerReturn {
+  player: AudioPlayer;
   isPlaying: boolean;
   isLoading: boolean;
   togglePlayPause: () => Promise<void>;
   seekTo: (positionMs: number) => Promise<void>;
   rewind: (seconds?: number) => Promise<void>;
   forward: (seconds?: number) => Promise<void>;
-  progressRef: React.MutableRefObject<AudioProgressData>;
-  formatTime: (ms: number) => string;
 }

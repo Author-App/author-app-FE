@@ -1,201 +1,84 @@
 import React, { memo } from 'react';
 import { YStack, XStack, getTokenValue } from 'tamagui';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 
 import UText from '@/src/components/core/text/uText';
+import UBadge from '@/src/components/core/display/uBadge';
 import ULocalImage from '@/src/components/core/image/uLocalImage';
 import { formatDurationCompact } from '@/src/utils/helper';
 import { formatPrice } from '@/src/utils/currency';
 import type { BookResponse } from '@/src/types/api/library.types';
-import { getBookTypeLabel, getBookTypeColor, getBookTypeIcon } from '@/src/utils/bookHelpers';
+import { getBookTypeLabel, getBookTypeTone } from '@/src/utils/bookHelpers';
 
 interface LibraryBookCardProps {
   book: BookResponse;
   onPress: () => void;
-  index: number;
-  numColumns: number;
 }
 
 const LibraryBookCard: React.FC<LibraryBookCardProps> = ({
   book,
   onPress,
-  index,
-  numColumns,
 }) => {
-  const teal = getTokenValue('$brandTeal', 'color');
-  const isAudiobook = book.type === 'audiobook';
-
-  // Calculate margins for grid spacing
-  const isLeftColumn = index % numColumns === 0;
-  const isRightColumn = index % numColumns === numColumns - 1;
+  const price = book.isFree ? 'Free' : formatPrice(book.price, book.currency);
+  const length =
+    book.type === 'audiobook' && book.durationSec
+      ? formatDurationCompact(book.durationSec)
+      : book.totalPages
+        ? `${book.totalPages} pages`
+        : null;
+  const owned = book.hasAccess && !book.isFree;
 
   return (
     <YStack
       flex={1}
-      mb={16}
-      ml={isLeftColumn ? 16 : 6}
-      mr={isRightColumn ? 16 : 6}
-      borderRadius={16}
-      overflow="hidden"
-      bg="rgba(255,255,255,0.04)"
+      mb={20}
+      p={8}
+      pb={10}
+      gap={8}
+      br={16}
+      bg="$glass"
       borderWidth={1}
-      borderColor="rgba(255,255,255,0.06)"
+      borderColor="$glassBorder"
       onPress={onPress}
       pressStyle={{ opacity: 0.92, scale: 0.97 }}
+      accessible
+      accessibilityRole="button"
+      accessibilityLabel={`${book.title}, ${getBookTypeLabel(book.type)}, ${owned ? 'owned' : price}`}
     >
-      {/* Cover Image with Cinematic Overlay */}
-      <YStack h={270} w="100%" position="relative">
-        <ULocalImage
-          source={book.thumbnail}
-          w="100%"
-          h="100%"
-        />
-        {/* Cinematic Gradient Overlay */}
-        <LinearGradient
-          colors={['transparent', 'rgba(19,36,64,0.4)', 'rgba(19,36,64,0.95)']}
-          locations={[0.3, 0.6, 1]}
-          style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: '100%',
-          }}
-        />
-
-        <XStack
-          position="absolute"
-          top={10}
-          left={10}
-          right={10}
-          jc="space-between"
-          ai="center"
-        >
-          <YStack
-            bg={getBookTypeColor(book.type) as any}
-            px={10}
-            py={5}
-            br={8}
-          >
-            <XStack ai="center" gap={5}>
-              <Ionicons
-                name={getBookTypeIcon(book.type)}
-                size={11}
-                color="white"
-              />
-              <UText variant="text-xs" color="$white" fontWeight="600">
-                {getBookTypeLabel(book.type)}
-              </UText>
-            </XStack>
-          </YStack>
-          {/* Bookmark */}
-          {book.bookmark && (
-            <YStack bg="rgba(0,0,0,0.5)" p={6} br={8}>
-              <Ionicons name="bookmark" size={16} color={teal} />
-            </YStack>
-          )}
-        </XStack>
-
-        {/* Owned Badge */}
-        {book.hasAccess && !book.isFree && (
-          <XStack
-            position="absolute"
-            bottom={5}
-            left={10}
-            bg="#FFD700"
-            px={8}
-            py={4}
-            br={6}
-            ai="center"
-            gap={4}
-            zIndex={22}
-            shadowColor="#000"
-            shadowOffset={{ width: 0, height: 2 }}
-            shadowOpacity={0.4}
-            shadowRadius={3}
-            elevation={4}
-          >
-            <Ionicons name="checkmark-circle" size={12} color="#132440" />
-            <UText variant="text-xs" color="$brandNavy" fontWeight="700">
-              Owned
-            </UText>
-          </XStack>
-        )}
-
-        {/* Bottom Content Overlay */}
-        <YStack
-          position="absolute"
-          bottom={0}
-          left={0}
-          right={0}
-          p={12}
-          gap={6}
-        >
-          {/* Title */}
-          <UText
-            variant="text-sm"
-            color="$white"
-            fontWeight="700"
-            numberOfLines={2}
-            lineHeight={18}
-          >
-            {book.title}
-          </UText>
-
-          {/* Author */}
-          <UText
-            variant="text-xs"
-            color="$brandTeal"
-            numberOfLines={1}
-            fontWeight="500"
-          >
-            {book.author}
-          </UText>
+      {/* Shadow on the outer view: overflow hidden on the same view would clip it */}
+      <YStack aspectRatio={2 / 3} br={10} boxShadow="0 8px 16px rgba(0,0,0,0.6)">
+        <YStack flex={1} br={10} overflow="hidden">
+          <ULocalImage source={book.thumbnail} w="100%" h="100%" contentFit="cover" />
         </YStack>
+
+        <UBadge
+          label={getBookTypeLabel(book.type)}
+          tone={getBookTypeTone(book.type)}
+          onImage
+          pos="absolute"
+          top={8}
+          left={8}
+        />
+        {book.bookmark && (
+          <YStack pos="absolute" top={6} right={6} p={6} br={8} bg="rgba(2,1,3,0.8)">
+            <Ionicons name="bookmark" size={14} color={getTokenValue('$accentCyan', 'color')} />
+          </YStack>
+        )}
+        {owned && <UBadge label="Owned" tone="purple" onImage pos="absolute" bottom={8} left={8} />}
       </YStack>
 
-      {/* Bottom Info Bar */}
-      <XStack
-        px={12}
-        py={10}
-        ai="center"
-        jc="space-between"
-        bg="rgba(255,255,255,0.02)"
-        borderTopWidth={1}
-        borderTopColor="rgba(255,255,255,0.05)"
-      >
-        {/* Price/Free Badge */}
-        {book.isFree ? (
-          <YStack bg="$brandTeal" px={10} py={4} br={6}>
-            <UText variant="text-xs" color="$brandNavy" fontWeight="700">
-              FREE
-            </UText>
-          </YStack>
-        ) : (
-          <UText variant="text-sm" color="$brandTeal" fontWeight="700">
-            {formatPrice(book.price, book.currency)}
+      <UText variant="display-s" color="$textPrimary" numberOfLines={2} reserveLines={2}>
+        {book.title}
+      </UText>
+      <XStack jc="space-between" ai="center" gap={6}>
+        <UText variant="display-s" color="$accentCyan">
+          {price}
+        </UText>
+        {length && (
+          <UText variant="meta-s" color="$textMuted" numberOfLines={1}>
+            {length}
           </UText>
         )}
-
-        {/* Duration/Pages with Icon */}
-        <XStack ai="center" gap={6}>
-          {isAudiobook && book.durationSec ? (
-            <XStack ai="center" gap={4} bg="rgba(255,255,255,0.06)" px={8} py={4} br={6}>
-              <Ionicons name="time-outline" size={12} color={teal} />
-              <UText variant="text-xs" color="$white" fontWeight="500">
-                {formatDurationCompact(book.durationSec)}
-              </UText>
-            </XStack>
-          ) : book.totalPages ? (
-            <XStack ai="center" gap={4} bg="rgba(255,255,255,0.06)" px={8} py={4} br={6}>
-              <Ionicons name="document-text-outline" size={12} color={teal} />
-              <UText variant="text-xs" color="$white" fontWeight="500">
-                {book.totalPages} pages
-              </UText>
-            </XStack>
-          ) : null}
-        </XStack>
       </XStack>
     </YStack>
   );

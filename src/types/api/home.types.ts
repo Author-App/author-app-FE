@@ -60,6 +60,8 @@ export interface ContinueReadingProgress {
   lastReadAt: string;
   percentage: number;
   totalPages: number;
+  /** Audiobooks only. The backend sends it with the position. */
+  durationSec?: number;
 }
 
 /**

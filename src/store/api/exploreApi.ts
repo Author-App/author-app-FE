@@ -1,11 +1,10 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 import { baseQueryWithReauth } from './baseQuery';
 import type { ApiResponse } from '@/src/types/api/common.types';
+import type { RootState } from '@/src/store';
 import type {
   ArticleListResponse,
   ArticleDetailResponse,
-  MediaListResponse,
-  MediaQueryParams,
   EventListResponse,
   EventResponse,
   CommunityListResponse,
@@ -20,7 +19,7 @@ import type {
 export const exploreApi = createApi({
   reducerPath: 'exploreApi',
   baseQuery: baseQueryWithReauth,
-  tagTypes: ['Articles', 'Media', 'Events', 'Communities'],
+  tagTypes: ['Articles', 'Events', 'Communities'],
 
   endpoints: (builder) => ({
     /**
@@ -50,23 +49,6 @@ export const exploreApi = createApi({
       providesTags: (result, error, id) => [{ type: 'Articles', id }],
       // Cache article details for 10 minutes
       keepUnusedDataFor: 600,
-    }),
-
-    /**
-     * GET /media?mediaType=podcast|video
-     * Fetches list of podcasts or videos
-     */
-    getMedia: builder.query<ApiResponse<MediaListResponse>, MediaQueryParams>({
-      query: ({ mediaType, page, limit }) => ({
-        url: '/media',
-        method: 'GET',
-        params: { mediaType, page, limit },
-      }),
-      providesTags: (result, error, { mediaType }) => [
-        { type: 'Media', id: mediaType },
-      ],
-      // Cache media list for 5 minutes
-      keepUnusedDataFor: 300,
     }),
 
     /**
@@ -163,6 +145,28 @@ export const exploreApi = createApi({
         body,
       }),
       invalidatesTags: (result, error, { id }) => [{ type: 'Communities', id }],
+      // Show the message at once. The refetch from the tag above swaps in the server's copy,
+      // and a failed send takes it back out (the text stays in the box for a retry)
+      async onQueryStarted({ id, body }, { dispatch, getState, queryFulfilled }) {
+        const user = (getState() as RootState).auth.user;
+        if (!user) return;
+        const patch = dispatch(
+          exploreApi.util.updateQueryData('getCommunityDetail', id, (draft) => {
+            draft.data?.threads.push({
+              userId: user.id,
+              userName: `${user.firstName} ${user.lastName}`.trim(),
+              userProfileImage: user.profileImageUrl ?? user.profileImage,
+              message: body.message,
+              createdAt: new Date().toISOString(),
+            });
+          })
+        );
+        try {
+          await queryFulfilled;
+        } catch {
+          patch.undo();
+        }
+      },
     }),
   }),
 });
@@ -170,7 +174,6 @@ export const exploreApi = createApi({
 export const {
   useGetArticlesQuery,
   useGetArticleDetailQuery,
-  useGetMediaQuery,
   useGetEventsQuery,
   useGetEventDetailQuery,
   useGetCommunitiesQuery,

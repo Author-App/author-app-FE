@@ -58,3 +58,6 @@ artifacts/
 
 # test coverage output
 coverage/
+
+# Personal notes, not part of the app
+stanley-paden-master.yaml

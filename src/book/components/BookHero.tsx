@@ -1,123 +1,141 @@
-import React from 'react';
-import { YStack, XStack } from 'tamagui';
+import React, { ReactNode } from 'react';
+import { XStack, YStack, getTokenValue } from 'tamagui';
+import { Ionicons } from '@expo/vector-icons';
 
-import UBackButton from '@/src/components/core/buttons/uBackButton';
 import ULocalImage from '@/src/components/core/image/uLocalImage';
 import UText from '@/src/components/core/text/uText';
+import UBadge from '@/src/components/core/display/uBadge';
 import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
 import UStarRating from '@/src/components/core/rating/UStarRating';
-import IconBook from '@/assets/icons/iconBook';
-import IconHeadphone from '@/assets/icons/iconHeadphone';
 import type { BookResponse } from '@/src/types/api/library.types';
-import { isPrintBook } from '@/src/utils/bookHelpers';
+import { getBookTypeLabel, getBookTypeTone } from '@/src/utils/bookHelpers';
 
 interface BookHeroProps {
   book: BookResponse;
   averageRating?: number;
   totalRatings?: number;
+  /** Cover width; the height is always 2:3 */
+  coverWidth?: number;
+  /** stacked: everything centred under the cover. side: the cover on the left, details beside it (medium) */
+  variant?: 'stacked' | 'side';
+  /** Side padding of the stacked hero */
+  px?: number;
+  /** Wide screens: the price and button, placed under the details */
+  children?: ReactNode;
 }
 
-export function BookHero({ book, averageRating, totalRatings }: BookHeroProps) {
-  const isAudiobook = book.type === 'audiobook';
-  const isPrint = isPrintBook(book.type);
-  const TypeIcon = isAudiobook ? IconHeadphone : IconBook;
+/** Cover with a purple glow, title, author, rating, then genre tags and the format. */
+export function BookHero({
+  book,
+  averageRating,
+  totalRatings,
+  coverWidth = 168,
+  variant = 'stacked',
+  px = 16,
+  children,
+}: BookHeroProps) {
+  const hasRating = !!averageRating && !!totalRatings;
+  const isSide = variant === 'side';
+  const textAlign = isSide ? 'left' : 'center';
 
-  // Get display label for book type
-  const getTypeLabel = () => {
-    switch (book.type) {
-      case 'audiobook': return 'Audiobook';
-      case 'ebook': return 'E-Book';
-      case 'hardcover': return 'Hardcover';
-      case 'paperback': return 'Paperback';
-      default: return 'Book';
-    }
-  };
+  const cover = (
+    <YStack
+      w={coverWidth}
+      h={coverWidth * 1.5}
+      br={14}
+      boxShadow="0 24px 48px rgba(0,0,0,0.8), 0 0 40px rgba(135,54,247,0.4)"
+    >
+      <YStack flex={1} br={14} overflow="hidden" borderWidth={1} borderColor="$inputBorder" ai="center" jc="center" bg="$glassSolid">
+        {book.thumbnail ? (
+          <ULocalImage source={{ uri: book.thumbnail }} width="100%" height="100%" contentFit="cover" />
+        ) : (
+          <Ionicons
+            name={book.type === 'audiobook' ? 'headset-outline' : 'book-outline'}
+            size={56}
+            color={getTokenValue('$textMuted', 'color')}
+          />
+        )}
+      </YStack>
+    </YStack>
+  );
 
-  // Get badge color based on type
-  const getTypeBadgeColor = () => {
-    if (isPrint) return '$brandCrimson';
-    if (isAudiobook) return '$brandTeal';
-    return '$brandOcean';
-  };
+  const title = (
+    <UText variant="display-l" color="$textPrimary" textAlign={textAlign} mt={isSide ? 0 : 6} accessibilityRole="header">
+      {book.title}
+    </UText>
+  );
 
-  return (
-  
+  const author = (
+    <UText variant="body" fontSize={14} lineHeight={20} color="$textSecondary" textAlign={textAlign}>
+      {book.author}
+    </UText>
+  );
+
+  const rating = (
+    <XStack
+      ai="center"
+      gap={8}
+      // One element for the row: otherwise "Rated 0 out of 5 stars" is read before "No ratings"
+      accessible
+      accessibilityRole="text"
+      accessibilityLabel={
+        hasRating ? `Rated ${averageRating!.toFixed(1)} out of 5, ${totalRatings} ratings` : 'No ratings yet'
+      }
+    >
+      <UStarRating rating={averageRating ?? 0} size={16} gap={2} />
+      {hasRating ? (
+        <>
+          <UText variant="display-s" color="$textPrimary">
+            {averageRating!.toFixed(1)}
+          </UText>
+          <UText variant="body-s" color="$textMuted">
+            ({totalRatings})
+          </UText>
+        </>
+      ) : (
+        <UText variant="body-s" color="$textMuted">
+          No ratings
+        </UText>
+      )}
+    </XStack>
+  );
+
+  const tags = (
+    <XStack gap={8} flexWrap="wrap" jc={isSide ? 'flex-start' : 'center'}>
+      {book.tags?.map((tag, index) => (
+        <UBadge key={tag.id || index} label={tag.name} tone="purple" />
+      ))}
+      <UBadge label={getBookTypeLabel(book.type)} tone={getBookTypeTone(book.type)} />
+    </XStack>
+  );
+
+  if (isSide) {
+    return (
       <UAnimatedView animation="fadeInUp" delay={100}>
-        <YStack ai="center" mb={20} px={20}>
-          <YStack
-            shadowColor="$brandCrimson"
-            shadowOffset={{ width: 0, height: 8 }}
-            shadowOpacity={0.4}
-            shadowRadius={20}
-            elevation={10}
-          >
-            {book.thumbnail ? (
-              <ULocalImage
-                source={{ uri: book.thumbnail }}
-                width={200}
-                height={280}
-                borderRadius={12}
-                contentFit="contain"
-              />
-            ) : (
-              <YStack
-                w={200}
-                h={280}
-                br={12}
-                bg="rgba(255, 255, 255, 0.1)"
-                ai="center"
-                jc="center"
-              >
-                <TypeIcon dimen={70} color="$white" />
-              </YStack>
-            )}
+        <XStack gap={32} ai="flex-start">
+          {cover}
+          <YStack flex={1} gap={14} pt={4}>
+            {tags}
+            {title}
+            {author}
+            {rating}
+            {children && <YStack mt={8}>{children}</YStack>}
           </YStack>
-        </YStack>
-
-        {/* Book title */}
-        <UText
-          variant="heading-h2"
-          color="$white"
-          textAlign="center"
-        >
-          {book.title}
-        </UText>
-
-        {/* Author name */}
-        <UText
-          variant="text-sm"
-          color="$neutral3"
-          textAlign="center"
-          mt={12}
-        >
-            {book.author}
-        </UText>
-
-        {/* Book Type Badge */}
-        <XStack jc="center" mt={12}>
-          <XStack
-            bg={getTypeBadgeColor()}
-            px={14}
-            py={6}
-            borderRadius={20}
-            ai="center"
-            gap={6}
-          >
-            <TypeIcon dimen={14} color="$white" />
-            <UText variant="text-xs" color="$white" fontWeight="600">
-              {getTypeLabel()}
-            </UText>
-          </XStack>
-        </XStack>
-
-        <XStack jc="center" ai="center" mt={12} gap={8}>
-            <UStarRating rating={averageRating ?? 0} />
-            <UText variant="text-sm" color="$neutral1">
-                {averageRating && totalRatings
-                ? `${averageRating.toFixed(1)} (${totalRatings})`
-                : 'No ratings'}
-            </UText>
         </XStack>
       </UAnimatedView>
+    );
+  }
+
+  return (
+    <UAnimatedView animation="fadeInUp" delay={100}>
+      <YStack ai="center" gap={14} px={px}>
+        {cover}
+        {title}
+        {author}
+        {rating}
+        {tags}
+        {children && <YStack alignSelf="stretch" mt={6}>{children}</YStack>}
+      </YStack>
+    </UAnimatedView>
   );
 }

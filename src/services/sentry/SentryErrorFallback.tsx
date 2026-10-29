@@ -7,6 +7,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
 /**
  * CRITICAL: This component MUST NOT use Tamagui or any themed components.
@@ -19,13 +20,17 @@ import { Feather } from '@expo/vector-icons';
  * Use plain React Native components with hardcoded colors only.
  */
 
-// Hardcoded brand colors (from tamagui.config.ts)
+// Raw values of the tamagui.config.ts tokens, named after them
 const COLORS = {
-  brandNavy: '#0D1B2A',
-  brandCrimson: '#D64550',
-  brandTeal: '#7EC8E3',
-  white: '#FFFFFF',
-  gray: '#9CA3AF',
+  bgPage: '#020103',
+  textPrimary: '#FFFFFF',
+  textSecondary: '#D1D5DB',
+  textMuted: '#9CA3AF',
+  errorText: '#FCA5A5',
+  glass: 'rgba(15,12,35,0.6)',
+  glassBorder: 'rgba(255,255,255,0.08)',
+  ctaStart: '#7C3AED',
+  ctaEnd: '#0E7490',
 };
 
 interface SentryErrorFallbackProps {
@@ -44,11 +49,8 @@ export const SentryErrorFallback = memo(function SentryErrorFallback({
   return (
     <View style={styles.container}>
       {/* Icon */}
-      <View style={styles.iconWrapper}>
-        <View style={styles.iconCircle} />
-        <View style={styles.iconOverlay}>
-          <Feather name="alert-triangle" size={32} color={COLORS.brandCrimson} />
-        </View>
+      <View style={styles.iconCircle}>
+        <Feather name="alert-triangle" size={30} color={COLORS.errorText} />
       </View>
 
       {/* Text Content */}
@@ -78,12 +80,15 @@ export const SentryErrorFallback = memo(function SentryErrorFallback({
       )}
 
       {/* Retry Button */}
-      <TouchableOpacity
-        style={styles.retryButton}
-        onPress={onRetry}
-        activeOpacity={0.8}
-      >
-        <Text style={styles.retryButtonText}>Try Again</Text>
+      <TouchableOpacity onPress={onRetry} activeOpacity={0.85} accessibilityRole="button" style={styles.retryShadow}>
+        <LinearGradient
+          colors={[COLORS.ctaStart, COLORS.ctaEnd]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.retryButton}
+        >
+          <Text style={styles.retryButtonText}>Try Again</Text>
+        </LinearGradient>
       </TouchableOpacity>
     </View>
   );
@@ -92,60 +97,52 @@ export const SentryErrorFallback = memo(function SentryErrorFallback({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.brandNavy,
+    backgroundColor: COLORS.bgPage,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 24,
     gap: 24,
   },
-  iconWrapper: {
-    position: 'relative',
-    width: 80,
-    height: 80,
-  },
   iconCircle: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: COLORS.brandCrimson,
-    opacity: 0.1,
-  },
-  iconOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'rgba(248,113,113,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(248,113,113,0.4)',
   },
   textContainer: {
     alignItems: 'center',
     gap: 8,
   },
+  // System fonts: this can render before the font provider has loaded anything
   title: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: COLORS.white,
+    fontSize: 22,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+    color: COLORS.textPrimary,
     textAlign: 'center',
-    fontFamily: 'PlayfairDisplay',
   },
   subtitle: {
-    fontSize: 14,
-    color: COLORS.brandTeal,
+    fontSize: 15,
+    lineHeight: 22,
+    color: COLORS.textSecondary,
     textAlign: 'center',
-    opacity: 0.9,
   },
   errorDetails: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 12,
+    backgroundColor: COLORS.glass,
+    borderWidth: 1,
+    borderColor: COLORS.glassBorder,
+    borderRadius: 14,
     padding: 12,
     maxWidth: 350,
     maxHeight: 200,
   },
   errorLabel: {
     fontSize: 12,
-    color: COLORS.brandCrimson,
+    color: COLORS.errorText,
     fontWeight: '600',
     marginBottom: 8,
   },
@@ -154,23 +151,30 @@ const styles = StyleSheet.create({
   },
   errorMessage: {
     fontSize: 12,
-    color: COLORS.white,
-    fontFamily: 'DMMono',
+    color: COLORS.textPrimary,
+    fontFamily: 'Menlo',
     marginBottom: 8,
   },
   stackTrace: {
     fontSize: 10,
-    color: COLORS.gray,
+    color: COLORS.textMuted,
+  },
+  retryShadow: {
+    borderRadius: 999,
+    boxShadow: '0 0 22px rgba(135,54,247,0.5)',
   },
   retryButton: {
-    backgroundColor: COLORS.brandCrimson,
-    paddingHorizontal: 32,
-    paddingVertical: 12,
-    borderRadius: 12,
+    height: 52,
+    paddingHorizontal: 40,
+    borderRadius: 999,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   retryButtonText: {
-    color: COLORS.white,
-    fontSize: 16,
-    fontWeight: '600',
+    color: COLORS.textPrimary,
+    fontSize: 14,
+    fontWeight: '700',
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
   },
 });

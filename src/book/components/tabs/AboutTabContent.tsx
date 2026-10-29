@@ -2,6 +2,7 @@ import React from 'react';
 import { YStack } from 'tamagui';
 
 import UText from '@/src/components/core/text/uText';
+import { READ_MAX } from '@/src/components/core/layout/layout';
 
 interface AboutTabContentProps {
   description?: string;
@@ -9,8 +10,8 @@ interface AboutTabContentProps {
 
 export function AboutTabContent({ description }: AboutTabContentProps) {
   return (
-    <YStack>
-      <UText variant="text-md" color="$neutral1">
+    <YStack maw={READ_MAX}>
+      <UText variant="body" color="$textSecondary">
         {description || 'No description available.'}
       </UText>
     </YStack>

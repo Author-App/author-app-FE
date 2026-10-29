@@ -12,44 +12,30 @@ interface ReviewCardProps {
 }
 
 export function ReviewCard({ review }: ReviewCardProps) {
+  const name = review.username || 'Anonymous';
+
   return (
-    <YStack
-      bg="rgba(255, 255, 255, 0.05)"
-      borderWidth={1}
-      borderColor="rgba(255, 255, 255, 0.08)"
-      br={12}
-      p={16}
-    >
-      <XStack gap={12}>
-        <UImage
-          imageSource={undefined}
-          fallBackText={getInitials(review.username)}
-          borderRadius={999}
-          w={40}
-          h={40}
-        />
+    <XStack p={16} gap={12} br={20} bg="$glass" borderWidth={1} borderColor="$glassBorder">
+      <UImage imageSource={undefined} fallBackText={getInitials(name)} br={20} w={40} h={40} />
 
-        <YStack flex={1}>
-          <XStack jc="space-between" ai="center">
-            <UText variant="text-md" color="$white" fontWeight="600">
-              {review.username || 'Anonymous'}
-            </UText>
-            <UText variant="text-xs" color="$neutral1">
-              {review.submittedAt ? formatDate(review.submittedAt) : ''}
-            </UText>
-          </XStack>
-
-          <XStack mt={6}>
-            <UStarRating rating={review.rating} size={14} />
-          </XStack>
-
-          {review.comment && (
-            <UText variant="text-sm" color="$neutral1" mt={10} lineHeight={20}>
-              {review.comment}
+      <YStack flex={1} gap={6}>
+        <XStack jc="space-between" ai="center" gap={8}>
+          <UText variant="body" fontWeight="600" lineHeight={20} color="$textPrimary" numberOfLines={1} flex={1}>
+            {name}
+          </UText>
+          {review.submittedAt && (
+            <UText variant="meta-s" color="$textMuted">
+              {formatDate(review.submittedAt)}
             </UText>
           )}
-        </YStack>
-      </XStack>
-    </YStack>
+        </XStack>
+        <UStarRating rating={review.rating} size={14} gap={2} />
+        {review.comment && (
+          <UText variant="body-s" lineHeight={20} color="$textSecondary">
+            {review.comment}
+          </UText>
+        )}
+      </YStack>
+    </XStack>
   );
 }

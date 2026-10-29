@@ -1,9 +1,7 @@
 import React, { memo } from 'react';
-import { XStack, YStack } from 'tamagui';
+import { XStack, YStack, getTokenValue } from 'tamagui';
+import { Ionicons } from '@expo/vector-icons';
 
-import IconCalender from '@/assets/icons/iconCalender';
-import IconDuration from '@/assets/icons/iconDuration';
-import IconLocation from '@/assets/icons/iconLocation';
 import UAnimatedView from '@/src/components/core/animated/UAnimatedView';
 import UText from '@/src/components/core/text/uText';
 import { formatEventDisplay } from '@/src/utils/helper';
@@ -18,6 +16,34 @@ interface EventInfoProps {
   location?: string;
 }
 
+function InfoRow({ icon, label, value }: { icon: keyof typeof Ionicons.glyphMap; label: string; value: string }) {
+  return (
+    // One element per row: "Date, Dec 17, 2025", not "Date" and the value as two stops
+    <XStack ai="center" gap={14} accessible accessibilityRole="text" accessibilityLabel={`${label}, ${value}`}>
+      <YStack
+        w={40}
+        h={40}
+        br={12}
+        ai="center"
+        jc="center"
+        bg="rgba(135,54,247,0.16)"
+        borderWidth={1}
+        borderColor="rgba(135,54,247,0.45)"
+      >
+        <Ionicons name={icon} size={18} color={getTokenValue('$accentPurple', 'color')} />
+      </YStack>
+      <YStack flex={1} gap={2}>
+        <UText variant="meta-s" color="$textMuted">
+          {label}
+        </UText>
+        <UText variant="body" fontSize={15} lineHeight={20} fontWeight="600" color="$textPrimary" numberOfLines={2}>
+          {value}
+        </UText>
+      </YStack>
+    </XStack>
+  );
+}
+
 export const EventInfo = memo(function EventInfo({
   eventStartUtc,
   eventDate,
@@ -27,84 +53,14 @@ export const EventInfo = memo(function EventInfo({
   location,
 }: EventInfoProps) {
   const display = formatEventDisplay({ eventStartUtc, eventDate, eventTime, timezone });
+  const time = eventTime ? `${display.timeLabel}${display.timezoneLabel ? ` ${display.timezoneLabel}` : ''}` : 'TBA';
 
   return (
     <UAnimatedView animation="fadeInUp" delay={200}>
-      <YStack
-        bg="rgba(255, 255, 255, 0.08)"
-        br={16}
-        p={16}
-        gap={16}
-      >
-        {/* Date */}
-        {eventDate && (
-          <XStack ai="center" gap={12}>
-            <YStack
-              w={40}
-              h={40}
-              br={12}
-              bg="rgba(255, 255, 255, 0.1)"
-              ai="center"
-              jc="center"
-            >
-              <IconCalender dimen={20} color="$white" />
-            </YStack>
-            <YStack>
-              <UText variant="text-xs" color="$neutral4">
-                Date
-              </UText>
-              <UText variant="text-md" color="$white" fontWeight="600">
-                {display.dateLabel}
-              </UText>
-            </YStack>
-          </XStack>
-        )}
-
-        {/* Time */}
-        <XStack ai="center" gap={12}>
-          <YStack
-            w={40}
-            h={40}
-            br={12}
-            bg="rgba(255, 255, 255, 0.1)"
-            ai="center"
-            jc="center"
-          >
-            <IconDuration dimen={20} color="$white" />
-          </YStack>
-          <YStack>
-            <UText variant="text-xs" color="$neutral4">
-              Time
-            </UText>
-            <UText variant="text-md" color="$white" fontWeight="600">
-              {display.timeLabel}{display.timezoneLabel ? ` ${display.timezoneLabel}` : ''}
-            </UText>
-          </YStack>
-        </XStack>
-
-        {/* Location (for offline events) */}
-        {eventType === 'offline' && location && (
-          <XStack ai="center" gap={12}>
-            <YStack
-              w={40}
-              h={40}
-              br={12}
-              bg="rgba(255, 255, 255, 0.1)"
-              ai="center"
-              jc="center"
-            >
-              <IconLocation dimen={20} color="$white" />
-            </YStack>
-            <YStack flex={1}>
-              <UText variant="text-xs" color="$neutral4">
-                Location
-              </UText>
-              <UText variant="text-md" color="$white" fontWeight="600" numberOfLines={2}>
-                {location}
-              </UText>
-            </YStack>
-          </XStack>
-        )}
+      <YStack p={16} gap={16} br={20} bg="$glass" borderWidth={1} borderColor="$glassBorder">
+        {eventDate && <InfoRow icon="calendar-outline" label="Date" value={display.dateLabel} />}
+        <InfoRow icon="time-outline" label="Time" value={time} />
+        {eventType === 'offline' && location && <InfoRow icon="location-outline" label="Location" value={location} />}
       </YStack>
     </UAnimatedView>
   );

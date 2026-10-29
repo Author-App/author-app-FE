@@ -1,6 +1,5 @@
-import { useCallback, useMemo, useState } from 'react';
-import { Dimensions } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import type { Href } from 'expo-router';
 
 import { useGetBooksQuery } from '@/src/store/api/libraryApi';
@@ -19,7 +18,15 @@ import type { LibraryTab } from '../types/library.types';
 export const useLibraryData = () => {
   const router = useRouter();
 
-  const [activeTab, setActiveTab] = useState<LibraryTab>('all');
+  const { tab } = useLocalSearchParams<{ tab?: LibraryTab }>();
+  const [activeTab, setActiveTab] = useState<LibraryTab>(tab ?? 'all');
+
+  // Cleared once used, so the next "See all" with the same tab still counts as a change
+  useEffect(() => {
+    if (!tab) return;
+    setActiveTab(tab);
+    router.setParams({ tab: undefined });
+  }, [tab, router]);
 
   const { isLoading, isError, refetch } = useGetBooksQuery({});
 
@@ -49,13 +56,6 @@ export const useLibraryData = () => {
     }
   }, [activeTab, allBooks, ownedBooks, ebooks, audiobooks, hardcovers, paperbacks]);
 
-  const screenWidth = Dimensions.get('window').width;
-  const numColumns = useMemo(() => {
-    if (screenWidth > 900) return 4;
-    if (screenWidth > 600) return 3;
-    return 2;
-  }, [screenWidth]);
-
   // Handlers
   const handleTabChange = useCallback((value: LibraryTab) => {
     setActiveTab(value);
@@ -78,9 +78,6 @@ export const useLibraryData = () => {
     // Filters
     activeTab,
     handleTabChange,
-
-    // Layout
-    numColumns,
 
     // Navigation
     navigateToBook,

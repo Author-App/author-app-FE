@@ -1,26 +1,31 @@
-import React from 'react';
-import { StyleSheet, StatusBar } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { AccessibilityInfo, ActivityIndicator, StatusBar, StyleSheet } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { YStack, XStack } from 'tamagui';
+import { YStack, getTokenValue } from 'tamagui';
 import Pdf from 'react-native-pdf';
 
 import UText from '@/src/components/core/text/uText';
 import UBackButton from '@/src/components/core/buttons/uBackButton';
-import AppLoader from '@/src/components/core/loaders/AppLoader';
+import UEmptyState from '@/src/components/core/feedback/UEmptyState';
+import UScreenError from '@/src/components/core/feedback/UScreenError';
 import { useEbookReader } from '../hooks/useEbookReader';
 import { ReaderHeader } from './ReaderHeader';
 import { ReaderFooter } from './ReaderFooter';
 
+/** Dark surface around white pages, chrome that hides on a tap. */
 export function EbookReaderScreen() {
   const { bookId } = useLocalSearchParams<{ bookId: string }>();
   const { top, bottom } = useSafeAreaInsets();
+  const [chromeVisible, setChromeVisible] = useState(true);
+  const [isScreenReaderOn, setScreenReaderOn] = useState(false);
 
   const {
     book,
     status,
     errorMessage,
     localPdfUri,
+    downloadPercent,
     currentPage,
     totalPages,
     initialPage,
@@ -28,103 +33,94 @@ export function EbookReaderScreen() {
     onPageChanged,
     onPdfError,
     saveProgressAndGoBack,
+    refetch,
   } = useEbookReader({ bookId });
 
-  if (__DEV__) {
-    console.log('EbookReaderScreen render', { bookId, book });
-  }
+  // Hidden chrome would hide the back button from VoiceOver, so it stays up while a screen reader runs
+  useEffect(() => {
+    AccessibilityInfo.isScreenReaderEnabled().then(setScreenReaderOn);
+    const sub = AccessibilityInfo.addEventListener('screenReaderChanged', setScreenReaderOn);
+    return () => sub.remove();
+  }, []);
 
+  const showChrome = chromeVisible || isScreenReaderOn;
 
-  if (status === 'loading') {
+  const backButton = (
+    <YStack pos="absolute" top={top + 8} left={16} zIndex={2}>
+      <UBackButton variant="glass-md" />
+    </YStack>
+  );
+
+  if (status === 'loading' || status === 'downloading') {
     return (
-      <YStack flex={1} bg="$brandNavy" ai="center" jc="center">
+      <YStack flex={1} bg="$bgReading" ai="center" jc="center" gap={14}>
         <StatusBar barStyle="light-content" />
-        <AppLoader bg="transparent" />
-      </YStack>
-    );
-  }
-
-
-  if (status === 'downloading') {
-    return (
-      <YStack flex={1} bg="$brandNavy" ai="center" jc="center">
-        <StatusBar barStyle="light-content" />
-        <AppLoader bg="transparent" />
+        {backButton}
+        <ActivityIndicator size="large" color={getTokenValue('$accentCyan', 'color')} />
+        <UText variant="meta" color="$textSecondary" accessibilityLiveRegion="polite">
+          {status === 'downloading' ? `Downloading ${downloadPercent}%` : 'Opening book'}
+        </UText>
       </YStack>
     );
   }
 
   if (status === 'no-access') {
     return (
-      <YStack flex={1} bg="$brandNavy" pt={top}>
+      <YStack flex={1} bg="$bgReading" jc="center" pt={top}>
         <StatusBar barStyle="light-content" />
-        <XStack px={20} py={12}>
-          <UBackButton variant="glass-md" />
-        </XStack>
-        <YStack flex={1} ai="center" jc="center" px={20}>
-          <UText color="$neutral4" textAlign="center">
-            {errorMessage || 'You need to purchase this book to read it.'}
-          </UText>
-        </YStack>
+        {backButton}
+        <UEmptyState icon="lock-closed-outline" title="Not in your library" message={errorMessage ?? undefined} />
       </YStack>
     );
   }
-
 
   if (status === 'error' || !localPdfUri) {
     return (
-      <YStack flex={1} bg="$brandNavy" pt={top}>
+      <YStack flex={1} bg="$bgReading" pt={top} pb={bottom}>
         <StatusBar barStyle="light-content" />
-        <XStack px={20} py={12}>
-          <UBackButton variant="glass-md" />
-        </XStack>
-        <YStack flex={1} ai="center" jc="center" px={20}>
-          <UText color="$danger" textAlign="center">
-            {errorMessage || 'Something went wrong'}
-          </UText>
-        </YStack>
+        {backButton}
+        <UScreenError message={errorMessage ?? 'Something went wrong'} onRetry={refetch} />
       </YStack>
     );
   }
-  
+
   return (
-    <YStack flex={1} bg="$white">
-      <StatusBar barStyle="dark-content" />
+    <YStack flex={1} bg="$bgReading">
+      <StatusBar barStyle="light-content" hidden={!showChrome} animated />
 
       <Pdf
         source={{ uri: localPdfUri }}
         page={initialPage}
         onLoadComplete={(pages) => onPageChanged(currentPage, pages)}
         onPageChanged={onPageChanged}
+        onPageSingleTap={() => setChromeVisible((visible) => !visible)}
         onError={onPdfError}
-        style={styles.pdf}
+        style={[styles.pdf, { backgroundColor: getTokenValue('$bgReading', 'color') }]}
         trustAllCerts={false}
         enablePaging
         horizontal
       />
 
-      {/* Header */}
-      <ReaderHeader
-        title={book?.title ?? 'Untitled'}
-        author={book?.author ?? 'Unknown Author'}
-        paddingTop={top}
-        onBack={saveProgressAndGoBack}
-      />
-
-      {/* Footer */}
-      <ReaderFooter
-        currentPage={currentPage}
-        totalPages={totalPages}
-        progressPercent={progressPercent}
-        paddingBottom={bottom}
-      />
+      {showChrome && (
+        <>
+          <ReaderHeader
+            title={book?.title ?? ''}
+            author={book?.author ?? ''}
+            paddingTop={top}
+            onBack={saveProgressAndGoBack}
+          />
+          <ReaderFooter
+            currentPage={currentPage}
+            totalPages={totalPages}
+            progressPercent={progressPercent}
+            paddingBottom={bottom}
+          />
+        </>
+      )}
     </YStack>
   );
 }
 
 const styles = StyleSheet.create({
-  pdf: {
-    flex: 1,
-    backgroundColor: '#fafafa',
-  },
+  pdf: { flex: 1 },
 });

@@ -1,10 +1,8 @@
 import React from 'react';
-import { YStack, XStack, Token, getTokenValue } from 'tamagui';
-import Animated, {
-  SharedValue,
-  useAnimatedStyle,
-} from 'react-native-reanimated';
-import { LayoutChangeEvent, Pressable, ScrollView } from 'react-native';
+import { StyleSheet, LayoutChangeEvent, Pressable, ScrollView } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { YStack, XStack } from 'tamagui';
+import Animated, { SharedValue, useAnimatedStyle } from 'react-native-reanimated';
 
 import UText from '@/src/components/core/text/uText';
 import { Tab, TabMeasurement } from './hooks/useTabBar';
@@ -17,9 +15,13 @@ interface TabBarProps<T extends string> {
   onTabLayout: (key: T, event: LayoutChangeEvent) => void;
   indicatorX: SharedValue<number>;
   indicatorWidth: SharedValue<number>;
-  indicatorColor?: Token;
+  /** Side padding, also where the track starts and ends */
+  inset?: number;
+  /** Phone: tabs spread edge to edge. Wide: natural widths, left-aligned */
+  spread?: boolean;
 }
 
+/** Underline tabs: Jura labels on a 1pt track, a glowing purple-to-cyan indicator under the active one. */
 export function TabBar<T extends string>({
   tabs,
   activeTab,
@@ -27,7 +29,8 @@ export function TabBar<T extends string>({
   onTabLayout,
   indicatorX,
   indicatorWidth,
-  indicatorColor = '$brandCrimson',
+  inset = 16,
+  spread = true,
 }: TabBarProps<T>) {
   const indicatorStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: indicatorX.value }],
@@ -35,64 +38,58 @@ export function TabBar<T extends string>({
   }));
 
   return (
-    <YStack>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ flexGrow: 1 }}
-      >
-        <XStack>
-          {tabs.map((tab, index) => {
-            const isActive = activeTab === tab.key;
+    <ScrollView
+      horizontal
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={[styles.content, { paddingHorizontal: inset }]}
+      accessibilityRole="tablist"
+    >
+      {/* Spread edge to edge, so the first and last tabs line up with the ends of the track */}
+      <XStack flex={1} gap={spread ? 22 : 32} jc={spread ? 'space-between' : 'flex-start'}>
+        {tabs.map((tab) => {
+          const isActive = activeTab === tab.key;
 
-            return (
-              <Pressable
-                key={tab.key}
-                onPress={() => onTabPress(tab.key)}
-                onLayout={(e) => onTabLayout(tab.key, e)}
-                style={{
-                  alignItems: 'center',
-                  paddingVertical: 12,
-                  paddingHorizontal: 16,
-                  // paddingLeft: isFirst ? 20 : 16,
-                  // paddingRight: isLast ? 20 : 16,
-                }}
-              >
-                <UText
-                  variant="text-md"
-                  color={isActive ? '$white' : '$neutral3'}
-                  fontWeight={isActive ? '600' : '400'}
-                >
-                  {tab.label}
-                </UText>
-              </Pressable>
-            );
-          })}
-        </XStack>
+          return (
+            <Pressable
+              key={tab.key}
+              onPress={() => onTabPress(tab.key)}
+              onLayout={(e) => onTabLayout(tab.key, e)}
+              style={styles.tab}
+              // "tab" drops the element from the iOS accessibility tree; a selected button reads the same
+              accessibilityRole="button"
+              accessibilityState={{ selected: isActive }}
+            >
+              <UText variant="meta-pill" color={isActive ? '$textPrimary' : '$textMuted'}>
+                {tab.label}
+              </UText>
+            </Pressable>
+          );
+        })}
+      </XStack>
 
-        {/* Tab line with animated indicator */}
-        <YStack
-          h={2}
-          bg="rgba(255, 255, 255, 0.15)"
-          mt={4}
-          position="absolute"
-          bottom={0}
-          left={0}
-          right={0}
-        >
-          <Animated.View
-            style={[
-              {
-                position: 'absolute',
-                height: 2,
-                backgroundColor: getTokenValue(indicatorColor),
-                borderRadius: 1,
-              },
-              indicatorStyle,
-            ]}
+      <YStack h={1} bg="$borderSoft" pos="absolute" bottom={0} left={inset} right={inset}>
+        <Animated.View style={[styles.indicator, indicatorStyle]}>
+          <LinearGradient
+            colors={['#8736F7', '#00F0FF']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={StyleSheet.absoluteFill}
           />
-        </YStack>
-      </ScrollView>
-    </YStack>
+        </Animated.View>
+      </YStack>
+    </ScrollView>
   );
 }
+
+const styles = StyleSheet.create({
+  content: { flexGrow: 1 },
+  tab: { height: 44, justifyContent: 'center' },
+  indicator: {
+    position: 'absolute',
+    bottom: 0,
+    height: 2,
+    borderRadius: 1,
+    overflow: 'hidden',
+    boxShadow: '0 0 8px rgba(0,240,255,0.7)',
+  },
+});
