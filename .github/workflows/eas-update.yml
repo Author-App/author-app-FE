@@ -55,9 +55,10 @@ jobs:
           set -euo pipefail
           VERSION=$(node -p "require('./app.json').expo.version")
           for PLATFORM in ios android; do
-            # A failed command must fail the run, never read as "no builds yet"
+            # A failed command must fail the run, never read as "no builds yet".
+            # build:list leaves runtimeVersion empty; with the appVersion policy the two are equal.
             RUNTIME=$(eas build:list --channel preview --platform "$PLATFORM" --status finished \
-              --limit 1 --json --non-interactive | node -p "JSON.parse(require('fs').readFileSync(0))[0]?.runtimeVersion ?? ''")
+              --limit 1 --json --non-interactive | node -p "const b = JSON.parse(require('fs').readFileSync(0))[0]; b?.runtimeVersion || b?.appVersion || ''")
             if [ "$RUNTIME" != "$VERSION" ]; then
               echo "::error::No $PLATFORM preview build has version $VERSION (latest is '${RUNTIME:-none}')."
               echo "Tester phones cannot receive this update. Build one: Actions > EAS Build > profile preview."

@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "438906297419",
+    "project_id": "author-app-83ac3",
+    "storage_bucket": "author-app-83ac3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:438906297419:android:019b33267eab55ca1ac1ce",
+        "android_client_info": {
+          "package_name": "com.swiftreflex.stanleypaden"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "438906297419-gqfb71tnebhqpctsn5f9b98a9l6d6q08.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBXTxyaCwi-XkRTf5x_Er1oFi4-0tE2awQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "438906297419-gqfb71tnebhqpctsn5f9b98a9l6d6q08.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
