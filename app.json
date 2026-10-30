@@ -74,7 +74,8 @@
           "enableFullScreenImage_legacy": true,
           "backgroundColor": "#020103"
         }
-      ]
+      ],
+      "expo-status-bar"
     ],
     "experiments": {
       "typedRoutes": true
