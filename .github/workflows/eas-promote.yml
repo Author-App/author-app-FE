@@ -15,6 +15,10 @@ on:
         default: 'all'
         type: choice
         options: [all, ios, android]
+      group:
+        description: 'Update group ID to promote (for a hotfix). Empty = newest update on preview'
+        required: false
+        default: ''
 
 concurrency:
   group: ${{ github.workflow }}
@@ -47,9 +51,13 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Promote
+        env:
+          GROUP: ${{ inputs.group }}
         run: |
+          # The newest update on preview can belong to another version; a hotfix names its group.
+          if [ -n "$GROUP" ]; then SOURCE="--group $GROUP"; else SOURCE="--branch preview"; fi
           eas update:republish \
-            --branch preview \
+            $SOURCE \
             --destination-branch production \
             --platform ${{ inputs.platform }} \
             --message "Promoted from preview by ${{ github.actor }}" \

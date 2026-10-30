@@ -724,6 +724,16 @@ _(not yet verified in CI)_
 - **Say it.** "OTA safety depended on a human remembering to bump the version. I turned that into a failing PR check by hashing the native layer."
 - **Term.** Runtime version. Expo fingerprint.
 
+### 9.3 A hotfix for an older version could not ship over the air
+
+_(not yet verified in CI)_
+
+- **Symptom.** Found while planning a hotfix, before it happened. A JS fix for 1.1.0, published from a branch cut at the `v1.1.0` tag, would fail the EAS Update guard once a 1.2.0 preview build existed. And the Promote button could send a 1.2.0 update instead of the hotfix.
+- **Cause.** The guard read only the newest preview build (`--limit 1`) and compared its version. Promote republished the newest update on the `preview` branch, which holds updates for every version.
+- **Fix.** The guard asks for any finished preview build with the exact version (`eas build:list --app-version`). Promote takes an optional update `group` ID and republishes that group; empty still means the newest update on preview.
+- **Say it.** "Updates for several binary versions share one branch. Anything that says 'latest' picks the wrong one as soon as two versions are live, so the hotfix path names the exact version and the exact update group."
+- **Term.** Hotfix branch. Update group. Runtime version.
+
 ---
 
 ## 10. Toolchain upgrades (Xcode 27, Expo SDK 55)
