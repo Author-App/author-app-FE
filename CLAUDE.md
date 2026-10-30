@@ -105,7 +105,7 @@ Do not re-argue these.
 
 **Stack:** Expo SDK 55, React Native 0.83, React 19.2, Reanimated 4.2, RNTL 13.3, pnpm, Redux Toolkit with RTK Query, Expo Router, Tamagui, Stripe, Sentry.
 
-**Tests that exist:** 21 Jest suites, 213 tests, plus 1 Detox E2E test on a separate runner.
+**Tests that exist:** 22 Jest suites, 215 tests, plus 1 Detox E2E test on a separate runner.
 
 | File | Kind | State |
 |---|---|---|
@@ -128,6 +128,7 @@ Do not re-argue these.
 | `src/eventDetail/hooks/__tests__/useEventDetail.test.tsx` | hook, clock | Good. Real store seeded with `upsertQueryData`, fetch never answers, fake timers. Join turns on and off by itself as the clock moves (BUG_LOG 2.1), a date with no time is "to be announced" on the day and ended after it (2.8). Calls `cleanup()` before `resetApiState`, or the mounted query refetches and Jest never exits. |
 | `src/components/core/layout/__tests__/layout.test.ts` | unit | Good. Size-class boundaries (660/661, 1023/1024) and real devices; `columns()` against the design's cover counts, an exact-fit row (catches a missing `+ gap`) and the never-zero guard. |
 | `src/library/hooks/__tests__/useLibraryData.test.tsx` | hook | Good. A `tab` route param picks the filter, also while Library stays mounted, and the same "See all" twice still switches back after a manual chip change (BUG_LOG 8.4). Fake `expo-router` whose `setParams` really changes the params. |
+| `src/store/__tests__/resetCacheOnLogout.test.ts` | unit, real store | Good. Logout forces the next home request to the network (BUG_LOG 6.6); a token refresh keeps the cache. Only `fetch` faked. |
 | `src/__tests__/smoke.test.tsx` | component | One test. Proves the render pipeline works. |
 | `e2e/login.test.js` | E2E, Detox | Good. Real Release build on a simulator, real backend, real account. Onboarding to login to home. |
 | `src/storage/__tests__/authStorage.test.ts` | unit | **Weak. Needs rewriting.** It mocks `../secureStorage`, which is his own code. Its "lifecycle" test tells a mock to return null then checks it returned null. Needs a fake store that actually holds state, with `expo-secure-store` as the only mock. |

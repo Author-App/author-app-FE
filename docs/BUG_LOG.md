@@ -552,6 +552,16 @@ _(code done; not yet checked by sending a real message)_
 - **Say it.** "Polling should follow what is on screen. I turn it off on the About view, and read the join state from the cache with useQueryState so the polling flag does not depend on its own subscription."
 - **Term.** Polling. Structural sharing. `useQueryState`.
 
+### 6.6 The next account saw the previous account's data
+
+_(not yet verified on device)_
+
+- **Symptom.** Log out, log in as someone else: the home screen still showed the first account's feed (continue reading, owned books). Only killing the app fixed it. Found on the 1.2.0 preview build.
+- **Cause.** RTK Query keeps responses in memory, keyed by endpoint and arguments, not by user. Logout cleared the auth slice and the persisted storage, never the API caches, and home, library, user and explore keep data for 300 to 600 seconds. The second login hit a fresh cache entry and never asked the server.
+- **Fix.** `src/store/resetCacheOnLogout.ts`: a listener middleware on `logOut` that dispatches `resetApiState()` on every API slice. It listens to the action, not the button, so all four logout paths (Settings, delete account, a bad session at launch, a failed token refresh in `baseQuery`) clear the cache. A token refresh keeps the cache. Test: `src/store/__tests__/resetCacheOnLogout.test.ts`.
+- **Say it.** "Our cache keys did not include the user, so after a logout the next account was served the previous account's responses. I reset every API cache from a listener on the logout action, so no logout path can skip it, and wrote a test that a logout forces the next request to the network."
+- **Term.** Cache invalidation. Listener middleware. Data leak between sessions.
+
 ---
 
 ## 7. Accessibility
