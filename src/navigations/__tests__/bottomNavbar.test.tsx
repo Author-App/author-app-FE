@@ -1,5 +1,5 @@
 import { Dimensions } from 'react-native';
-import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import type { BottomTabBarProps } from 'expo-router/js-tabs';
 import { renderWithProviders, screen, fireEvent } from '@/src/test-utils/render';
 import BottomNavbar from '../bottomNavbar';
 

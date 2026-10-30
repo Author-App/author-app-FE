@@ -760,6 +760,16 @@ _(not yet verified in CI)_
 - **Say it.** "Jest runs JavaScript only, so any library that needs its native half on import has to be mocked at that boundary. And the test renderer is pinned to React's exact version, so every React upgrade moves it too."
 - **Term.** Native module mock. Peer dependency.
 
+### 10.5 The splash logo shrank after moving to SDK 56
+
+_(checked on the simulator, not yet on device)_
+
+- **Symptom.** After the SDK 56 upgrade the launch screen showed the logo as a tiny mark in the middle instead of across the screen.
+- **Cause.** SDK 56 no longer accepts the top-level `splash` block, so it moved into the `expo-splash-screen` plugin. The old block was read as a full-screen image; the plugin's default is a 100 point square (`imageWidth: 100`).
+- **Fix.** `"enableFullScreenImage_legacy": true` in the plugin options. The generated `SplashScreen.storyboard` is back to the old 414 by 736 frame.
+- **Say it.** "A config migration kept the same keys but changed what the default meant. I compared the generated native file before and after, instead of trusting that the config looked the same."
+- **Term.** Launch screen. Config plugin defaults.
+
 ## How to add an entry
 
 When a bug is fixed, add it under the right section with the same parts: Symptom, Cause, Fix, Say it, Term. Mark it _(not yet verified on device)_ until you have checked it on a device. Then add it to `docs/TODO.md` if it needs a device check.

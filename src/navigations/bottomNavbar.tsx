@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+import type { BottomTabBarProps } from 'expo-router/js-tabs';
 import { useWindowDimensions } from 'react-native';
 import { styled, XStack } from 'tamagui';
 import UAnimatedView from '@/src/components/core/animated/UAnimatedView';

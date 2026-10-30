@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react'
-import { NavigationContext } from '@react-navigation/native'
+import { NavigationContext } from 'expo-router/react-navigation'
 import { LinearGradient } from 'expo-linear-gradient'
 import { ActivityIndicator, StyleProp, StyleSheet, View, ViewStyle } from 'react-native'
 import Animated, {
@@ -148,6 +148,6 @@ export function NeonButton({
 }
 
 const styles = StyleSheet.create({
-    sweepClip: { ...StyleSheet.absoluteFillObject, borderRadius: 9999, overflow: 'hidden' },
+    sweepClip: { ...StyleSheet.absoluteFill, borderRadius: 9999, overflow: 'hidden' },
     sweep: { position: 'absolute', top: 0, bottom: 0, width: SWEEP_WIDTH },
 })

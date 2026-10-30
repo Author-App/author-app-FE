@@ -103,7 +103,7 @@ Do not re-argue these.
 
 **Config:** done and working. `jest.config.js`, `jest.setup.js`, `jest.setup-after-env.js`, `src/test-utils/render.tsx`. Do not change these without a specific reason.
 
-**Stack:** Expo SDK 55, React Native 0.83, React 19.2, Reanimated 4.2, RNTL 13.3, pnpm, Redux Toolkit with RTK Query, Expo Router, Tamagui, Stripe, Sentry.
+**Stack:** Expo SDK 57, React Native 0.86, React 19.2, Reanimated 4.5, RNTL 13.3, pnpm, Redux Toolkit with RTK Query, Expo Router, Tamagui, Stripe, Sentry.
 
 **Tests that exist:** 21 Jest suites, 213 tests, plus 1 Detox E2E test on a separate runner.
 
