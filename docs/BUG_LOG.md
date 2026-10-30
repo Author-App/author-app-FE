@@ -734,6 +734,14 @@ _(not yet verified in CI)_
 - **Say it.** "OTA safety depended on a human remembering to bump the version. I turned that into a failing PR check by hashing the native layer."
 - **Term.** Runtime version. Expo fingerprint.
 
+### 9.4 Every OTA from CI crashed on launch and rolled back
+
+- **Symptom.** The logout fix reached the phone over the air, but the app still showed the old account. Sentry had no "OTA update launched" event. A clean install downloaded the update, then the app crashed on the next open and came back on the built-in bundle.
+- **Cause.** `eas update` in `eas-update.yml` ran without `--environment`, so the EAS environment variables were never loaded. `EXPO_PUBLIC_*` values are inlined at bundle time, so the OTA bundle had no API URL. `env.ts` throws on startup when validation fails. expo-updates' error recovery then crashed the app (`ErrorRecovery.crash()`, found in the iPhone's crash report, symbolicated with the dSYM from Sentry) and rolled back to the embedded bundle for good. EAS builds were fine because a build profile loads its environment by name.
+- **Fix.** `eas update --branch preview --environment preview`. Checked by grepping the downloaded OTA bundle: the API host was missing from it and present in the build's `main.jsbundle`.
+- **Say it.** "The update shipped, but it had no config in it. Env vars are baked in at bundle time, and the update command never loaded them, so the app threw at startup and expo-updates rolled back silently. I found it from the device crash report, not from Sentry, because the crash happens before Sentry starts."
+- **Term.** Build-time env inlining. OTA rollback (expo-updates error recovery). Crash symbolication.
+
 ---
 
 ## 10. Toolchain upgrades (Xcode 27, Expo SDK 55)
