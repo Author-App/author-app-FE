@@ -13,6 +13,7 @@ import { ordersApi } from './api/ordersApi';
 import { printApi } from './api/printApi';
 import { pushTokenApi } from './api/pushTokenApi';
 import { bugReportApi } from './api/bugReportApi';
+import { resetCacheOnLogout } from './resetCacheOnLogout';
 
 import authSlice, { type AuthState } from './slices/authSlice';
 import pushTokenSlice, { type PushTokenState } from './slices/pushTokenSlice';
@@ -72,6 +73,7 @@ export const store = configureStore({
       immutableCheck: false,
       serializableCheck: false,
     })
+      .prepend(resetCacheOnLogout.middleware)
       .concat(authApi.middleware)
       .concat(homeApi.middleware)
       .concat(exploreApi.middleware)
