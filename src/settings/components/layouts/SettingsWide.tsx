@@ -1,6 +1,6 @@
 import React from 'react';
 import { XStack, YStack } from 'tamagui';
-import * as Application from 'expo-application';
+import { VERSION_LABEL } from '../../versionLabel';
 
 import UText from '@/src/components/core/text/uText';
 import { useLayoutClass } from '@/src/components/core/layout/useLayoutClass';
@@ -15,7 +15,7 @@ const SettingsWide = ({ user, isError, onRetry, sections, renderOptionRight }: S
   const profile = <UserProfileCard user={user} isError={isError} onRetry={onRetry} />;
   const version = (
     <UText variant="meta-s" color="$textMuted" textAlign="center">
-      Version {Application.nativeApplicationVersion}
+      {VERSION_LABEL}
     </UText>
   );
 

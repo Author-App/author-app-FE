@@ -1,6 +1,6 @@
 import React from 'react';
 import { YStack } from 'tamagui';
-import * as Application from 'expo-application';
+import { VERSION_LABEL } from '../../versionLabel';
 
 import UText from '@/src/components/core/text/uText';
 import SettingsHeader from '../SettingsHeader';
@@ -16,7 +16,7 @@ const SettingsCompact = ({ user, isError, onRetry, sections, renderOptionRight }
       <UserProfileCard user={user} isError={isError} onRetry={onRetry} />
       <SettingsSectionList sections={sections} renderOptionRight={renderOptionRight} />
       <UText variant="meta-s" color="$textMuted" textAlign="center">
-        Version {Application.nativeApplicationVersion}
+        {VERSION_LABEL}
       </UText>
     </YStack>
   </>
