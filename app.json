@@ -8,11 +8,6 @@
     "icon": "./assets/images/mainLogo.png",
     "scheme": "stanleypaden",
     "userInterfaceStyle": "automatic",
-    "splash": {
-      "image": "./assets/images/splashLogo.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#020103"
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.swiftreflex.stanleypaden",
@@ -69,7 +64,17 @@
       "expo-secure-store",
       "expo-asset",
       "expo-video",
-      "./plugins/withPodsDeploymentTarget"
+      "./plugins/withPodsDeploymentTarget",
+      "expo-image",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splashLogo.png",
+          "resizeMode": "contain",
+          "enableFullScreenImage_legacy": true,
+          "backgroundColor": "#020103"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

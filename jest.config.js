@@ -12,7 +12,7 @@ module.exports = {
     'node_modules/(?!(?:\\.pnpm/)?(' +
       '(jest-)?react-native|@react-native(-community)?|' +
       'expo(nent)?|@expo(nent)?[/+].*|@expo-google-fonts[/+].*|' +
-      'react-navigation|@react-navigation[/+].*|' +
+      'react-navigation|@react-navigation[/+].*|standard-navigation|' +
       '@shopify[/+]flash-list|@stripe[/+]stripe-react-native|lottie-react-native|' +
       '@sentry[/+]react-native|native-base|' +
       '@tamagui[/+].*|tamagui|' +
