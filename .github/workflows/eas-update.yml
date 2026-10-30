@@ -68,4 +68,4 @@ jobs:
           done
 
       - name: Publish to testers
-        run: eas update --branch preview --message "${{ github.event.head_commit.message || 'Manual update' }}" --non-interactive
+        run: eas update --branch preview --environment preview --message "${{ github.event.head_commit.message || 'Manual update' }}" --non-interactive
