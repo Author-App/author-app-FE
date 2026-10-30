@@ -8,3 +8,6 @@ allowBuilds:
 
 overrides:
   react-native-web: 0.21.2
+
+patchedDependencies:
+  expo-router@55.0.18: patches/expo-router@55.0.18.patch

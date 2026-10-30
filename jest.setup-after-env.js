@@ -10,6 +10,8 @@
  * expect and the lifecycle hooks exist here.
  * Global mocks and custom matchers go in this file.
  */
+// Worklets 0.7 throws on import without its native part. Reanimated loads it first.
+jest.mock('react-native-worklets', () => require('react-native-worklets/src/mock'));
 require('react-native-reanimated').setUpTests();
 
 // React Native's mock window is 750 wide, which is the medium layout. Tests run as an iPhone
