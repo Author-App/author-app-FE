@@ -73,3 +73,11 @@ export const cacheSignedUrl = async (bookId: string, url: string): Promise<void>
 export const clearCachedSignedUrl = async (bookId: string): Promise<void> => {
   await AsyncStorage.removeItem(`${URL_CACHE_PREFIX}${bookId}`);
 };
+
+// Keys carry no user: the next account would open at this one's page, and skip the access check.
+export const clearAllBookStorage = async (): Promise<void> => {
+  const keys = await AsyncStorage.getAllKeys();
+  await AsyncStorage.multiRemove(
+    keys.filter((key) => key.startsWith(PROGRESS_PREFIX) || key.startsWith(URL_CACHE_PREFIX))
+  );
+};
