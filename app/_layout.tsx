@@ -32,11 +32,7 @@ for (const Icon of [Ionicons, Feather] as unknown as { defaultProps?: object }[]
   };
 }
 
-// Initialize Sentry before anything else
-initSentry({
-  enableInDev: false,
-  tracesSampleRate: 0.2,
-});
+initSentry();
 
 // $bgPage, as a literal: this renders before the Tamagui provider. Matches the splash background.
 const BG_PAGE = '#020103';

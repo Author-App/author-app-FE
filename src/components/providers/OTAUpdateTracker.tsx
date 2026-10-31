@@ -110,24 +110,6 @@ export function OTAUpdateTracker(): null {
             level: 'info',
           });
 
-          // Capture as message for easy Sentry search
-          sentryService.captureMessage(
-            `OTA update launched: ${currentId.substring(0, 16)}...`,
-            {
-              level: 'info',
-              tags: {
-                'ota.event': 'new_update_boot',
-                'ota.previous_id': lastId.substring(0, 16),
-              },
-              extra: {
-                previousUpdateId: lastId,
-                currentUpdateId: currentId,
-                channel: Updates.channel,
-                runtimeVersion: Updates.runtimeVersion,
-              },
-            }
-          );
-
           if (__DEV__) {
             console.log('📦 [OTA] New update boot detected:', currentId);
           }
