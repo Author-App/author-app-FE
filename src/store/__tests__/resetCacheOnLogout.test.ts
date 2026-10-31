@@ -1,4 +1,6 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { configureStore } from '@reduxjs/toolkit';
+import { waitFor } from '@testing-library/react-native';
 import { resetCacheOnLogout } from '../resetCacheOnLogout';
 import { homeApi } from '@/src/store/api/homeApi';
 import authSlice, { logOut, updateTokens } from '@/src/store/slices/authSlice';
@@ -45,5 +47,35 @@ describe('switching accounts', () => {
 
     expect(fetchMock).not.toHaveBeenCalled();
     expect(result.data?.data.banner?.title).toBe('Welcome back, Ali');
+  });
+});
+
+describe('book storage on logout', () => {
+  const PAGE_KEY = 'BOOK_PDF_PROGRESS_book-1';
+  const LINK_KEY = 'BOOK_URL_CACHE_book-1';
+
+  beforeEach(async () => {
+    await AsyncStorage.clear();
+    await AsyncStorage.multiSet([
+      [PAGE_KEY, JSON.stringify({ page: 42, totalPages: 300 })],
+      [LINK_KEY, JSON.stringify({ url: 'https://cdn.test/book-1.pdf', cachedAt: Date.now() })],
+      ['@app/lastUpdateId', 'update-1'],
+      ['persist:author_app_v2', '{}'],
+    ]);
+    makeStore().dispatch(logOut());
+    // The cleanup is async, so wait until it has run before asserting
+    await waitFor(async () => expect(await AsyncStorage.getItem(PAGE_KEY)).toBeNull());
+  });
+
+  it('forgets the last account’s reading page', async () => {
+    expect(await AsyncStorage.getItem(PAGE_KEY)).toBeNull();
+  });
+
+  it('forgets the last account’s book link, so the next one cannot skip the access check', async () => {
+    expect(await AsyncStorage.getItem(LINK_KEY)).toBeNull();
+  });
+
+  it('keeps everything that is not about books', async () => {
+    expect(await AsyncStorage.getAllKeys()).toEqual(['@app/lastUpdateId', 'persist:author_app_v2']);
   });
 });

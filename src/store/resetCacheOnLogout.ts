@@ -11,6 +11,7 @@ import { printApi } from './api/printApi';
 import { pushTokenApi } from './api/pushTokenApi';
 import { bugReportApi } from './api/bugReportApi';
 import { logOut } from './slices/authSlice';
+import { clearAllBookStorage } from '@/src/storage/bookProgress';
 
 const APIS = [authApi, homeApi, exploreApi, mediaApi, userApi, libraryApi, ordersApi, printApi, pushTokenApi, bugReportApi];
 
@@ -20,7 +21,8 @@ export const resetCacheOnLogout = createListenerMiddleware();
 
 resetCacheOnLogout.startListening({
   actionCreator: logOut,
-  effect: (_, { dispatch }) => {
+  effect: async (_, { dispatch }) => {
     APIS.forEach((api) => dispatch(api.util.resetApiState()));
+    await clearAllBookStorage();
   },
 });

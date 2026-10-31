@@ -742,6 +742,16 @@ _(not yet verified in CI)_
 - **Say it.** "The update shipped, but it had no config in it. Env vars are baked in at bundle time, and the update command never loaded them, so the app threw at startup and expo-updates rolled back silently. I found it from the device crash report, not from Sentry, because the crash happens before Sentry starts."
 - **Term.** Build-time env inlining. OTA rollback (expo-updates error recovery). Crash symbolication.
 
+### 9.5 The next account opened e-books at the last account's page
+
+_(not yet verified on device)_
+
+- **Symptom.** Found by reading the code, after the logout cache fix. Account A reads a book, logs out, account B logs in on the same phone. B opens the same book at A's page, and leaving the reader saves A's page to B's account. Within 55 minutes of A opening a book, B could also read it without owning it.
+- **Cause.** `bookProgress.ts` keys AsyncStorage by book only: `BOOK_PDF_PROGRESS_<id>` and `BOOK_URL_CACHE_<id>`. Nothing cleared them on logout. Local progress wins over the server when it is newer. A cached signed URL plus the PDF on disk opens the reader before the access check.
+- **Fix.** `clearAllBookStorage()` removes both prefixes. `resetCacheOnLogout` calls it, so every logout path clears it. The PDF files stay: without a cached URL the reader checks access with the server first.
+- **Say it.** "Clearing the Redux cache was not enough, because some user data lived in device storage under keys with no user in them. I cleared it in the same logout listener, so one place covers every way of logging out."
+- **Term.** Per-user storage scoping. Logout cleanup.
+
 ---
 
 ## 10. Toolchain upgrades (Xcode 27, Expo SDK 55)
