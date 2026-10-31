@@ -28,10 +28,6 @@ export const savePdfProgress = async (
   );
 };
 
-export const removePdfProgress = async (bookId: string) => {
-  await AsyncStorage.removeItem(`${PROGRESS_PREFIX}${bookId}`);
-};
-
 interface CachedUrl {
   url: string;
   cachedAt: number;
