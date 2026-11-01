@@ -30,6 +30,9 @@ jobs:
       # Read by the test process only. Never prefixed with EXPO_PUBLIC_.
       E2E_EMAIL: ${{ secrets.E2E_EMAIL }}
       E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
+      # A Release build uploads source maps to Sentry and fails without a token.
+      # A test build is not a release, so it should not upload at all.
+      SENTRY_DISABLE_AUTO_UPLOAD: 'true'
 
     steps:
       - name: Checkout
