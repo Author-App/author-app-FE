@@ -8,7 +8,6 @@
  * Usage:
  *   import { sentryService } from '@/src/services/sentry';
  *   sentryService.captureError(error);
- *   sentryService.trackNavigation('/home');
  */
 
 import * as Sentry from '@sentry/react-native';
@@ -54,8 +53,6 @@ export type PaymentStep =
 
 class SentryService {
   private static instance: SentryService;
-  private isInitialized = false;
-  private currentUser: SentryUser | null = null;
 
   private constructor() {
     // Private constructor for singleton
@@ -71,20 +68,6 @@ class SentryService {
     return SentryService.instance;
   }
 
-  /**
-   * Mark as initialized (called after Sentry.init)
-   */
-  markInitialized(): void {
-    this.isInitialized = true;
-  }
-
-  /**
-   * Check if Sentry is initialized
-   */
-  get initialized(): boolean {
-    return this.isInitialized;
-  }
-
   // ==========================================================================
   // User Management
   // ==========================================================================
@@ -93,8 +76,6 @@ class SentryService {
    * Set the current user for error tracking
    */
   setUser(user: SentryUser | null): void {
-    this.currentUser = user;
-
     if (user) {
       const { id, email, username, ...rest } = user;
       Sentry.setUser({
@@ -106,13 +87,6 @@ class SentryService {
     } else {
       Sentry.setUser(null);
     }
-  }
-
-  /**
-   * Get the current user
-   */
-  getUser(): SentryUser | null {
-    return this.currentUser;
   }
 
   /**
@@ -143,25 +117,6 @@ class SentryService {
   }
 
   /**
-   * Capture a message (for non-error events)
-   */
-  captureMessage(
-    message: string,
-    options: CaptureOptions = {}
-  ): string {
-    const { tags, extra, level = 'info', fingerprint } = options;
-
-    const eventId = Sentry.captureMessage(message, {
-      tags,
-      extra,
-      level,
-      fingerprint,
-    });
-
-    return eventId;
-  }
-
-  /**
    * Capture an API error with structured data
    */
   captureApiError(
@@ -172,6 +127,10 @@ class SentryService {
     return this.captureError(
       error instanceof Error ? error : new Error(`API Error: ${endpoint}`),
       {
+        // Without this Sentry groups by stack trace, which changes with the
+        // caller, so one broken endpoint becomes several issues.
+        fingerprint: ['api-error', endpoint, String(statusCode ?? 'unknown')],
+        level: statusCode && statusCode >= 500 ? 'error' : 'warning',
         tags: {
           type: 'api_error',
           endpoint,
@@ -200,36 +159,6 @@ class SentryService {
       data: options.data,
       level: options.level ?? 'info',
       timestamp: Date.now() / 1000,
-    });
-  }
-
-  /**
-   * Track navigation/screen changes
-   */
-  trackNavigation(
-    screenName: string,
-    params?: Record<string, unknown>
-  ): void {
-    this.addBreadcrumb({
-      category: 'navigation',
-      message: `Navigated to ${screenName}`,
-      data: { screen: screenName, params },
-      level: 'info',
-    });
-  }
-
-  /**
-   * Track user actions (button clicks, form submissions, etc.)
-   */
-  trackAction(
-    action: string,
-    data?: Record<string, unknown>
-  ): void {
-    this.addBreadcrumb({
-      category: 'user_action',
-      message: action,
-      data,
-      level: 'info',
     });
   }
 
@@ -314,13 +243,6 @@ class SentryService {
   // ==========================================================================
 
   /**
-   * Set a global tag (appears on all events)
-   */
-  setTag(key: string, value: string): void {
-    Sentry.setTag(key, value);
-  }
-
-  /**
    * Set multiple tags at once
    */
   setTags(tags: Record<string, string>): void {
@@ -330,60 +252,10 @@ class SentryService {
   }
 
   /**
-   * Set extra context data
-   */
-  setExtra(key: string, value: unknown): void {
-    Sentry.setExtra(key, value);
-  }
-
-  /**
    * Set context (structured data group)
    */
   setContext(name: string, context: Record<string, unknown>): void {
     Sentry.setContext(name, context);
-  }
-
-  // ==========================================================================
-  // Performance Monitoring
-  // ==========================================================================
-
-  /**
-   * Start a performance transaction
-   */
-  startTransaction(
-    name: string,
-    op: string
-  ): Sentry.Span | undefined {
-    return Sentry.startInactiveSpan({ name, op });
-  }
-
-  /**
-   * Wrap an async function with performance tracking
-   */
-  async withPerformance<T>(
-    name: string,
-    op: string,
-    fn: () => Promise<T>
-  ): Promise<T> {
-    return Sentry.startSpan({ name, op }, async () => {
-      return fn();
-    });
-  }
-
-  // ==========================================================================
-  // Utility Methods
-  // ==========================================================================
-
-  /**
-   * Wrap a component with Sentry error boundary
-   */
-  wrap = Sentry.wrap;
-
-  /**
-   * Get the underlying Sentry instance (escape hatch)
-   */
-  get native(): typeof Sentry {
-    return Sentry;
   }
 }
 

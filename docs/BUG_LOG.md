@@ -564,6 +564,16 @@ _(not yet verified on device)_
 
 ---
 
+### 6.7 An offline request said "Something went wrong"
+
+- **Symptom.** With the phone offline, any failed request showed "Something went wrong. Please try again." The user was never told it was their connection. Confirmed on a real Android device on a 422 kbps link, where a login hung for 12 seconds and was then killed by a wifi handover.
+- **Cause.** RTK Query reports a request that never got an answer as `{ status: 'FETCH_ERROR' }` with no `data` field. `extractErrorMessage` tested for `data` first (an API error), then for an `Error` instance. A plain object with a string in `status` matched neither, so it fell through to the generic fallback.
+- **Fix.** An `isTransportError` check runs **before** the API-error check in `src/services/error.service.ts`. `FETCH_ERROR` gives "No internet connection. Please check your network.", `TIMEOUT_ERROR` gives "Request timed out. Please try again." A test had pinned the old wrong text with a comment reading "current behaviour, not desired behaviour"; it went red and was replaced with three tests for the new behaviour.
+- **Say it.** "A dropped request and a rejected request look nothing alike in RTK Query: one has a string status and no body, the other has a number and a body. We only handled the second, so every offline failure hit the generic fallback. The order of the checks was the bug."
+- **Term.** Transport error. `FetchBaseQueryError`.
+
+---
+
 ## 7. Accessibility
 
 Found because RNTL queries by role and label. When the query failed, the app was not accessible.
@@ -797,6 +807,44 @@ _(checked on the simulator, not yet on device)_
 - **Fix.** `"enableFullScreenImage_legacy": true` in the plugin options. The generated `SplashScreen.storyboard` is back to the old 414 by 736 frame.
 - **Say it.** "A config migration kept the same keys but changed what the default meant. I compared the generated native file before and after, instead of trusting that the config looked the same."
 - **Term.** Launch screen. Config plugin defaults.
+
+## 11. Monitoring (Sentry)
+
+### 11.1 Every event arrived twice
+
+_(not yet verified on device)_
+
+- **Symptom.** Breadcrumbs and events appeared twice in Sentry, and `[Sentry] Initialized successfully` logged twice in production.
+- **Cause.** `initSentry` had no guard against a second call, and the root layout module was evaluated twice in production, so two clients ran at once. Separately, `app.json` listed the Sentry plugin twice: `"@sentry/react-native/expo"` with options and a bare `"@sentry/react-native"`. The bare package's `app.plugin.js` is `module.exports = require('./expo')`, so both entries resolved to the same config plugin and its build-time changes were applied twice.
+- **Fix.** A module-level `hasInitialized` flag makes `initSentry` idempotent, which is correct whatever makes the module evaluate twice. The duplicate plugin entry was removed.
+- **Say it.** "Two Sentry clients were running, so every event was sent twice. I made init idempotent rather than hunt for why the module evaluated twice, because a guard is right either way, and I found a second cause in app.json where the same config plugin was registered under two names."
+- **Term.** Idempotent initialisation. Expo config plugin resolution.
+
+### 11.2 `ignoreErrors` filtered nothing
+
+- **Symptom.** `Sentry.init` listed `'Network request failed'` in `ignoreErrors`, yet offline errors kept arriving.
+- **Cause.** `ignoreErrors` matches an event's **final** message. `captureApiError` wraps a plain RTK Query rejection in `new Error('API Error: ' + endpoint)` before Sentry ever sees it, so the original text is already gone by the time the filter runs.
+- **Fix.** Filter at the call site instead. `handleApiError` decides what reaches Sentry; `ignoreErrors` now carries a comment saying it only sees the rewritten message.
+- **Say it.** "The filter ran after our own code had rewritten the message, so it could never match. A filter is only useful where it can still see what it is filtering."
+- **Term.** Event processing order.
+
+### 11.3 One broken endpoint appeared as three issues
+
+- **Symptom.** `API Error: auth/login` existed as three separate Sentry issues with 41, 5 and 1 events. None showed the real count. One of them was attributed to `captureStripeError`, which never touched that request.
+- **Cause.** Sentry groups events by stack trace unless told otherwise. The `Error` is constructed inside `SentryService`, so the frames above it change with the calling screen and with how each release was symbolicated.
+- **Fix.** An explicit grouping key: `fingerprint: ['api-error', endpoint, String(statusCode ?? 'unknown')]`. One endpoint plus one status is now always exactly one issue.
+- **Say it.** "Grouping by stack trace splits one bug across however many places call it. I set the fingerprint to what the error actually is, the endpoint and the status, so the count is real. Changing a fingerprint retires the old issues, so expect a fresh set after the next release."
+- **Term.** Fingerprint. Issue grouping.
+
+### 11.4 Sentry was a log file, not an error tracker
+
+- **Symptom.** 15 issues and about 200 events, of which 7 were defects. A genuine Android push failure (`Default FirebaseApp is not initialized`) sat unseen for weeks even though the default email alert fired on it.
+- **Cause.** Two habits. Expected outcomes were captured as errors: a wrong password (`401`), a wrong verification code (`401`), a duplicate signup (`409`). And `captureMessage` was used as a logger in `OTAUpdateTracker`, with the update uuid inside the message, so **every OTA update created a permanent new issue**. Five of the fifteen issues were that one call.
+- **Fix.** `401`, `403` and `409` no longer reach Sentry; `400` deliberately still does, because it means our client sent something the server rejected, which is a defect (a real one was found this way: `400 "Last name is required"`, a gap in the Yup schema). The OTA `captureMessage` was deleted; the `setTags` and `addBreadcrumb` calls above it already carried the same data in a form that filters real issues. Environment now comes from the EAS channel, so testers and store users are separate. 13 issues archived, 1 resolved in next release.
+- **Say it.** "Almost everything in Sentry was expected behaviour, so the one real bug was invisible. The alert was not missing, it fired and I ignored it, because thirteen of fifteen emails were noise. The fix was sending fewer events, not writing a better alert."
+- **Term.** Alert fatigue. Signal to noise.
+
+---
 
 ## How to add an entry
 

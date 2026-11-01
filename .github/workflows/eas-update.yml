@@ -69,3 +69,12 @@ jobs:
 
       - name: Publish to testers
         run: eas update --branch preview --environment preview --message "${{ github.event.head_commit.message || 'Manual update' }}" --non-interactive
+
+      # EAS Build uploads source maps for the native bundle. An OTA ships a
+      # different bundle, so without this a JS crash in an update shows minified
+      # frames. `eas update` leaves the bundles and maps in dist; org and project
+      # come from the Sentry plugin block in app.json.
+      - name: Upload source maps to Sentry
+        env:
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        run: pnpm exec sentry-expo-upload-sourcemaps dist

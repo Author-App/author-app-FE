@@ -20,11 +20,13 @@ He has used Vitest and Playwright on web. On mobile he has now, in this repo:
 - Set up Detox from nothing and written an E2E login test that drives the real app on a simulator against the real backend
 - Tested a race: held one request with a promise so it lands after a newer one, and asserted the request body that was sent
 - Driven a polling loop with fake timers and `jest.advanceTimersByTimeAsync`, starting the async call inside `act`
+- Run the E2E suite in CI (`e2e.yml`, `macos-latest`, `workflow_dispatch` plus a nightly `schedule`)
+- Proved a suite by mutation: broke each source line in turn and checked exactly one test went red. Caught a boundary test that used `503` where the branch is `>= 500`, so a `>` survived. Moved it to `500`.
+- Read and written Sentry through its HTTP API with a token, to triage issues instead of guessing from the dashboard
 
 He has **not** yet:
 
 - Used Maestro
-- Run the E2E suite in CI
 
 He knows the difference between `fireEvent`, `waitFor` and `act`, and that `act` is only needed when asserting immediately instead of awaiting.
 
@@ -98,6 +100,8 @@ Do not re-argue these.
 - Name each `it` after the behaviour, not the code. "says Completed on the last page", not "tests formatPagesLeft".
 - When pinning behaviour he is unsure about, add a comment saying it is current behaviour, not desired behaviour.
 - Test three or four values, not thirty. Testing all 35 currency symbols tests his typing.
+- A test on a boundary must use the boundary value. `503` proves 5xx works; only `500` catches a `>` that should be a `>=`.
+- **An event in Sentry is something you would change code to prevent.** Expected outcomes (401, 403, 409), dropped requests and the app's own logging are breadcrumbs or tags, never events. A `400` is still an event: it means our client sent something the server rejected. The whole decision lives in `handleApiError`. Reference: `docs/SENTRY_SETUP.md`.
 
 ## Current state
 
@@ -105,7 +109,7 @@ Do not re-argue these.
 
 **Stack:** Expo SDK 57, React Native 0.86, React 19.2, Reanimated 4.5, RNTL 13.3, pnpm, Redux Toolkit with RTK Query, Expo Router, Tamagui, Stripe, Sentry.
 
-**Tests that exist:** 22 Jest suites, 218 tests, plus 1 Detox E2E test on a separate runner.
+**Tests that exist:** 22 Jest suites, 225 tests, plus 1 Detox E2E test on a separate runner.
 
 | File | Kind | State |
 |---|---|---|
@@ -114,7 +118,7 @@ Do not re-argue these.
 | `src/storage/__tests__/secureStorage.test.ts` | unit | Good. Mocks `expo-secure-store`, the real boundary. |
 | `src/utils/__tests__/currency.test.ts` | unit | Good. |
 | `src/utils/__tests__/helper.test.ts` | unit | Good. Includes frozen-clock tests. |
-| `src/services/__tests__/error.service.test.ts` | unit | Good. Pins the branches of `extractErrorMessage`. |
+| `src/services/__tests__/error.service.test.ts` | unit | Good. Pins the branches of `extractErrorMessage`, including a dropped request (`FETCH_ERROR`) and a timeout. Also covers the send-or-not decision in `handleApiError` against the global `@sentry/react-native` mock: 401, 403 and 409 are not reported, 400 and 500 are. Mutation-checked. |
 | `src/components/home/sections/__tests__/SectionHeader.test.tsx` | component | Good. First RNTL test. |
 | `src/components/core/buttons/__tests__/uBackButton.test.tsx` | component | Good. Press, plus `expo-router` mocked locally as the assertion target. |
 | `src/components/core/rating/__tests__/UStarRating.test.tsx` | unit + component | Good. Includes a `rerender` regression test for the stale closure. |
@@ -283,7 +287,9 @@ He liked this shape. Keep it.
 
 ## Next targets, in order
 
-1. A GitHub Actions workflow for the E2E suite. `macos-latest`, `workflow_dispatch` plus a nightly `schedule`, never on `pull_request`. Needs `brew install applesimutils`, `expo prebuild`, and `EXPO_PUBLIC_API_BASE_URL`, `E2E_EMAIL`, `E2E_PASSWORD` as repo secrets. The existing `test.yml` and `pr-check.yml` need no edits.
+1. The push token is POSTed on every app open, with no comparison against the last one sent. A write on every launch for a value that almost never changes.
 2. Rewrite `authStorage.test.ts` against the real boundary.
+3. Delete `src/utils/registerForPushNotifications.ts`. Zero callers.
+4. `apiErrorHandler` reads `payload.data.data.message.failed`, four levels deep with no guard.
 
 Do not start any of these without walking through the seven steps above first.

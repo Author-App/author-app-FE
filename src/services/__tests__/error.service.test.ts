@@ -1,4 +1,5 @@
-import { extractErrorMessage } from '../error.service';
+import * as Sentry from '@sentry/react-native';
+import { extractErrorMessage, handleApiError } from '../error.service';
 
 describe('extractErrorMessage', () => {
   describe('API errors from the server', () => {
@@ -56,11 +57,71 @@ describe('extractErrorMessage', () => {
       expect(extractErrorMessage(404)).toBe(fallback);
     });
 
-    // Current behaviour, not desired behaviour: an offline RTK Query rejection has no
-    // `data` key and is not an Error instance, so it never reaches the network branch above.
-    it('falls back on a real offline RTK Query error', () => {
+  });
+
+  describe('requests that never got an answer', () => {
+    it('tells the user to check their connection when the request was dropped', () => {
       const error = { status: 'FETCH_ERROR', error: 'TypeError: Network request failed' };
-      expect(extractErrorMessage(error)).toBe('Something went wrong. Please try again.');
+      expect(extractErrorMessage(error)).toBe(
+        'No internet connection. Please check your network.'
+      );
     });
+
+    it('tells the user to retry when the request timed out', () => {
+      const error = { status: 'TIMEOUT_ERROR', error: 'AbortError' };
+      expect(extractErrorMessage(error)).toBe('Request timed out. Please try again.');
+    });
+
+    // A numeric status is an answer from the server, so it must not take this branch.
+    it('still shows the server message on a numeric status', () => {
+      const error = { status: 400, data: { message: 'Email already in use' } };
+      expect(extractErrorMessage(error)).toBe('Email already in use');
+    });
+  });
+});
+
+describe('handleApiError', () => {
+  beforeEach(() => {
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+  });
+
+  it('does not report a dropped request', () => {
+    handleApiError({ status: 'FETCH_ERROR', error: 'Network request failed' }, 'home/feed');
+    expect(Sentry.captureException).not.toHaveBeenCalled();
+  });
+
+  it('does not report a wrong password', () => {
+    handleApiError({ status: 401, data: { message: 'Invalid credentials' } }, 'auth/login');
+    expect(Sentry.captureException).not.toHaveBeenCalled();
+  });
+
+  it('does not report signing up with an email that already exists', () => {
+    handleApiError(
+      { status: 409, data: { message: 'User with this email already exists' } },
+      'auth/signup'
+    );
+    expect(Sentry.captureException).not.toHaveBeenCalled();
+  });
+
+  // A 400 means our client sent something the server rejected. That is a defect.
+  it('reports a payload the server rejected, tagged with the endpoint', () => {
+    handleApiError({ status: 400, data: { message: 'Last name is required' } }, 'auth/signup');
+    expect(Sentry.captureException).toHaveBeenCalledWith(
+      expect.any(Error),
+      expect.objectContaining({
+        level: 'warning',
+        fingerprint: ['api-error', 'auth/signup', '400'],
+        tags: expect.objectContaining({ endpoint: 'auth/signup', status_code: '400' }),
+      })
+    );
+  });
+
+  // 500 exactly, so a `>` instead of a `>=` in captureApiError fails this.
+  it('reports a server failure at error level', () => {
+    handleApiError({ status: 500, data: null }, 'print/quote');
+    expect(Sentry.captureException).toHaveBeenCalledWith(
+      expect.any(Error),
+      expect.objectContaining({ level: 'error' })
+    );
   });
 });
