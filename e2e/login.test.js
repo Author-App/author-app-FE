@@ -1,4 +1,4 @@
-const { device, element, by, expect, waitFor } = require('detox');
+const { device, element, by, expect, waitFor, system } = require('detox');
 
 const EMAIL = process.env.E2E_EMAIL;
 const PASSWORD = process.env.E2E_PASSWORD;
@@ -35,8 +35,18 @@ describe('Login', () => {
     await device.disableSynchronization();
 
     // The feed is live data, so assert on the shell of the screen, never on a
-    // book title the CMS can change tomorrow.
-    await waitFor(element(by.id('home-screen'))).toBeVisible().withTimeout(30000);
+    // book title the CMS can change tomorrow. toExist first: it passes under a sheet.
+    await waitFor(element(by.id('home-screen'))).toExist().withTimeout(30000);
+
+    // iOS offers to save the password after a login. Its sheet covers the middle of
+    // Home, so home-screen never counts as visible. A real user dismisses it too.
+    try {
+      await system.element(by.system.label('Not Now')).tap();
+    } catch {
+      // No sheet: Passwords AutoFill is off on this simulator.
+    }
+
+    await waitFor(element(by.id('home-screen'))).toBeVisible().withTimeout(10000);
     await expect(element(by.id('tab-(home)'))).toBeVisible();
   });
 
