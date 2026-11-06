@@ -762,6 +762,14 @@ _(not yet verified on device)_
 - **Say it.** "Clearing the Redux cache was not enough, because some user data lived in device storage under keys with no user in them. I cleared it in the same logout listener, so one place covers every way of logging out."
 - **Term.** Per-user storage scoping. Logout cleanup.
 
+### 9.6 The nightly E2E failed on a login screen that looked correct
+
+- **Symptom.** From 4 Nov 2026 every nightly run failed with `Timed out while waiting for expectation: TOBEVISIBLE WITH MATCHER(id == "login-email") TIMEOUT(10s)`. The failure screenshot showed the login form, fully drawn.
+- **Cause.** The Detox log said `app_status: busy`, with pending layer animations and timers. The `NeonButton` scan and the wordmark glitch are endless Reanimated loops, so the login screen is never idle. Detox waits for idle before every match. The test only turned synchronisation off after login, for the home banner.
+- **Fix.** `device.disableSynchronization()` moved to right after the onboarding tap. Every later step already uses `waitFor` with a timeout, so nothing relied on the automatic wait.
+- **Say it.** "Detox waits until the app is idle before it looks for anything. We added an animation that never stops, so idle never came. The screen was right and the test was blind. I turned synchronisation off from the first screen with a loop, and kept explicit waits on every step."
+- **Term.** Detox synchronisation. Idle detection.
+
 ---
 
 ## 10. Toolchain upgrades (Xcode 27, Expo SDK 55)
@@ -843,6 +851,14 @@ _(not yet verified on device)_
 - **Fix.** `401`, `403` and `409` no longer reach Sentry; `400` deliberately still does, because it means our client sent something the server rejected, which is a defect (a real one was found this way: `400 "Last name is required"`, a gap in the Yup schema). The OTA `captureMessage` was deleted; the `setTags` and `addBreadcrumb` calls above it already carried the same data in a form that filters real issues. Environment now comes from the EAS channel, so testers and store users are separate. 13 issues archived, 1 resolved in next release.
 - **Say it.** "Almost everything in Sentry was expected behaviour, so the one real bug was invisible. The alert was not missing, it fired and I ignored it, because thirteen of fifteen emails were noise. The fix was sending fewer events, not writing a better alert."
 - **Term.** Alert fatigue. Signal to noise.
+
+### 11.5 "App Hanging" alerts every day, from no real user
+
+- **Symptom.** Six new `App Hanging: App hanging for at least 2000 ms` issues (STANLEY-PADEN-11 to 16, 22 events) from 2 Nov 2026, alerting daily.
+- **Cause.** Every event had `device.simulator: True`, release `1.3.0+1`, environment `unknown`, and a main thread full of `Detox` and `DetoxSync` frames. Their timestamps match the nightly `e2e.yml` runs to the minute. The E2E job builds a Release app, and Release builds start Sentry. Native hang detection then reported a slow CI simulator with Detox on the main thread. No real device had a single hang event.
+- **Fix.** `initSentry` returns early when `Device.isDevice` is false. Native events like hangs never pass through JS `beforeSend`, so the filter has to stop Sentry from starting, not drop events afterwards. _(not yet verified on device)_
+- **Say it.** "The alerts came from our own test robot. Every event said simulator, and the times matched the nightly E2E run. I stopped Sentry from starting on a simulator, because a native hang is reported by the native SDK and never reaches the JS filter."
+- **Term.** App hang detection (watchdog). Test traffic in production monitoring.
 
 ---
 

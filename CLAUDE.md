@@ -158,7 +158,7 @@ Do not re-argue these.
 **Three Detox traps already hit here, all real:**
 
 1. **Hittability.** Detox refuses to tap a view a finger could not reach. The Sign In button is covered by the keyboard, so the test submits with `tapReturnKey()` instead. RNTL would have pressed it happily, because RNTL has no keyboard and no screen.
-2. **Synchronisation.** Detox waits for the app to be idle before every match. `HeroBanner` runs `setInterval(4000)` forever, so idle never comes and `waitFor` times out while the screen looks correct. Fixed with a narrow `device.disableSynchronization()` before the home assertions only, never at launch.
+2. **Synchronisation.** Detox waits for the app to be idle before every match. `HeroBanner` runs `setInterval(4000)` forever, so idle never comes and `waitFor` times out while the screen looks correct. The login screen's Reanimated loops (`NeonButton` scan, wordmark glitch) do the same. Fixed with `device.disableSynchronization()` right after the onboarding tap, never at launch, with an explicit `waitFor` on every later step (BUG_LOG 9.6).
 3. **Keychain.** `expo-secure-store` writes to the iOS keychain, which survives an app reinstall. Without `device.clearKeychain()` the app can boot already logged in and the test proves nothing.
 
 **One animation system: Reanimated.** Never use Tamagui's `animation` prop on views (`animation="quick"` and similar). Its driver is React Native's old `Animated`, which updates views with `setNativeProps` from the JS thread and crashed the app when it collided with Reanimated (BUG_LOG 5.6). `pressStyle` without `animation` is fine, it just applies instantly. The only exception is `Sheet`, which needs the driver. Toasts are our own `Toast`/`ToastHost` (`src/components/core/toast/toast.tsx`) on Reanimated; `react-native-toast-message` was removed because its Android slide used the JS driver.
@@ -282,7 +282,6 @@ He liked this shape. Keep it.
 - `formatEventDisplay` in `helper.ts` uses `Intl.DateTimeFormat` with a `timeZone` option. Node has full ICU so it works under Jest. Hermes on device may not. Tests could be green while the app is wrong. Unconfirmed on a real device.
 - `renderWithProviders` now has Redux, SafeAreaProvider and Tamagui. The real root in `app/_layout.tsx` also has GestureHandlerRootView, Stripe, PersistGate and FontProvider. A screen that needs one of those will fail and name it. **Do not add them pre-emptively.**
 - The E2E logs into the real backend with a real account. It is not hermetic. A backend outage fails it, and it writes real session data. This is why it must not run on every PR.
-- Onboarding, Login and every auth CTA now run endless Reanimated loops (the wordmark glitch and the `NeonButton scan` sweep). They pause on blur, but the screen under test is never idle. The Detox login flow has not been rerun since. If it times out on a screen that looks right, this is the cause: disable synchronisation for that step.
 - Only the elements the login flow touches carry a `testID`: `onboarding-login`, `login-email`, `login-password`, `home-screen`, `tab-*`. Add one only when an E2E actually needs it. Never add a `testID` to route around a missing accessibility label in a component test.
 
 ## Next targets, in order
