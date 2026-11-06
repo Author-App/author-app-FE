@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/react-native';
+import * as Device from 'expo-device';
 import * as Updates from 'expo-updates';
 
 // Public by design: a DSN ships inside every build and only accepts events.
@@ -31,6 +32,8 @@ export function initSentry(): void {
   // clients and sent every breadcrumb and event twice.
   if (hasInitialized) return;
   if (__DEV__ && !ENABLE_IN_DEV) return;
+  // No user runs a simulator. The nightly Detox build does, and its hangs are not ours.
+  if (!Device.isDevice) return;
 
   hasInitialized = true;
   const environment = resolveEnvironment();

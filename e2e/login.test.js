@@ -20,6 +20,12 @@ describe('Login', () => {
     await waitFor(element(by.id('onboarding-login'))).toBeVisible().withTimeout(30000);
     await element(by.id('onboarding-login')).tap();
 
+    // From Login on, the app never reports itself idle: the NeonButton scan and
+    // the wordmark glitch loop forever, then the hero banner rotates on a
+    // setInterval and the skeletons shimmer. Detox waits for idle before every
+    // match, so it must stop waiting here or each waitFor times out.
+    await device.disableSynchronization();
+
     await waitFor(element(by.id('login-email'))).toBeVisible().withTimeout(10000);
     await element(by.id('login-email')).typeText(EMAIL);
     await element(by.id('login-password')).typeText(PASSWORD);
@@ -28,11 +34,6 @@ describe('Login', () => {
     // sits outside UKeyboardAvoidingView, so the keyboard covers it and Detox
     // cannot tap it. Both paths call the same handleSubmit.
     await element(by.id('login-password')).tapReturnKey();
-
-    // The hero banner auto-rotates on a setInterval and the skeletons shimmer on
-    // a repeating animation, so the app never reports itself idle. Detox waits
-    // for idle before every match, so it must be told to stop waiting here.
-    await device.disableSynchronization();
 
     // The feed is live data, so assert on the shell of the screen, never on a
     // book title the CMS can change tomorrow. toExist first: it passes under a sheet.
